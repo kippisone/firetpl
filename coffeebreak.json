@@ -1,0 +1,10 @@
+{
+	"project": "FireTPL",
+	"browser": true,
+	"files": "firetpl.js",
+	"watch": "src/**/*.js",
+	"tests": "tests/**/*.spec.js",
+	"grunt": {
+		"task": "concat:build"
+	}
+}

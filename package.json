@@ -1,0 +1,29 @@
+{
+  "name": "firetpl",
+  "version": "0.0.1",
+  "description": "FireTPL is a pretty Javascript template engine",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "keywords": [
+    "template",
+    "tpl",
+    "firetpl",
+    "fire",
+    "fire-template",
+    "fire-tpl",
+    "xqcore",
+    "xqcore-template"
+  ],
+  "author": "Andi Heinkelein <andi@noname-media.com> (http://noname-media.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "grunt-bumpup": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0"
+  },
+  "dependencies": {
+    "mkdirp": "~0.3.5",
+    "commander": "~2.1.0"
+  }
+}

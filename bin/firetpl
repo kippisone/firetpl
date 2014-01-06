@@ -1,0 +1,59 @@
+#!/usr/bin/env node
+/*global XQCore:true */
+var fs = require('fs'),
+	path = require('path');
+
+var mkdirp = require('mkdirp'),
+	program = require('commander');
+
+var FireTPL = require('../firetpl');
+
+program.version('0.0.1')
+	.usage('[options] <file ...>')
+	.option('-o, --out <outfile>', 'Write precompiled file to <outfile>. If this option is not present write to STDOUT')
+	.option('-d, --debug', 'Enable debug mode')
+	.option('-v, --verbose', 'Output more infos')
+	.parse(process.argv);
+
+// console.log('Args', program.args);
+var src = program.args[0],
+	source = fs.readFileSync(src, 'utf8'),
+	tplName = path.basename(src, path.extname(src));
+
+//Set debug mode
+FireTPL.debug = !!program.debug;
+
+if (program.verbose) {
+	console.log('Precompile ', program.args);
+	console.log('---------- begin of source file ----------');
+	console.log(source);
+	console.log('---------- end of source file ----------');
+	console.log('size: ', source.length, 'chars');
+	console.log('');
+	console.log('');
+}
+
+
+var precompiled = FireTPL.precompile(source).toString();
+
+if (program.verbose) {
+	console.log('---------- begin of precompiled file ----------');
+	console.log(precompiled);
+	console.log('---------- end of precompiled file ----------');
+	console.log('size: ', precompiled.length, 'chars');
+}
+
+var output = '(function() {';
+	output += 'FireTPL.templateCache.' + tplName + '=function(data) {var s=\'\';var h=FireTPL.helpers;' + precompiled + 'return s;};';
+	output += '})();';
+
+if (program.out) {
+	console.log('Write to', program.out);
+	var dir = path.dirname(program.out);
+	if (dir) {
+		mkdirp.sync(dir);
+	}
+	fs.writeFileSync(program.out, output);
+}else {
+	console.log(output);
+}

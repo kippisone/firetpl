@@ -1,0 +1,9 @@
+div class=example
+	h1
+		$title
+	div class=description
+		$description
+	ul
+		each $listing
+			li
+				$name
