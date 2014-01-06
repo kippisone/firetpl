@@ -11,8 +11,8 @@ var FireTPL = require('../firetpl');
 program.version('0.0.1')
 	.usage('[options] <file ...>')
 	.option('-o, --out <outfile>', 'Write precompiled file to <outfile>. If this option is not present write to STDOUT')
-	.option('-a, --amd', 'Precompile as AMD module. Value is the FireTPL module path')
-	.option('-c, --commonjs', 'Precompile as commonjs module. Value is the FireTPL module path')
+	.option('-a, --amd <path>', 'Precompile as AMD module. <path> is the FireTPL module path')
+	.option('-c, --commonjs <path>', 'Precompile as CommonJS module. <path> is the FireTPL module path')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-v, --verbose', 'Output more infos')
 	.parse(process.argv);
@@ -46,11 +46,11 @@ if (program.verbose) {
 }
 
 var output = '';
-	if (options.commonjs) {
-		out += 'var FireTPL = require(\'' + options.commonjs + '\');';
+	if (program.commonjs) {
+		out += 'var FireTPL = require(\'' + program.commonjs + '\');';
 	}
-	else if (options.amd) {
-		out += 'define([\'' + options.amd + '\'], function(FireTPL) {';
+	else if (program.amd) {
+		out += 'define([\'' + program.amd + '\'], function(FireTPL) {';
 	}
 	else {
 		output = '(function() {';
@@ -58,10 +58,10 @@ var output = '';
 
 	output += 'FireTPL.templateCache.' + tplName + '=function(data) {var s=\'\';var h=FireTPL.helpers;' + precompiled + 'return s;};';
 	
-	if (options.commonjs) {
+	if (program.commonjs) {
 
 	}
-	else if(options.amd) {
+	else if(program.amd) {
 		output += '});';
 	}
 	else {
