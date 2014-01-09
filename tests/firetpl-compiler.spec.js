@@ -216,7 +216,7 @@ describe('FireTPL', function() {
 			var attrs = fireTpl.stripAttributes(' foo=bar bla=blubb onShow=myEvent');
 			expect(attrs).to.eql({
 				attrs: ['foo="bar"', 'bla="blubb"'],
-				events: [['onShow', 'myEvent']]
+				events: ['show:myEvent']
 			});
 		});
 
@@ -225,7 +225,7 @@ describe('FireTPL', function() {
 			var attrs = fireTpl.stripAttributes(' onFoo=bar onBla=blubb onShow=myEvent');
 			expect(attrs).to.eql({
 				attrs: [],
-				events: [['onFoo', 'bar'], ['onBla', 'blubb'], ['onShow', 'myEvent']]
+				events: ['foo:bar', 'bla:blubb', 'show:myEvent']
 			});
 		});
 	});
@@ -440,6 +440,28 @@ describe('FireTPL', function() {
 			expect(errorStub).was.called();
 			expect(errorStub).was.calledWith('Loading a FireTPL template failed! Server response was: 500 Internal Server Error');
 			errorStub.restore();
+		});
+	});
+
+	describe('events', function() {
+		it('Should precompile a tmpl with events', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		div id=myDiv onShow=show\n';
+			template += '			button onClick=filter data-filter=asc\n';
+			template += '				Filter ascend\n';
+			template += '			button onClick=filter data-filter=desc\n';
+			template += '				Filter descend\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head></head><body><div id="myDiv" on="show:show">' +
+				'<button data-filter="asc" on="click:filter">Filter ascend</button>' +
+				'<button data-filter="desc" on="click:filter">Filter descend</button>' +
+				'</div></body></html>\';'
+			);
 		});
 	});
 });

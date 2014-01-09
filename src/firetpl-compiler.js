@@ -47,10 +47,6 @@
 		prevItem = curItem;
 		curItem = null;
 
-		var eventMaper = function(item) {
-			return item[0] + '="p.fire(\'' + item[1] + '\')"';
-		};
-
 		do {
 			// console.log('Pat:', this.pattern, tmpl);
 			match = this.pattern.exec(tmpl);
@@ -97,18 +93,20 @@
 				if (matchContent) {
 					res = this.stripAttributes(matchContent);
 					if (res) {
-						attrs = ' ' + res.attrs.join(' ');
+						if (res.attrs) {
+							attrs += ' ' + res.attrs.join(' ');
+						}
 
 						if (res.events.length !== 0) {
 							//this.registerEvent(res.events);
 							//TODO better event register method
-							var events = res.events.map(eventMaper);
-							attrs = ' ' + events.join(' ');
+							var events = res.events;
+							attrs += ' on="' + events.join(';') + '"';
 						}
 					}
 				}
 
-				this.append('str', '<' + matchTag + attrs + '>');
+				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
 				this.closer.push('</' + matchTag + '>');
 			}
 			else if (matchContent) {
@@ -125,7 +123,7 @@
 						this.registerEvent(res.events);
 					}
 
-					this.out = this.out.replace(/\>$/, attrs + '>');
+					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
 				}
 				else {
 					throw 'Parse error (3)';
@@ -244,7 +242,7 @@
 			}
 
 			if (match[1]) {
-				events.push([match[1], match[3]]);
+				events.push(match[1].substr(2).toLowerCase() + ':' + match[3]);
 			}
 			else if (match[2]) {
 				attrs.push(match[2] + '="' + match[3] + '"');

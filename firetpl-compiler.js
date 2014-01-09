@@ -9,7 +9,6 @@
  * Copyright (c) 2013 - 2014 Noname Media, http://noname-media.com
  * Author Andi Heinkelein
  *
- * Creation Date: 2014-01-05
  */
 
 var FireTPL;
@@ -19,13 +18,13 @@ var FireTPL;
 	'use strict';
 
 	if (typeof define === 'function' && define.amd) {
-		define('xqcore', ['jquery'], factory);
+		define('xqcore', [], factory);
 	} else if (typeof module !== 'undefined' && module.exports) {
-		module.exports = factory(require('jquery'));
+		module.exports = factory();
 	} else {
-		root.FireTPL = factory(root.jQuery);
+		root.FireTPL = factory();
 	}
-}(this, function (jQuery) {
+}(this, function () {
 	'use strict';
 
 	FireTPL = {
@@ -47,17 +46,11 @@ var FireTPL;
 	/*global define:false */
 	'use strict';
 
-	var Compiler = function(url) {
+	var Compiler = function() {
 		this.indentionPattern = /\t/g;
 		this.pattern = /^([ \t]*)?(\/\/.*)?(if|end|else|each|unless)?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?(.*)?$/gm;
 
-		this.helpers = {};
-		this.registerCoreHelper();
 		this.nextScope = 0;
-
-		if (url) {
-			this.tmpl = FireTPL.loadFile(url);
-		}
 	};
 
 	/**
@@ -88,10 +81,6 @@ var FireTPL;
 
 		prevItem = curItem;
 		curItem = null;
-
-		var eventMaper = function(item) {
-			return item[0] + '="p.fire(\'' + item[1] + '\')"';
-		};
 
 		do {
 			// console.log('Pat:', this.pattern, tmpl);
@@ -139,18 +128,20 @@ var FireTPL;
 				if (matchContent) {
 					res = this.stripAttributes(matchContent);
 					if (res) {
-						attrs = ' ' + res.attrs.join(' ');
+						if (res.attrs) {
+							attrs += ' ' + res.attrs.join(' ');
+						}
 
 						if (res.events.length !== 0) {
 							//this.registerEvent(res.events);
 							//TODO better event register method
-							var events = res.events.map(eventMaper);
-							attrs = ' ' + events.join(' ');
+							var events = res.events;
+							attrs += ' on="' + events.join(';') + '"';
 						}
 					}
 				}
 
-				this.append('str', '<' + matchTag + attrs + '>');
+				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
 				this.closer.push('</' + matchTag + '>');
 			}
 			else if (matchContent) {
@@ -167,7 +158,7 @@ var FireTPL;
 						this.registerEvent(res.events);
 					}
 
-					this.out = this.out.replace(/\>$/, attrs + '>');
+					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
 				}
 				else {
 					throw 'Parse error (3)';
@@ -185,6 +176,10 @@ var FireTPL;
 		// console.log('Closer', this.closer.length, this.closer);
 		while (this.closer.length > 0) {
 			this.appendCloser();
+		}
+
+		if (this.lastItemType === 'str') {
+			this.out += '\';';
 		}
 
 		return this.out;
@@ -282,7 +277,7 @@ var FireTPL;
 			}
 
 			if (match[1]) {
-				events.push([match[1], match[3]]);
+				events.push(match[1].substr(2).toLowerCase() + ':' + match[3]);
 			}
 			else if (match[2]) {
 				attrs.push(match[2] + '="' + match[3] + '"');
@@ -371,16 +366,6 @@ var FireTPL;
 	};
 
 	/**
-	 * Register an event listener
-	 *
-	 * @method registerEvent
-	 * @param Object events Event array
-	 */
-	Compiler.prototype.registerEvent = function(events) {
-		//TODO register events
-	};
-
-	/**
 	 * Get next scope id
 	 *
 	 * @method getNextScope
@@ -416,91 +401,6 @@ var FireTPL;
 		this.out = this.out.slice(0, startPos) + tag;
 	};
 
-	/**
-	 * Register a block helper
-	 *
-	 * @method registerHelper
-	 * @param {String} helper Helper name
-	 * @param {Function} fn Helper function
-	 */
-	Compiler.prototype.registerHelper = function(helper, fn) {
-		this.helpers[helper] = fn;
-	};
-
-	/**
-	 * Register core helper
-	 *
-	 * @private
-	 * @method registerCoreHelper
-	 */
-	Compiler.prototype.registerCoreHelper = function() {
-		this.registerHelper('if', function(context, fn) {
-			var s = '';
-
-			if (context) {
-				s += fn(context);
-			}
-
-			return s;
-		});
-		
-		this.registerHelper('else', function(context, fn) {
-			return fn(context);
-		});
-
-		this.registerHelper('unless', function(context, fn) {
-			var s = '';
-
-			if (!(context)) {
-				s += fn(context);
-			}
-
-			return s;
-		});
-
-		this.registerHelper('each', function(context, fn) {
-			var s = '';
-
-			if (context) {
-				context.forEach(function(item) {
-					s += fn(item);
-				});
-			}
-
-			return s;
-		});
-	};
-
-	/**
-	 * Executes a precompiled
-	 * @method compile
-	 * @param {String} template Template string or precompiled tempalte
-	 * @returns {String} Returns executed template
-	 */
-	Compiler.prototype.compile = function(template, data) {
-		var s, h;
-		
-		if (!/^s=\'/.test(template)) {
-			template = this.precompile(template);
-		}
-
-		s = '';
-		h = this.helpers;
-			
-		return function(data) {
-			// console.log('Out:', precompiled + '\'');
-			//jshint evil:true
-			try {
-				eval(template + '\';');
-			}
-			catch (err) {
-				console.error('FireTPL parse error', err);
-			}
-
-			return s;
-		};
-	};
-
 	FireTPL.Compiler = Compiler;
 
 	/* +---------- FireTPL methods ---------- */
@@ -508,22 +408,34 @@ var FireTPL;
 	FireTPL.loadFile = function(src) {
 		var content = '';
 
+		if (typeof XMLHttpRequest === 'undefined') {
+			console.warn('Don\'t use FireTPL.loadFile() on node.js');
+			return;
+		}
+
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', src, false);
 		xhr.send();
 
+
 		if (xhr.readyState === 4) {
-			if (xhr.status === '200') {
-				return xhr.responseText;
+			if (xhr.status === 200) {
+				content = xhr.responseText;
+			}
+			else if (xhr.status === 404) {
+				console.error('Loading a FireTPL template failed! Template wasn\'t found!');
 			}
 			else {
-				console.error('Loading a FireTPL template failed! Server response was ', xhr.statusText, xhr);
+				console.error('Loading a FireTPL template failed! Server response was: ' + xhr.status + ' ' + xhr.statusText);
 			}
 		}
+
+		return content;
 	};
 
-	FireTPL.precompile = function() {
-
+	FireTPL.precompile = function(tmpl) {
+		var compiler = new FireTPL.Compiler();
+		return compiler.precompile(tmpl);
 	};
 
 })(FireTPL);
