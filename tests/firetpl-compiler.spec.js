@@ -106,6 +106,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
@@ -117,6 +118,7 @@ describe('FireTPL', function() {
 				'\t\t\t',
 				undefined,
 				'if',
+				undefined,
 				undefined,
 				undefined,
 				' $bla'
@@ -132,6 +134,7 @@ describe('FireTPL', function() {
 				undefined,
 				'foo=bar',
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
@@ -144,6 +147,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'bla="Super bla"',
+				undefined,
 				undefined,
 				undefined
 			]);
@@ -158,6 +162,7 @@ describe('FireTPL', function() {
 				undefined,
 				'bla=\'Super bla\'',
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
@@ -171,6 +176,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'div',
+				undefined,
 				undefined
 			]);
 		});
@@ -184,7 +190,36 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'div',
+				undefined,
 				' id="myDiv class="bla blubb"'
+			]);
+		});
+
+		it('Should match a string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var match = fireTpl.pattern.exec('\t\t\t"Hi, I\'m a string"');
+			expect(match.slice(1)).to.eql([
+				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'"Hi, I\'m a string"',
+				undefined
+			]);
+		});
+
+		it('Should match the begin of a multiline string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var match = fireTpl.pattern.exec('\t\t\t"Hi, I\'m a multiline string');
+			expect(match.slice(1)).to.eql([
+				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'"Hi, I\'m a multiline string',
+				undefined
 			]);
 		});
 	});
@@ -374,6 +409,95 @@ describe('FireTPL', function() {
 				's+=\'</body></html>\';'
 			);
 		});
+
+		it('Should precompile a tmpl string with a multiline string', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		div class=content\n';
+			template += '			"I\'m a multiline\n';
+			template += '			String"\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head></head><body>' +
+				'<div class="content">I\\\'m a multiline String</div>' +
+				'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with multiple multiline strings', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		div class=content\n';
+			template += '			"I\'m a multiline\n';
+			template += '			String"\n';
+			template += '			"And a line break"\n';
+			template += '			\n';
+			template += '			"And a paragraph\n';
+			template += '			Block"\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head></head><body>' +
+				'<div class="content">I\\\'m a multiline String<br>' +
+				'And a line break<br><br>And a paragraph Block</div>' +
+				'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with multiple multiline strings and placeholders', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		div class=content\n';
+			template += '			"I\'m a $super multiline\n';
+			template += '			String"\n';
+			template += '			"And a $super line break"\n';
+			template += '			\n';
+			template += '			"And a $super paragraph\n';
+			template += '			Block"\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head></head><body>' +
+				'<div class="content">I\\\'m a \'+data.super+\' multiline String<br>' +
+				'And a \'+data.super+\' line break<br><br>And a \'+data.super+\' paragraph Block</div>' +
+				'</body></html>\';'
+			);
+		});
+
+		it('Shouldn\'t close void tags', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '		meta\n';
+			template += '		title\n';
+			template += '		link\n';
+			template += '	body\n';
+			template += '		input\n';
+			template += '		img\n';
+			template += '		div class=content\n';
+			template += '			map\n';
+			template += '				area\n';
+			template += '				area\n';
+			template += '			br\n';
+			template += '			colgroup\n';
+			template += '				col\n';
+			template += '				col\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head><meta><title></title><link></head><body>' +
+				'<input><img>' +
+				'<div class="content"><map><area><area></map><br>' +
+				'<colgroup><col><col></colgroup></div></body></html>\';'
+			);
+		});
 	});
 
 	describe('loadFile', function() {
@@ -440,28 +564,6 @@ describe('FireTPL', function() {
 			expect(errorStub).was.called();
 			expect(errorStub).was.calledWith('Loading a FireTPL template failed! Server response was: 500 Internal Server Error');
 			errorStub.restore();
-		});
-	});
-
-	describe('events', function() {
-		it('Should precompile a tmpl with events', function() {
-			var template = 'html\n';
-			template += '	head\n';
-			template += '	body\n';
-			template += '		div id=myDiv onShow=show\n';
-			template += '			button onClick=filter data-filter=asc\n';
-			template += '				Filter ascend\n';
-			template += '			button onClick=filter data-filter=desc\n';
-			template += '				Filter descend\n';
-
-			var fireTpl = new FireTPL.Compiler();
-			template = fireTpl.precompile(template);
-			expect(template).to.equal(
-				's+=\'<html><head></head><body><div id="myDiv" on="show:show">' +
-				'<button data-filter="asc" on="click:filter">Filter ascend</button>' +
-				'<button data-filter="desc" on="click:filter">Filter descend</button>' +
-				'</div></body></html>\';'
-			);
 		});
 	});
 });

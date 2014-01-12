@@ -107,18 +107,14 @@ var FireTPL;
 	 * @returns {String} Returns executed template
 	 */
 	FireTPL.compile = function(template) {
-		var s, h;
-		
 		if (!/^s\+=\'/.test(template)) {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 		}
 
-		s = '';
-		h = this.helpers;
-			
 		return function(data) {
-			// console.log('Out:', template);
+			var s = '';
+			var h = FireTPL.helpers;
 			//jshint evil:true
 			try {
 				eval(template);

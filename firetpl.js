@@ -48,7 +48,8 @@ var FireTPL;
 
 	var Compiler = function() {
 		this.indentionPattern = /\t/g;
-		this.pattern = /^([ \t]*)?(\/\/.*)?(if|end|else|each|unless)?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?(.*)?$/gm;
+		this.pattern = /^([ \t]*)?(\/\/.*)?(if|end|else|each|unless)?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?(.*)?$/gm;
+		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.nextScope = 0;
 	};
@@ -97,7 +98,8 @@ var FireTPL;
 				matchStatement = match[3],
 				matchAttribute = match[4],
 				matchTag = match[5],
-				matchContent = match[6];
+				matchString = match[6],
+				matchContent = match[7];
 
 			//Reset attributes
 			attrs = '';
@@ -142,11 +144,48 @@ var FireTPL;
 				}
 
 				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
-				this.closer.push('</' + matchTag + '>');
+				this.closer.push(this.voidElements.indexOf(matchTag) === -1 ? '</' + matchTag + '>' : '');
 			}
 			else if (matchContent) {
 				//It's a string
 				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\''));
+				this.closer.push('');
+			}
+			else if (matchString) {
+				//It's a string
+				
+				var strPattern,
+					strMatch;
+
+				if (matchString.substr(-1) === '"') {
+					matchString = matchString.substr(1, matchString.length - 2);
+				}
+				else {
+					strPattern = /([^\"]*)\"/g;
+					strPattern.lastIndex = this.pattern.lastIndex;
+					strMatch = strPattern.exec(tmpl);
+					matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+					this.pattern.lastIndex = strPattern.lastIndex;
+				}
+
+				//Check for multi text blocks
+				while (true) {
+					strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+					strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
+					if (strMatch) {
+						this.pattern.lastIndex += strPattern.lastIndex;
+						if (strMatch[2]) {
+							matchString += '<br>';
+						}
+
+						matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+					}
+					else {
+						break;
+					}
+				}
+
+				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -161,13 +200,13 @@ var FireTPL;
 					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
 				}
 				else {
-					throw 'Parse error (3)';
+					throw 'FireTPL parse error (3)';
 				}
 
 				this.closer.push('');
 			}
 			else {
-				throw 'Parse error (1)';
+				throw 'FireTPL parse error (1)';
 			}
 
 
@@ -513,18 +552,14 @@ var FireTPL;
 	 * @returns {String} Returns executed template
 	 */
 	FireTPL.compile = function(template) {
-		var s, h;
-		
 		if (!/^s\+=\'/.test(template)) {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 		}
 
-		s = '';
-		h = this.helpers;
-			
 		return function(data) {
-			// console.log('Out:', template);
+			var s = '';
+			var h = FireTPL.helpers;
 			//jshint evil:true
 			try {
 				eval(template);

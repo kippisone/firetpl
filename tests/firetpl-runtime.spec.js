@@ -362,22 +362,4 @@ describe('FireTPL runtime', function() {
 			);
 		});
 	});
-
-	describe('events', function() {
-		it('Should replace all event tags', function() {
-			var template = 's+=\'<html><head></head><body><div id="myDiv" on="show:show">' +
-				'<button data-filter="asc" on="click:filter">Filter ascend</button>' +
-				'<button data-filter="desc" on="click:filter">Filter descend</button>' +
-				'</div></body></html>\';';
-
-			template = FireTPL.compile(template);
-			var html = template();
-			expect(html).to.equal(
-				'<html><head></head><body><div id="myDiv">' +
-				'<button data-filter="asc">Filter ascend</button>' +
-				'<button data-filter="desc">Filter descend</button>' +
-				'</div></body></html>'
-			);
-		});
-	});
 });
