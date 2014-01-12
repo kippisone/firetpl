@@ -107,20 +107,24 @@
 							attrs += ' on="' + events.join(';') + '"';
 						}
 
+						if (attrs === ' ') {
+							attrs = '';
+						}
+
 						if (res.content) {
 							content = res.content.join(' ');
 						}
 					}
 				}
 
-				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\'') + '>');
+				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
 				console.log('CONTENT:', content);
 				this.append('str', content);
 				this.closer.push(this.voidElements.indexOf(matchTag) === -1 ? '</' + matchTag + '>' : '');
 			}
 			else if (matchContent) {
 				//It's a string
-				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\''));
+				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchString) {
@@ -157,7 +161,7 @@
 					}
 				}
 
-				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\''));
+				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -169,7 +173,7 @@
 						this.registerEvent(res.events);
 					}
 
-					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\'') + '>');
+					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
 				}
 				else {
 					throw 'FireTPL parse error (3)';
@@ -270,7 +274,7 @@
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:(@[a-zA-Z0-9._-]*))?(?:(\$[a-zA-Z0-9._-]*))?(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+))/gm;
+		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:\$([a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
 		var attrs = [],
 			events = [],
 			content = [],
@@ -305,7 +309,7 @@
 			match = pattern.exec(str);
 		}
 
-		return attrs.length || events.length ? {
+		return attrs.length || events.length || content.length ? {
 			attrs: attrs,
 			events: events,
 			content: content
@@ -323,31 +327,9 @@
 	Compiler.prototype.parseStatement = function(statement, str) {
 		if (str) {
 			str = str.trim();
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
+			str = str.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
 		}
 
-		/*if (statement === 'if') {
-			return 'if(' + str + ')';
-		}
-		else if (statement === 'else') {
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-			return 'else';
-		}
-		else if (statement === 'unless') {
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-			return 'if(!(' + str + '))';
-		}*/
-		//else if (statement === 'each') {
-		//	var m = /\$([a-zA-Z0-9$_]+)\s+in\s+\$([a-zA-Z0-9$_])$/.exec(str);
-		//	if (m[1] && m[2]) {
-		//		return 'for(var ' + m[1] + ' in data.' + m[2] + ')';
-		//	}
-		//	else {
-		//		str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-		//		return 'for(var i=0,l=' + str + '.length;i<len;i++)';
-		//	}
-		//	
-		//}
 		if (statement === 'if') {
 			return ['var c=' + str + ';var r=h.if(c,function(data){var s=\'\';', 'return s;});s+=r;'];
 		}

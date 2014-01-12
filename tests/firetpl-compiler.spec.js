@@ -508,14 +508,14 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		div class=description\n';
 			template += '			@txt.description\n';
-			template += '		button @btn.submit\n';
+			template += '		button @btn.submit';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body>\';' +
-				's+=\'<div class="description">\'+lang.txt.description+\'</div>\';' +
-				's+=\'<button>\'+lang.btn.submit+\'</body></html>\';'
+				's+=\'<html><head></head><body>' +
+				'<div class="description">\'+lang.txt.description+\'</div>' +
+				'<button>\'+lang.btn.submit+\'</button></body></html>\';'
 			);
 		});
 	});
