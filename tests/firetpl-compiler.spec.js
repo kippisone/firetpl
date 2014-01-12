@@ -230,7 +230,8 @@ describe('FireTPL', function() {
 			var attrs = fireTpl.stripAttributes(' foo=bar bla=blubb');
 			expect(attrs).to.eql({
 				attrs: ['foo="bar"', 'bla="blubb"'],
-				events: []
+				events: [],
+				content: []
 			});
 		});
 
@@ -251,7 +252,8 @@ describe('FireTPL', function() {
 			var attrs = fireTpl.stripAttributes(' foo=bar bla=blubb onShow=myEvent');
 			expect(attrs).to.eql({
 				attrs: ['foo="bar"', 'bla="blubb"'],
-				events: ['show:myEvent']
+				events: ['show:myEvent'],
+				content: []
 			});
 		});
 
@@ -260,7 +262,8 @@ describe('FireTPL', function() {
 			var attrs = fireTpl.stripAttributes(' onFoo=bar onBla=blubb onShow=myEvent');
 			expect(attrs).to.eql({
 				attrs: [],
-				events: ['foo:bar', 'bla:blubb', 'show:myEvent']
+				events: ['foo:bar', 'bla:blubb', 'show:myEvent'],
+				content: []
 			});
 		});
 	});
@@ -496,6 +499,23 @@ describe('FireTPL', function() {
 				'<input><img>' +
 				'<div class="content"><map><area><area></map><br>' +
 				'<colgroup><col><col></colgroup></div></body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with i18n tags', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		div class=description\n';
+			template += '			@txt.description\n';
+			template += '		button @btn.submit\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.equal(
+				's+=\'<html><head></head><body>\';' +
+				's+=\'<div class="description">\'+lang.txt.description+\'</div>\';' +
+				's+=\'<button>\'+lang.btn.submit+\'</body></html>\';'
 			);
 		});
 	});

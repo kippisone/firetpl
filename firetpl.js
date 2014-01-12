@@ -91,7 +91,7 @@ var FireTPL;
 				break;
 			}
 
-			// console.log('Match', match);
+			console.log('Match', match);
 			var isEmptyLine = /^\s*$/.test(match[0]),
 				matchIndention = match[1],
 				matchComment = match[2],
@@ -127,6 +127,7 @@ var FireTPL;
 				this.closer.push(['code', statement[1]]);
 			}
 			else if (matchTag) {
+				var content = '';
 				if (matchContent) {
 					res = this.stripAttributes(matchContent);
 					if (res) {
@@ -140,15 +141,21 @@ var FireTPL;
 							var events = res.events;
 							attrs += ' on="' + events.join(';') + '"';
 						}
+
+						if (res.content) {
+							content = res.content.join(' ');
+						}
 					}
 				}
 
-				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
+				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\'') + '>');
+				console.log('CONTENT:', content);
+				this.append('str', content);
 				this.closer.push(this.voidElements.indexOf(matchTag) === -1 ? '</' + matchTag + '>' : '');
 			}
 			else if (matchContent) {
 				//It's a string
-				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\''));
+				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchString) {
@@ -185,7 +192,7 @@ var FireTPL;
 					}
 				}
 
-				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\''));
+				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -197,7 +204,7 @@ var FireTPL;
 						this.registerEvent(res.events);
 					}
 
-					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
+					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9$_]+)/g, '\'+lang.$1+\'') + '>');
 				}
 				else {
 					throw 'FireTPL parse error (3)';
@@ -298,15 +305,17 @@ var FireTPL;
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+))/g;
+		var pattern = /(?:(@[a-zA-Z0-9._-]*))?(?:(\$[a-zA-Z0-9._-]*))?(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+))/gm;
 		var attrs = [],
 			events = [],
+			content = [],
 			d = 1000,
 			match;
-		
+
 		match = pattern.exec(str);
+			console.log('SUBMATCH:', str, match);
 		while (match) {
-			// console.log('Submatch',match);
+			console.log('Submatch',match);
 			if (!match[0]) {
 				break;
 			}
@@ -316,10 +325,16 @@ var FireTPL;
 			}
 
 			if (match[1]) {
-				events.push(match[1].substr(2).toLowerCase() + ':' + match[3]);
+				content.push('\'+lang.' + match[1] + '+\'');
 			}
-			else if (match[2]) {
-				attrs.push(match[2] + '="' + match[3] + '"');
+			if (match[2]) {
+				content.push('\'+data.' + match[2] + '+\'');
+			}
+			if (match[3]) {
+				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
+			}
+			else if (match[4]) {
+				attrs.push(match[4] + '="' + match[5] + '"');
 			}
 
 			match = pattern.exec(str);
@@ -327,7 +342,8 @@ var FireTPL;
 
 		return attrs.length || events.length ? {
 			attrs: attrs,
-			events: events
+			events: events,
+			content: content
 		} : null;
 	};
 
