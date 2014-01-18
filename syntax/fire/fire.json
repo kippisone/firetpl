@@ -1,0 +1,12 @@
+{
+	"name": "FireTPL",
+	"patterns": [
+		{
+			"name": "indention",
+			"match": "\\n(\\t*)"
+		}, {
+			"name": "tag",
+			"match": "[a-zA-Z0-9]+"
+		}
+	]
+}

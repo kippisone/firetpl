@@ -15,6 +15,7 @@ module.exports = function(grunt) {
 			build: {
 				src: [
 					'src/firetpl.js',
+					'src/firetpl-parser.js',
 					'src/firetpl-compiler.js',
 					'src/firetpl-runtime.js'
 				],
@@ -30,6 +31,7 @@ module.exports = function(grunt) {
 			compiler: {
 				src: [
 					'src/firetpl.js',
+					'src/firetpl-parser.js',
 					'src/firetpl-compiler.js'
 				],
 				dest: 'firetpl-compiler.js'
