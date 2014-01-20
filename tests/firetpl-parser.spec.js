@@ -1,4 +1,4 @@
-describe.only('Parser', function() {
+describe.skip('Parser', function() {
 	'use strict';
 
 	describe('constructor', function() {

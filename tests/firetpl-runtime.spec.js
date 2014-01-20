@@ -57,7 +57,7 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		if $sayit\n';
+			template += '		:if $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
@@ -66,7 +66,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div>Hello World</div>' +
+				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -75,10 +75,10 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		if $sayit\n';
+			template += '		:if $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
-			template += '		else\n';
+			template += '		:else\n';
 			template += '			div\n';
 			template += '				Good bye\n';
 
@@ -87,7 +87,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div>Hello World</div>' +
+				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -96,10 +96,10 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		if $sayit\n';
+			template += '		:if $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
-			template += '		else\n';
+			template += '		:else\n';
 			template += '			div\n';
 			template += '				Good bye\n';
 
@@ -108,7 +108,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div>Good bye</div>' +
+				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Good bye</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -117,7 +117,7 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		unless $sayit\n';
+			template += '		:unless $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
@@ -126,8 +126,8 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body>' +
-				'</body></html>'
+				'<html><head></head><body><div class="xq-scope xq-scope001">' +
+				'</div></body></html>'
 			);
 		});
 
@@ -135,7 +135,7 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		unless $sayit\n';
+			template += '		:unless $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
@@ -144,8 +144,8 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div>Hello World</div>' +
-				'</body></html>'
+				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'</div></body></html>'
 			);
 		});
 
@@ -153,17 +153,17 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		each $listing\n';
+			template += '		:each $listing : div class=listing\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
 				listing: undefined
 			});
 			expect(html).to.equal(
-				'<html><head></head><body class="xq-scope xq-scope001">' +
-				'</body></html>'
+				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'</div></body></html>'
 			);
 		});
 
@@ -171,7 +171,7 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		each $listing\n';
+			template += '		:each $listing\n';
 			template += '			span\n';
 			template += '				$name\n';
 
@@ -183,9 +183,9 @@ describe('FireTPL runtime', function() {
 				]
 			});
 			expect(html).to.equal(
-				'<html><head></head><body class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div class="xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
-				'</body></html>'
+				'</div></body></html>'
 			);
 		});
 	});

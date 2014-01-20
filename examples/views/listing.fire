@@ -3,7 +3,8 @@ div class=example
 		$title
 	div class=description
 		$description
-	ul
-		each $listing
-			li
-				$name
+	:each $listing : ul class=listing
+		li
+			span class=name $name
+			:if $image : span class=image
+				img src=$image

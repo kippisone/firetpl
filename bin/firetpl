@@ -14,6 +14,7 @@ program.version('0.0.1')
 	.option('-a, --amd <path>', 'Precompile as AMD module. <path> is the FireTPL module path')
 	.option('-c, --commonjs <path>', 'Precompile as CommonJS module. <path> is the FireTPL module path')
 	.option('-d, --debug', 'Enable debug mode')
+	.option('-p, --pretty', 'Prettify output')
 	.option('-v, --verbose', 'Output more infos')
 	.parse(process.argv);
 
@@ -45,6 +46,43 @@ if (program.verbose) {
 	console.log('size: ', precompiled.length, 'chars');
 }
 
+var beforeOut = function(str) {
+	if (!program.pretty) {
+		return str;
+	}
+
+	var indention = 0,
+		out = '';
+
+	var repeat = function(str, i) {
+		var out = '';
+		while (i > 0) {
+			out += str;
+			i--;
+		}
+		return out;
+	};
+
+	for (var i = 0; i < str.length; i++) {
+		var c = str.charAt(i);
+		out += c;
+
+		if (c === '{') {
+			indention++;
+			out += '\n' + repeat('\t', indention);
+		}
+		else if(c === '}') {
+			indention--;
+			out += '\n' + repeat('\t', indention);
+		}
+		else if(c === ';') {
+			out += '\n' + repeat('\t', indention);
+		}
+	}
+
+	return out;
+};
+
 var output = '';
 	if (program.commonjs) {
 		out += 'var FireTPL = require(\'' + program.commonjs + '\');';
@@ -74,7 +112,7 @@ if (program.out) {
 	if (dir) {
 		mkdirp.sync(dir);
 	}
-	fs.writeFileSync(program.out, output);
-}else {
-	console.log(output);
+	fs.writeFileSync(program.out, beforeOut(output));
+} else {
+	console.log(beforeOut(output));
 }

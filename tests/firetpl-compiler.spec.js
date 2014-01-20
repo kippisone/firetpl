@@ -44,6 +44,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			fireTpl.indention = 2;
 			fireTpl.closer = ['a', 'b', 'c'];
+			console.log('SCOPE', fireTpl.curScope);
 			fireTpl.handleIndention('\t');
 
 			expect(fireTpl.indention).to.be(1);
@@ -74,10 +75,24 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('newScope', function() {
+		var instance;
+
+		beforeEach(function() {
+			instance = new FireTPL.Compiler();
+		});
+
+		it('Should add a new scope', function() {
+			instance.newScope('scope001');
+			expect(instance.curScope).to.eql(['scope001', 'root']);
+			expect(instance.out).to.eql({ root: '', scope001: '' });
+		});
+	});
+
 	describe('append', function() {
 		it('Should append to out str', function() {
 			var fireTpl = new FireTPL.Compiler();
-			fireTpl.out = '';
+			fireTpl.out = { root: '' };
 			fireTpl.append('str', '<div>');
 			fireTpl.append('code', 'if(data.bla){');
 			fireTpl.append('str', 'Hello');
@@ -86,7 +101,7 @@ describe('FireTPL', function() {
 			fireTpl.append('str', 'Good bye');
 			fireTpl.append('code', '}');
 			fireTpl.append('str', '</div>');
-			expect(fireTpl.out).to.equal('s+=\'<div>\';if(data.bla){s+=\'Hello\';}else{s+=\'Good bye\';}s+=\'</div>');
+			expect(fireTpl.out.root).to.equal('s+=\'<div>\';if(data.bla){s+=\'Hello\';}else{s+=\'Good bye\';}s+=\'</div>');
 		});
 	});
 
@@ -107,17 +122,19 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
 
 		it('Should match a statement', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tif $bla');
+			var match = fireTpl.pattern.exec('\t\t\t:if $bla');
 			expect(match.slice(1)).to.eql([
 				'\t\t\t',
 				undefined,
 				'if',
+				undefined,
 				undefined,
 				undefined,
 				undefined,
@@ -135,6 +152,7 @@ describe('FireTPL', function() {
 				'foo=bar',
 				undefined,
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
@@ -147,6 +165,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'bla="Super bla"',
+				undefined,
 				undefined,
 				undefined,
 				undefined
@@ -163,6 +182,7 @@ describe('FireTPL', function() {
 				'bla=\'Super bla\'',
 				undefined,
 				undefined,
+				undefined,
 				undefined
 			]);
 		});
@@ -176,6 +196,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'div',
+				undefined,
 				undefined,
 				undefined
 			]);
@@ -191,6 +212,7 @@ describe('FireTPL', function() {
 				undefined,
 				'div',
 				undefined,
+				undefined,
 				' id="myDiv class="bla blubb"'
 			]);
 		});
@@ -205,6 +227,7 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'"Hi, I\'m a string"',
+				undefined,
 				undefined
 			]);
 		});
@@ -219,6 +242,37 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				'"Hi, I\'m a multiline string',
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a html string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var match = fireTpl.pattern.exec('\t\t\t\'<b>Hi, I&#39;m a html string</b>\'');
+			expect(match.slice(1)).to.eql([
+				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'\'<b>Hi, I&#39;m a html string</b>\'',
+				undefined
+			]);
+		});
+
+		it('Should match the begin of a multiline html string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var match = fireTpl.pattern.exec('\t\t\t\'<b>Hi, I&#39;m a multiline html string</b>');
+			expect(match.slice(1)).to.eql([
+				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'\'<b>Hi, I&#39;m a multiline html string</b>',
 				undefined
 			]);
 		});
@@ -271,9 +325,9 @@ describe('FireTPL', function() {
 	describe('injectClass', function() {
 		it('Should inject a class into the last tag', function() {
 			var fireTpl = new FireTPL.Compiler();
-			fireTpl.out = '<div><span>';
+			fireTpl.out.root = '<div><span>';
 			fireTpl.injectClass('injected');
-			expect(fireTpl.out).to.equal('<div><span class="injected">');
+			expect(fireTpl.out.root).to.equal('<div><span class="injected">');
 		});
 	});
 
@@ -335,18 +389,18 @@ describe('FireTPL', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		if $sayit\n';
+			template += '		:if $sayit : div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body>\';' + 
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' + 
 				'var c=data.sayit;var r=h.if(c,function(data){var s=\'\';s+=\'' + 
 				'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
-				's+=\'</body></html>\';'
+				's+=\'</div></body></html>\';'
 			);
 		});
 
@@ -354,24 +408,24 @@ describe('FireTPL', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		if $sayit\n';
+			template += '		:if $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
-			template += '		else\n';
+			template += '		:else\n';
 			template += '			div\n';
 			template += '				Good bye\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body>\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
 				'var c=data.sayit;var r=h.if(c,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
 				'if(!r){s+=h.else(c,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}' +
-				's+=\'</body></html>\';'
+				's+=\'</div></body></html>\';'
 			);
 		});
 
@@ -379,18 +433,18 @@ describe('FireTPL', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		unless $sayit\n';
+			template += '		:unless $sayit\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body>\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
 				's+=h.unless(data.sayit,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});' +
-				's+=\'</body></html>\';'
+				's+=\'</div></body></html>\';'
 			);
 		});
 
@@ -398,18 +452,18 @@ describe('FireTPL', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		each $listing\n';
+			template += '		:each $listing\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body class="xq-scope xq-scope001">\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
 				's+=h.each(data.listing,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});' +
-				's+=\'</body></html>\';'
+				's+=\'</div></body></html>\';'
 			);
 		});
 
