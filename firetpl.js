@@ -80,9 +80,17 @@ var FireTPL;
 		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
-		this.nextScope = 0;
+		this.reset();
+	};
+
+	Compiler.prototype.reset = function() {
+		this.pattern.lastIndex = 0;
+		this.indention = -1;
+		this.closer = [];
 		this.curScope = ['root'];
 		this.out = { root: '' };
+		this.lastItemType = 'code';
+		this.nextScope = 0;
 	};
 
 	/**
@@ -93,6 +101,7 @@ var FireTPL;
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
 	Compiler.prototype.precompile = function(tmpl) {
+		this.reset();
 		var match,
 			attrs = '',
 			res,
@@ -104,12 +113,6 @@ var FireTPL;
 			tmpl = this.tmpl;
 		}
 
-		this.pattern.lastIndex = 0;
-		this.indention = -1;
-		this.closer = [];
-		this.curScope = ['root'];
-		this.out = { root: '' };
-		this.lastItemType = 'code';
 		var d = 10000;
 
 		prevItem = curItem;
@@ -231,23 +234,46 @@ var FireTPL;
 			this.out[this.curScope[0]] += '\';';
 		}
 
-		return this.out[this.curScope[0]];
+		// return this.out[this.curScope[0]];
+		return this.getOutStream();
+	};
+
+	Compiler.prototype.getOutStream = function() {
+		var outStream = 'scopes=scopes||{};';
+		var keys = Object.keys(this.out);
+
+		keys = keys.sort(function(a, b) {
+			return b.localeCompare(a);
+		});
+
+		keys.forEach(function(key) {
+			if (key === 'root') {
+				return;
+			}
+
+			outStream += 'scopes.' + key + '=function(data){var s=\'\';' + this.out[key] + 'return s;};';
+		}.bind(this));
+
+		outStream += 'var s=\'\';';
+		outStream += this.out.root;
+
+		return outStream;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		console.log('Parse helper', helper, content);
+		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = 'div',
 			tagAttrs = '';
 
 		if (helper === 'else') {
-			tag = null;
-			tagAttrs = '';
-			scopeId = this.scopeId;
+			this.newScope('scope' + this.lastIfScope);
+			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.closer.push(['code', 'return s;});}']);
+			return;
 		}
-		else {
-			scopeId = this.getNextScope();
-		}
+		this.lastIfScope= null;
+		scopeId = this.getNextScope();
 
 		if (content) {
 			var pattern = /(".*")?(?:\s*:\s*)([a-zA-Z0-9]+)(.*)/;
@@ -270,19 +296,16 @@ var FireTPL;
 			content = content.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
 		}
 
-
-		this.newScope(scopeId);
+		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ');');
+		this.newScope('scope' + scopeId);
 
 		if (helper === 'if') {
-			this.append('code', 'var c=' + content + ';var r=h.if(c,function(data){var s=\'\';');
+			this.lastIfScope = scopeId;
+			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
-		else if (helper === 'else') {
-			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
-			this.closer.push(['code', 'return s;});}']);
-		}
 		else {
-			this.append('code', 's+=h.' + helper + '(' + content + ',function(data){var s=\'\';');
+			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
@@ -358,7 +381,13 @@ var FireTPL;
 	 */
 	Compiler.prototype.appendCloser = function() {
 		var el = this.closer.pop() || '';
-		if (Array.isArray(el)) {
+		if (el === 'scope') {
+			//Scope change
+			this.append('code', '');
+			var scope = this.curScope.shift();
+			this.appendCloser();
+		}
+		else if (Array.isArray(el)) {
 			this.append(el[0], el[1]);
 		}
 		else {
@@ -533,7 +562,10 @@ var FireTPL;
 	 */
 	Compiler.prototype.newScope = function(scope) {
 		this.curScope.unshift(scope);
-		this.out[scope] = '';
+		this.out[scope] = this.out[scope] || '';
+		this.closer.push('scope');
+		//this.append('code', '');
+		this.lastItemType = 'code';
 	};
 
 	FireTPL.Compiler = Compiler;
@@ -570,7 +602,8 @@ var FireTPL;
 
 	FireTPL.precompile = function(tmpl) {
 		var compiler = new FireTPL.Compiler();
-		return compiler.precompile(tmpl);
+		compiler.precompile(tmpl);
+		return compiler.getOutStream();
 	};
 
 })(FireTPL);
@@ -653,12 +686,12 @@ var FireTPL;
 			template = fireTpl.precompile(template);
 		}
 
-		return function(data) {
-			var s = '';
+		return function(data, scopes) {
 			var h = FireTPL.helpers;
+			var s;
 			//jshint evil:true
 			try {
-				eval(template);
+				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');
 			}
 			catch (err) {
 				console.error('FireTPL parse error', err);

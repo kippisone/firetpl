@@ -105,6 +105,82 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('getOutStream', function() {
+		var instance;
+
+		beforeEach(function() {
+			instance = new FireTPL.Compiler();
+		});
+
+		it('Should get the output stream', function() {
+			instance.out = {
+				root: 's+=\'<html><head></head><body><div>\'+scope001(data)+\'</div></body></html>\';',
+				scope001: 's+=\'<div class="listing"><div class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';',
+				scope002: 's+=\'<img src="\'+data.img+\'">\';'
+			};
+
+			expect(instance.getOutStream()).to.eql(
+				'scopes=scopes||{};' +
+				'scopes.scope002=function(data){var s=\'\';s+=\'<img src="\'+data.img+\'">\';return s;};' +
+				'scopes.scope001=function(data){var s=\'\';s+=\'<div class="listing"><div class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';return s;};' +
+				'var s=\'\';' +
+				's+=\'<html><head></head><body><div>\'+scope001(data)+\'</div></body></html>\';'
+			);
+		});
+	});
+
+	describe('appendCloser', function() {
+		var instance;
+
+		beforeEach(function() {
+			instance = new FireTPL.Compiler();
+			instance.lastItemType = 'code';
+		});
+
+		it('Should append a closer to the out stream', function() {
+			instance.closer = ['</html>', '</div>'];
+			instance.appendCloser();
+
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var s=\'\';s+=\'</div>');
+		});
+
+		it('Should append a closer to the out stream', function() {
+			instance.closer = ['</html>', '</div>', ['code', 'data.bla;']];
+			instance.appendCloser();
+			instance.appendCloser();
+
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var s=\'\';data.bla;s+=\'</div>');
+		});
+
+		it('Should append a closer to the out stream', function() {
+			instance.out = { root: '', scope001: '' };
+			instance.curScope = ['scope001', 'root'];
+			instance.closer = ['</html>', '</div>', 'scope', '<img>'];
+			instance.lastItemType = 'code';
+			instance.appendCloser();
+			instance.appendCloser();
+
+			expect(instance.out.root).to.eql('s+=\'</div>');
+			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};scopes.scope001=function(data){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>');
+		});
+
+		it('Should append a closer to the out stream', function() {
+			instance.out = { root: '', scope001: '', scope002: '' };
+			instance.curScope = ['scope002', 'scope001', 'root'];
+			instance.closer = ['</html>', '</div>', 'scope', '<img>','scope', '<span>'];
+			instance.lastItemType = 'code';
+			instance.appendCloser();
+			instance.appendCloser();
+			instance.appendCloser();
+
+			expect(instance.out.root).to.eql('s+=\'</div>');
+			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
+			expect(instance.out.scope002).to.eql('s+=\'<span>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};scopes.scope002=function(data){var s=\'\';s+=\'<span>\';return s;};scopes.scope001=function(data){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>');
+		});
+	});
+
 	describe('check pattern', function() {
 		it('Should match an empty line', function() {
 			var fireTpl = new FireTPL.Compiler();
@@ -342,6 +418,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
 				'</body></html>\';'
@@ -359,6 +436,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>\';'
@@ -379,6 +457,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>\';'
@@ -396,10 +475,14 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' + 
-				'var c=data.sayit;var r=h.if(c,function(data){var s=\'\';s+=\'' + 
+				'scopes=scopes||{};' +
+				'scopes.scope001=function(data){var s=\'\';' +
+				'var c=data;var r=h.if(c,function(data){var s=\'\';s+=\'' + 
 				'<div>Hello World</div>\';' +
-				'return s;});s+=r;' +
+				'return s;});s+=r;return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' + 
+				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
 		});
@@ -418,13 +501,17 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
-				'var c=data.sayit;var r=h.if(c,function(data){var s=\'\';' +
+				'scopes=scopes||{};' +
+				'scopes.scope001=function(data){var s=\'\';' +
+				'var c=data;var r=h.if(c,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
 				'if(!r){s+=h.else(c,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
-				'return s;});}' +
+				'return s;});}return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
 		});
@@ -440,10 +527,14 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
-				's+=h.unless(data.sayit,function(data){var s=\'\';' +
+				'scopes=scopes||{};' +
+				'scopes.scope001=function(data){var s=\'\';' +
+				's+=h.unless(data,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
-				'return s;});' +
+				'return s;});return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
 		});
@@ -459,10 +550,14 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
-				's+=h.each(data.listing,function(data){var s=\'\';' +
+				'scopes=scopes||{};' +
+				'scopes.scope001=function(data){var s=\'\';' +
+				's+=h.each(data,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
-				'return s;});' +
+				'return s;});return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=scopes.scope001(data.listing);' +
 				's+=\'</div></body></html>\';'
 			);
 		});
@@ -478,6 +573,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a multiline String</div>' +
 				'</body></html>\';'
@@ -499,6 +595,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a multiline String<br>' +
 				'And a line break<br><br>And a paragraph Block</div>' +
@@ -521,6 +618,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a \'+data.super+\' multiline String<br>' +
 				'And a \'+data.super+\' line break<br><br>And a \'+data.super+\' paragraph Block</div>' +
@@ -549,6 +647,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head><meta><title></title><link></head><body>' +
 				'<input><img>' +
 				'<div class="content"><map><area><area></map><br>' +
@@ -567,6 +666,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 			expect(template).to.equal(
+				'scopes=scopes||{};var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="description">\'+lang.txt.description+\'</div>' +
 				'<button>\'+lang.btn.submit+\'</button></body></html>\';'

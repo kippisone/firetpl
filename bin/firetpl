@@ -37,7 +37,7 @@ if (program.verbose) {
 }
 
 
-var precompiled = FireTPL.precompile(source).toString();
+var precompiled = FireTPL.precompile(source);
 
 if (program.verbose) {
 	console.log('---------- begin of precompiled file ----------');
@@ -65,14 +65,16 @@ var beforeOut = function(str) {
 
 	for (var i = 0; i < str.length; i++) {
 		var c = str.charAt(i);
-		out += c;
-
-		if (c === '{') {
-			indention++;
+		
+		if(c === '}' && str.charAt(i - 1) !== '{') {
+			indention--;
 			out += '\n' + repeat('\t', indention);
 		}
-		else if(c === '}') {
-			indention--;
+
+		out += c;
+
+		if (c === '{' && str.charAt(i + 1) !== '}') {
+			indention++;
 			out += '\n' + repeat('\t', indention);
 		}
 		else if(c === ';') {
@@ -84,27 +86,27 @@ var beforeOut = function(str) {
 };
 
 var output = '';
-	if (program.commonjs) {
-		out += 'var FireTPL = require(\'' + program.commonjs + '\');';
-	}
-	else if (program.amd) {
-		out += 'define([\'' + program.amd + '\'], function(FireTPL) {';
-	}
-	else {
-		output = '(function() {';
-	}
+if (program.commonjs) {
+	out += 'var FireTPL = require(\'' + program.commonjs + '\');';
+}
+else if (program.amd) {
+	out += 'define([\'' + program.amd + '\'], function(FireTPL) {';
+}
+else {
+	output = '(function() {';
+}
 
-	output += 'FireTPL.templateCache.' + tplName + '=function(data) {var s=\'\';var h=FireTPL.helpers;' + precompiled + 'return s;};';
-	
-	if (program.commonjs) {
+output += 'FireTPL.templateCache.' + tplName + '=function(data) {var h=FireTPL.helpers;' + precompiled + 'return s;};';
 
-	}
-	else if(program.amd) {
-		output += '});';
-	}
-	else {
-		output += '})();';
-	}
+if (program.commonjs) {
+
+}
+else if(program.amd) {
+	output += '});';
+}
+else {
+	output += '})();';
+}
 
 if (program.out) {
 	console.log('Write to', program.out);

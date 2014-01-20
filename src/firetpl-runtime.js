@@ -77,12 +77,12 @@
 			template = fireTpl.precompile(template);
 		}
 
-		return function(data) {
-			var s = '';
+		return function(data, scopes) {
 			var h = FireTPL.helpers;
+			var s;
 			//jshint evil:true
 			try {
-				eval(template);
+				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');
 			}
 			catch (err) {
 				console.error('FireTPL parse error', err);
