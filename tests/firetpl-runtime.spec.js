@@ -277,34 +277,34 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with a truthy if..else statement', function() {
 			var template = function(data, scopes) {
-                var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        var c=data;
-                        var r=h.if(c,function(data){
-                                var s='';
-                                s+='<div>Hello World</div>';
-                                return s;
+				var h=FireTPL.helpers;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						var c=data;
+						var r=h.if(c,function(data){
+								var s='';
+								s+='<div>Hello World</div>';
+								return s;
 
-                        });
-                        s+=r;
-                        if(!r){
-                                s+=h.else(c,function(data){
-                                        var s='';
-                                        s+='<div>Good bye</div>';
-                                        return s;
+						});
+						s+=r;
+						if(!r){
+								s+=h.else(c,function(data){
+										var s='';
+										s+='<div>Good bye</div>';
+										return s;
 
-                                });
+								});
 
-                        }return s;
+						}return s;
 
-                };
-                var s='';
-                s+='<html><head></head><body><div class="xq-scope xq-scope001">';
-                s+=scopes.scope001(data.sayit);
-                s+='</div></body></html>';
-                return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+=scopes.scope001(data.sayit);
+				s+='</div></body></html>';
+				return s;
 			};
 
 			var html = template({
@@ -319,33 +319,33 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with a falsy if..else statement', function() {
 			var template = function(data, scopes) {
 				var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        var c=data;
-                        var r=h.if(c,function(data){
-                                var s='';
-                                s+='<div>Hello World</div>';
-                                return s;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						var c=data;
+						var r=h.if(c,function(data){
+								var s='';
+								s+='<div>Hello World</div>';
+								return s;
 
-                        });
-                        s+=r;
-                        if(!r){
-                                s+=h.else(c,function(data){
-                                        var s='';
-                                        s+='<div>Good bye</div>';
-                                        return s;
+						});
+						s+=r;
+						if(!r){
+								s+=h.else(c,function(data){
+										var s='';
+										s+='<div>Good bye</div>';
+										return s;
 
-                                });
+								});
 
-                        }return s;
+						}return s;
 
-                };
-                var s='';
-                s+='<html><head></head><body><div class="xq-scope xq-scope001">';
-                s+=scopes.scope001(data.sayit);
-                s+='</div></body></html>';
-                return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+=scopes.scope001(data.sayit);
+				s+='</div></body></html>';
+				return s;
 
 			};
 
@@ -361,23 +361,23 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with an truthy unless statement', function() {
 			var template = function(data, scopes) {
 				var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        s+=h.unless(data,function(data){
-                                var s='';
-                                s+='<div>Hello World</div>';
-                                return s;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						s+=h.unless(data,function(data){
+								var s='';
+								s+='<div>Hello World</div>';
+								return s;
 
-                        });
-                        return s;
+						});
+						return s;
 
-                };
-                var s='';
-                s+='<html><head></head><body><div class="xq-scope xq-scope001">';
-                s+=scopes.scope001(data.sayit);
-                s+='</div></body></html>';
-                return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+=scopes.scope001(data.sayit);
+				s+='</div></body></html>';
+				return s;
 			};
 
 			var html = template({
@@ -392,22 +392,22 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with an falsy unless statement', function() {
 			var template = function(data, scopes) {
 				var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        s+=h.unless(data,function(data){
-                                var s='';
-                                s+='<div>Hello World</div>';
-                                return s;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						s+=h.unless(data,function(data){
+								var s='';
+								s+='<div>Hello World</div>';
+								return s;
 
-                        });
-                        return s;
-                };
-                var s='';
-                s+='<html><head></head><body><div class="xq-scope xq-scope001">';
-                s+=scopes.scope001(data.sayit);
-                s+='</div></body></html>';
-                return s;
+						});
+						return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+=scopes.scope001(data.sayit);
+				s+='</div></body></html>';
+				return s;
 			};
 
 			var html = template({
@@ -422,23 +422,23 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with an falsy each statement', function() {
 			var template = function(data, scopes) {
 				var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        s+=h.each(data,function(data){
-                                var s='';
-                                s+='<div>Hello World</div>';
-                                return s;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						s+=h.each(data,function(data){
+								var s='';
+								s+='<div>Hello World</div>';
+								return s;
 
-                        });
-                        return s;
+						});
+						return s;
 
-                };
-                var s='';
-                s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
-                s+=scopes.scope001(data.listing);
-                s+='</div></body></html>';
-                return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+=scopes.scope001(data.listing);
+				s+='</div></body></html>';
+				return s;
 			};
 
 			var html = template({
@@ -453,23 +453,23 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with an truthy each statement', function() {
 			var template = function(data, scopes) {
 				var h=FireTPL.helpers;
-                scopes=scopes||{};
-                scopes.scope001=function(data){
-                        var s='';
-                        s+=h.each(data,function(data){
-                                var s='';
-                                s+='<span>' + data.name + '</span>';
-                                return s;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						s+=h.each(data,function(data){
+								var s='';
+								s+='<span>' + data.name + '</span>';
+								return s;
 
-                        });
-                        return s;
+						});
+						return s;
 
-                };
-                var s='';
-                s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
-                s+=scopes.scope001(data.listing);
-                s+='</div></body></html>';
-                return s;
+				};
+				var s='';
+				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+=scopes.scope001(data.listing);
+				s+='</div></body></html>';
+				return s;
 			};
 
 			var html = template({
@@ -483,6 +483,54 @@ describe('FireTPL runtime', function() {
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
 			);
+		});
+	});
+	
+	describe('Scopes', function() {
+		it('Should call a scope function of a FireTemplate', function() {
+			var template = function(data, scopes) {
+				var h=FireTPL.helpers;
+				scopes=scopes||{};
+				scopes.scope001=function(data){
+						var s='';
+						s+=h.each(data,function(data){
+								var s='';
+								s+='<span>' + data.name + '</span>';
+								return s;
+
+						});
+						return s;
+
+				};
+				var s='';
+				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+=scopes.scope001(data.listing);
+				s+='</div></body></html>';
+				return s;
+			};
+
+			var scopes = {};
+			var html = template({
+				listing: [
+					{name: 'Andi'},
+					{name: 'Donnie'}
+				]
+			}, scopes);
+
+			expect(scopes).to.be.an('object');
+			expect(scopes.scope001).to.be.a('function');
+
+			expect(html).to.equal(
+				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'<span>Andi</span><span>Donnie</span>' +
+				'</div></body></html>'
+			);
+
+			var scopeCall = scopes.scope001([
+				{name: 'Carl'}
+			]);
+
+			expect(scopeCall).to.eql('<span>Carl</span>');
 		});
 	});
 });

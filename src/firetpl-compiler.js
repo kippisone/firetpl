@@ -197,7 +197,7 @@
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
+		console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = 'div',
 			tagAttrs = '';
@@ -223,7 +223,7 @@
 		}
 
 		if (tag) {
-			this.parseTag(tag, tagAttrs);
+			this.parseTag(tag, tagAttrs + ' xq-scope=scope' + scopeId + ' xq-path=' + content.trim().replace(/^\$/, ''));
 			this.injectClass('xq-scope xq-scope' + scopeId);
 		}
 

@@ -33,6 +33,35 @@ var FireTPL;
 
 	return FireTPL;
 }));
+(function(FireTPL, undefined) {
+	'use strict';
+
+	var Parser = function() {
+
+	};
+
+	Parser.prototype.parse = function() {
+		
+	};
+
+	Parser.prototype.getSyntaxConf = function(type) {
+		var syntaxConf = FireTPL.loadFile('syntax/' + type + '/' + type + '.json');
+		if (syntaxConf) {
+			syntaxConf = JSON.parse(syntaxConf);
+		}
+
+		var pat = [];
+		syntaxConf.patterns.forEach(function(p) {
+			pat.push(p.match);
+		});
+
+		pat = '(' + pat.join(')|(') + ')';
+		return pat;
+	};
+
+	FireTPL.Parser = Parser;
+
+})(FireTPL);
 /**
  * FireTPL compiler module
  *
@@ -48,8 +77,19 @@ var FireTPL;
 
 	var Compiler = function() {
 		this.indentionPattern = /\t/g;
-		this.pattern = /^([ \t]*)?(\/\/.*)?(if|end|else|each|unless)?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?(.*)?$/gm;
+		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
+		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
+		this.reset();
+	};
+
+	Compiler.prototype.reset = function() {
+		this.pattern.lastIndex = 0;
+		this.indention = -1;
+		this.closer = [];
+		this.curScope = ['root'];
+		this.out = { root: '' };
+		this.lastItemType = 'code';
 		this.nextScope = 0;
 	};
 
@@ -61,6 +101,7 @@ var FireTPL;
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
 	Compiler.prototype.precompile = function(tmpl) {
+		this.reset();
 		var match,
 			attrs = '',
 			res,
@@ -72,11 +113,6 @@ var FireTPL;
 			tmpl = this.tmpl;
 		}
 
-		this.pattern.lastIndex = 0;
-		this.indention = -1;
-		this.closer = [];
-		this.out = '';
-		this.lastItemType = 'code';
 		var d = 10000;
 
 		prevItem = curItem;
@@ -94,10 +130,12 @@ var FireTPL;
 			var isEmptyLine = /^\s*$/.test(match[0]),
 				matchIndention = match[1],
 				matchComment = match[2],
-				matchStatement = match[3],
+				matchHelper = match[3],
 				matchAttribute = match[4],
 				matchTag = match[5],
-				matchContent = match[6];
+				matchString = match[6],
+				matchHTML = match[7],
+				matchContent = match[8];
 
 			//Reset attributes
 			attrs = '';
@@ -114,39 +152,53 @@ var FireTPL;
 			//Handle indention
 			this.handleIndention(matchIndention);
 
-			if (matchStatement) {
-				//It's a statement
-				if (matchStatement === 'each') {
-					this.injectClass('xq-scope xq-scope' + this.getNextScope());
-				}
+			if (matchHelper) {
+				var helper = this.parseHelper(matchHelper, matchContent);
 
-				statement = this.parseStatement(matchStatement, matchContent);
-				this.append('code', statement[0]);
-				this.closer.push(['code', statement[1]]);
 			}
 			else if (matchTag) {
-				if (matchContent) {
-					res = this.stripAttributes(matchContent);
-					if (res) {
-						if (res.attrs) {
-							attrs += ' ' + res.attrs.join(' ');
-						}
-
-						if (res.events.length !== 0) {
-							//this.registerEvent(res.events);
-							//TODO better event register method
-							var events = res.events;
-							attrs += ' on="' + events.join(';') + '"';
-						}
-					}
-				}
-
-				this.append('str', '<' + matchTag + attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
-				this.closer.push('</' + matchTag + '>');
+				this.parseTag(matchTag, matchContent);
 			}
 			else if (matchContent) {
 				//It's a string
-				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\''));
+				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
+				this.closer.push('');
+			}
+			else if (matchString) {
+				//It's a string
+				
+				var strPattern,
+					strMatch;
+
+				if (matchString.substr(-1) === '"') {
+					matchString = matchString.substr(1, matchString.length - 2);
+				}
+				else {
+					strPattern = /([^\"]*)\"/g;
+					strPattern.lastIndex = this.pattern.lastIndex;
+					strMatch = strPattern.exec(tmpl);
+					matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+					this.pattern.lastIndex = strPattern.lastIndex;
+				}
+
+				//Check for multi text blocks
+				while (true) {
+					strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+					strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
+					if (strMatch) {
+						this.pattern.lastIndex += strPattern.lastIndex;
+						if (strMatch[2]) {
+							matchString += '<br>';
+						}
+
+						matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+					}
+					else {
+						break;
+					}
+				}
+
+				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -158,16 +210,16 @@ var FireTPL;
 						this.registerEvent(res.events);
 					}
 
-					this.out = this.out.replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9$_]+)/g, '\'+data.$1+\'') + '>');
+					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
 				}
 				else {
-					throw 'Parse error (3)';
+					throw 'FireTPL parse error (3)';
 				}
 
 				this.closer.push('');
 			}
 			else {
-				throw 'Parse error (1)';
+				throw 'FireTPL parse error (1)';
 			}
 
 
@@ -179,10 +231,121 @@ var FireTPL;
 		}
 
 		if (this.lastItemType === 'str') {
-			this.out += '\';';
+			this.out[this.curScope[0]] += '\';';
 		}
 
-		return this.out;
+		// return this.out[this.curScope[0]];
+		return this.getOutStream();
+	};
+
+	Compiler.prototype.getOutStream = function() {
+		var outStream = 'scopes=scopes||{};';
+		var keys = Object.keys(this.out);
+
+		keys = keys.sort(function(a, b) {
+			return b.localeCompare(a);
+		});
+
+		keys.forEach(function(key) {
+			if (key === 'root') {
+				return;
+			}
+
+			outStream += 'scopes.' + key + '=function(data){var s=\'\';' + this.out[key] + 'return s;};';
+		}.bind(this));
+
+		outStream += 'var s=\'\';';
+		outStream += this.out.root;
+
+		return outStream;
+	};
+
+	Compiler.prototype.parseHelper = function(helper, content) {
+		console.log('Parse helper', helper, content);
+		var scopeId,
+			tag = 'div',
+			tagAttrs = '';
+
+		if (helper === 'else') {
+			this.newScope('scope' + this.lastIfScope);
+			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.closer.push(['code', 'return s;});}']);
+			return;
+		}
+		this.lastIfScope= null;
+		scopeId = this.getNextScope();
+
+		if (content) {
+			var pattern = /(".*")?(?:\s*:\s*)([a-zA-Z0-9]+)(.*)/;
+			var match = content.split(pattern);
+			// console.log('Split', match);
+			if (match && match[2]) {
+				tag = match[2];
+				tagAttrs = match[3];
+				content = match[0] + (match[1] ? match[1] : '');
+			}
+		}
+
+		if (tag) {
+			this.parseTag(tag, tagAttrs + ' xq-scope=scope' + scopeId + ' xq-path=' + content.trim().replace(/^\$/, ''));
+			this.injectClass('xq-scope xq-scope' + scopeId);
+		}
+
+		if (content) {
+			content = content.trim();
+			content = content.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
+		}
+
+		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ');');
+		this.newScope('scope' + scopeId);
+
+		if (helper === 'if') {
+			this.lastIfScope = scopeId;
+			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
+			this.closer.push(['code', 'return s;});s+=r;']);
+		}
+		else {
+			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
+			this.closer.push(['code', 'return s;});']);
+		}
+
+		// this.appendCloser();
+	};
+
+	Compiler.prototype.parseTag = function(tag, content) {
+		// console.log('Parse tag', tag, content);
+
+		var tagContent = '',
+			res,
+			attrs = '';
+
+		if (content) {
+			res = this.stripAttributes(content);
+			if (res) {
+				if (res.attrs) {
+					attrs += ' ' + res.attrs.join(' ');
+				}
+
+				if (res.events.length !== 0) {
+					//this.registerEvent(res.events);
+					//TODO better event register method
+					var events = res.events;
+					attrs += ' on="' + events.join(';') + '"';
+				}
+
+				if (attrs === ' ') {
+					attrs = '';
+				}
+
+				if (res.content) {
+					tagContent = res.content.join(' ');
+				}
+			}
+		}
+
+		this.append('str', '<' + tag + attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
+		this.append('str', tagContent);
+		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
 	/**
@@ -195,13 +358,13 @@ var FireTPL;
 	 */
 	Compiler.prototype.append = function(type, str) {
 		if (type === this.lastItemType) {
-			this.out += str;
+			this.out[this.curScope[0]] += str;
 		}
 		else if(type === 'str') {
-			this.out += 's+=\'' + str;
+			this.out[this.curScope[0]] += 's+=\'' + str;
 		}
 		else if(type === 'code') {
-			this.out += '\';' + str;
+			this.out[this.curScope[0]] += '\';' + str;
 		}
 		else {
 			throw 'Wrong data type in .appand()';
@@ -218,7 +381,13 @@ var FireTPL;
 	 */
 	Compiler.prototype.appendCloser = function() {
 		var el = this.closer.pop() || '';
-		if (Array.isArray(el)) {
+		if (el === 'scope') {
+			//Scope change
+			this.append('code', '');
+			var scope = this.curScope.shift();
+			this.appendCloser();
+		}
+		else if (Array.isArray(el)) {
 			this.append(el[0], el[1]);
 		}
 		else {
@@ -259,15 +428,15 @@ var FireTPL;
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+))/g;
+		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:\$([a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
 		var attrs = [],
 			events = [],
+			content = [],
 			d = 1000,
 			match;
-		
+
 		match = pattern.exec(str);
 		while (match) {
-			// console.log('Submatch',match);
 			if (!match[0]) {
 				break;
 			}
@@ -277,18 +446,25 @@ var FireTPL;
 			}
 
 			if (match[1]) {
-				events.push(match[1].substr(2).toLowerCase() + ':' + match[3]);
+				content.push('\'+lang.' + match[1] + '+\'');
 			}
-			else if (match[2]) {
-				attrs.push(match[2] + '="' + match[3] + '"');
+			if (match[2]) {
+				content.push('\'+data.' + match[2] + '+\'');
+			}
+			if (match[3]) {
+				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
+			}
+			else if (match[4]) {
+				attrs.push(match[4] + '="' + match[5] + '"');
 			}
 
 			match = pattern.exec(str);
 		}
 
-		return attrs.length || events.length ? {
+		return attrs.length || events.length || content.length ? {
 			attrs: attrs,
-			events: events
+			events: events,
+			content: content
 		} : null;
 	};
 
@@ -303,31 +479,9 @@ var FireTPL;
 	Compiler.prototype.parseStatement = function(statement, str) {
 		if (str) {
 			str = str.trim();
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
+			str = str.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
 		}
 
-		/*if (statement === 'if') {
-			return 'if(' + str + ')';
-		}
-		else if (statement === 'else') {
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-			return 'else';
-		}
-		else if (statement === 'unless') {
-			str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-			return 'if(!(' + str + '))';
-		}*/
-		//else if (statement === 'each') {
-		//	var m = /\$([a-zA-Z0-9$_]+)\s+in\s+\$([a-zA-Z0-9$_])$/.exec(str);
-		//	if (m[1] && m[2]) {
-		//		return 'for(var ' + m[1] + ' in data.' + m[2] + ')';
-		//	}
-		//	else {
-		//		str = str.replace(/\$([a-zA-Z0-9$_]+)/g, 'data.$1');
-		//		return 'for(var i=0,l=' + str + '.length;i<len;i++)';
-		//	}
-		//	
-		//}
 		if (statement === 'if') {
 			return ['var c=' + str + ';var r=h.if(c,function(data){var s=\'\';', 'return s;});s+=r;'];
 		}
@@ -381,9 +535,9 @@ var FireTPL;
 	 * @param {String} className Class names to be injected
 	 */
 	Compiler.prototype.injectClass = function(className) {
-		var startPos = this.out.lastIndexOf('<');
-		var tag = this.out.slice(startPos);
-		// console.log('Out before inject: ', this.out, tag);
+		var startPos = this.out[this.curScope[0]].lastIndexOf('<');
+		var tag = this.out[this.curScope[0]].slice(startPos);
+		// console.log('Out before inject: ', this.out[this.curScope[0]], tag);
 		
 		if (!/^<[a-z0-9]+/.test(tag)) {
 			throw 'An each statement must be within a block element!';
@@ -398,7 +552,20 @@ var FireTPL;
 			return ' class="' + className + '">';
 		});
 
-		this.out = this.out.slice(0, startPos) + tag;
+		this.out[this.curScope[0]] = this.out[this.curScope[0]].slice(0, startPos) + tag;
+	};
+
+	/**
+	 * Add and change scope
+	 * @method newScope
+	 * @param {String} scope New scope
+	 */
+	Compiler.prototype.newScope = function(scope) {
+		this.curScope.unshift(scope);
+		this.out[scope] = this.out[scope] || '';
+		this.closer.push('scope');
+		//this.append('code', '');
+		this.lastItemType = 'code';
 	};
 
 	FireTPL.Compiler = Compiler;
@@ -435,7 +602,8 @@ var FireTPL;
 
 	FireTPL.precompile = function(tmpl) {
 		var compiler = new FireTPL.Compiler();
-		return compiler.precompile(tmpl);
+		compiler.precompile(tmpl);
+		return compiler.getOutStream();
 	};
 
 })(FireTPL);
