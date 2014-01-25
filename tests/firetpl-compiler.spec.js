@@ -115,14 +115,14 @@ describe('FireTPL', function() {
 		it('Should get the output stream', function() {
 			instance.out = {
 				root: 's+=\'<html><head></head><body><div>\'+scope001(data)+\'</div></body></html>\';',
-				scope001: 's+=\'<div class="listing"><div class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';',
+				scope001: 's+=\'<div class="listing"><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';',
 				scope002: 's+=\'<img src="\'+data.img+\'">\';'
 			};
 
 			expect(instance.getOutStream()).to.eql(
 				'scopes=scopes||{};' +
 				'scopes.scope002=function(data){var s=\'\';s+=\'<img src="\'+data.img+\'">\';return s;};' +
-				'scopes.scope001=function(data){var s=\'\';s+=\'<div class="listing"><div class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';return s;};' +
+				'scopes.scope001=function(data){var s=\'\';s+=\'<div class="listing"><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope002">\'+scope002(data.listing)+\'</div></div>\';return s;};' +
 				'var s=\'\';' +
 				's+=\'<html><head></head><body><div>\'+scope001(data)+\'</div></body></html>\';'
 			);
@@ -184,8 +184,12 @@ describe('FireTPL', function() {
 	describe('check pattern', function() {
 		it('Should match an empty line', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t');
+			var handleIndentionStub = sinon.stub(fireTpl, 'handleIndention');
+			
+			var match = fireTpl.pattern.exec('\t\t\t\n');
 			expect(/^\s*$/.test(match[0])).to.be(true);
+			expect(handleIndentionStub).was.notCalled();
+			handleIndentionStub.restore();
 		});
 
 		it('Should match a line comment', function() {
@@ -481,7 +485,7 @@ describe('FireTPL', function() {
 				'<div>Hello World</div>\';' +
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' + 
+				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' + 
 				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
@@ -510,7 +514,7 @@ describe('FireTPL', function() {
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
@@ -533,7 +537,7 @@ describe('FireTPL', function() {
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.sayit);' +
 				's+=\'</div></body></html>\';'
 			);
@@ -556,7 +560,7 @@ describe('FireTPL', function() {
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
-				's+=\'<html><head></head><body><div class="xq-scope xq-scope001">\';' +
+				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.listing);' +
 				's+=\'</div></body></html>\';'
 			);

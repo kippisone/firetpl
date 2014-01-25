@@ -66,7 +66,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div></div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -87,7 +87,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div></div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -108,7 +108,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Good bye</div></div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -126,7 +126,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
 				'</div></body></html>'
 			);
 		});
@@ -144,7 +144,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -162,7 +162,7 @@ describe('FireTPL runtime', function() {
 				listing: undefined
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'<html><head></head><body><div class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
 				'</div></body></html>'
 			);
 		});
@@ -183,7 +183,7 @@ describe('FireTPL runtime', function() {
 				]
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
 			);
@@ -260,7 +260,7 @@ describe('FireTPL runtime', function() {
 						return s;
 
 				};
-				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -270,7 +270,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -301,7 +301,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -311,7 +311,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -342,7 +342,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -353,7 +353,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Good bye</div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -374,7 +374,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -384,7 +384,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
 				'</div></body></html>'
 			);
 		});
@@ -404,7 +404,7 @@ describe('FireTPL runtime', function() {
 						return s;
 				};
 				var s='';
-				s+='<html><head></head><body><div class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -414,7 +414,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.equal(
-				'<html><head></head><body><div class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
