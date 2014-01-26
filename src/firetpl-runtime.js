@@ -72,11 +72,12 @@
 	 * @returns {String} Returns executed template
 	 */
 	FireTPL.compile = function(template) {
-		if (!/^s\+=\'/.test(template)) {
+		if (!/^scopes=scopes/.test(template)) {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
 		}
 
+		console.log(template);
 		return function(data, scopes) {
 			var h = FireTPL.helpers;
 			var s;

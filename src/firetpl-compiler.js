@@ -97,7 +97,7 @@
 			}
 			else if (matchContent) {
 				//It's a string
-				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
+				this.append('str', this.parseVariables(matchContent));
 				this.closer.push('');
 			}
 			else if (matchString) {
@@ -134,7 +134,7 @@
 					}
 				}
 
-				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
+				this.append('str', this.parseVariables(matchString));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -146,7 +146,7 @@
 						this.registerEvent(res.events);
 					}
 
-					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
+					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
 				}
 				else {
 					throw 'FireTPL parse error (3)';
@@ -175,7 +175,7 @@
 	};
 
 	Compiler.prototype.getOutStream = function() {
-		var outStream = 'scopes=scopes||{};';
+		var outStream = 'scopes=scopes||{};var root=data,parent=data;';
 		var keys = Object.keys(this.out);
 
 		keys = keys.sort(function(a, b) {
@@ -187,7 +187,7 @@
 				return;
 			}
 
-			outStream += 'scopes.' + key + '=function(data){var s=\'\';' + this.out[key] + 'return s;};';
+			outStream += 'scopes.' + key + '=function(data,parent){var s=\'\';' + this.out[key] + 'return s;};';
 		}.bind(this));
 
 		outStream += 'var s=\'\';';
@@ -204,7 +204,7 @@
 
 		if (helper === 'else') {
 			this.newScope('scope' + this.lastIfScope);
-			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.append('code', 'if(!r){s+=h.else(c,function(data,parent){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
 			return;
 		}
@@ -229,19 +229,19 @@
 
 		if (content) {
 			content = content.trim();
-			content = content.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
+			content = this.parseVariables(content, true);
 		}
 
-		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ');');
+		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ',data);');
 		this.newScope('scope' + scopeId);
 
 		if (helper === 'if') {
 			this.lastIfScope = scopeId;
-			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
+			this.append('code', 'var c=data;var r=h.if(c,function(data,parent){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
 		else {
-			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
+			this.append('code', 's+=h.' + helper + '(data,function(data,parent){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
@@ -279,9 +279,37 @@
 			}
 		}
 
-		this.append('str', '<' + tag + attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
+		this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
 		this.append('str', tagContent);
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
+	};
+
+	Compiler.prototype.parseVariables = function(str, isCode) {
+		var opener = '',
+			closer = '';
+
+		if (!isCode) {
+			opener = '\'+';
+			closer = '+\'';
+		}
+
+		str = str
+			.replace(/\'/g, '\\\'')
+			.replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
+
+				if (/^this\b/.test(p1)) {
+					return opener + p1.replace(/^this/, 'data') + closer;
+				}
+				else if (/^(parent\b|root\b)/.test(p1)) {
+					return opener + p1 + closer;
+				}
+				
+				return opener + 'data.' + p1 + closer;
+				
+			})
+			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
+
+		return str;
 	};
 
 	/**
@@ -385,13 +413,13 @@
 				content.push('\'+lang.' + match[1] + '+\'');
 			}
 			if (match[2]) {
-				content.push('\'+data.' + match[2] + '+\'');
+				content.push('\'+' + this.parseVariables(match[2]) + '+\'');
 			}
 			if (match[3]) {
 				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
 			}
 			else if (match[4]) {
-				attrs.push(match[4] + '="' + match[5] + '"');
+				attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
 			}
 
 			match = pattern.exec(str);
@@ -415,7 +443,7 @@
 	Compiler.prototype.parseStatement = function(statement, str) {
 		if (str) {
 			str = str.trim();
-			str = str.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
+			str = this.parseVariables(str);
 		}
 
 		if (statement === 'if') {

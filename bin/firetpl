@@ -87,16 +87,16 @@ var beforeOut = function(str) {
 
 var output = '';
 if (program.commonjs) {
-	out += 'var FireTPL = require(\'' + program.commonjs + '\');';
+	output += 'var FireTPL = require(\'' + program.commonjs + '\');';
 }
 else if (program.amd) {
-	out += 'define([\'' + program.amd + '\'], function(FireTPL) {';
+	output += 'define([\'' + program.amd + '\'], function(FireTPL) {';
 }
 else {
 	output = '(function() {';
 }
 
-output += 'FireTPL.templateCache.' + tplName + '=function(data) {var h=FireTPL.helpers;' + precompiled + 'return s;};';
+output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {var h=FireTPL.helpers;' + precompiled + 'return s;};';
 
 if (program.commonjs) {
 

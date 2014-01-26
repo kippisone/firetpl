@@ -1,5 +1,8 @@
 FireTPL v1.0.0
 
+	- Add $parent
+	- Remove " in attr parser
+	
 	- i18n support
 	- inline functions
 	- inline html

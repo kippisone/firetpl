@@ -533,4 +533,23 @@ describe('FireTPL runtime', function() {
 			expect(scopeCall).to.eql('<span>Carl</span>');
 		});
 	});
+
+	describe('$parent, $root and $this', function() {
+		it('Should get the parent data scope with $parent', function() {
+			var tmpl = 'div\n' +
+				'	:each $listing : div\n' +
+				'		span $parent.name\n';
+
+			var template = FireTPL.compile(tmpl);
+			var html = template({
+				name: 'Andi',
+				listing: [
+					{ key: 'A', value: 'AAA' },
+					{ key: 'B', value: 'BBB' }
+				]
+			});
+
+			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001"><span>Andi</span><span>Andi</span></div></div>');
+		});
+	});
 });

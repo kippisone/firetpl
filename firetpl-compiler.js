@@ -449,13 +449,18 @@ var FireTPL;
 				content.push('\'+lang.' + match[1] + '+\'');
 			}
 			if (match[2]) {
-				content.push('\'+data.' + match[2] + '+\'');
+				if (match[2] === 'this') {
+					content.push('\'+data+\'');
+				}
+				else {
+					content.push('\'+data.' + match[2] + '+\'');
+				}
 			}
 			if (match[3]) {
 				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
 			}
 			else if (match[4]) {
-				attrs.push(match[4] + '="' + match[5] + '"');
+				attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
 			}
 
 			match = pattern.exec(str);
