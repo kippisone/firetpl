@@ -161,8 +161,31 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				listing: undefined
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'</div></body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with inline variable', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:each $listing : div class=listing\n';
+			template += '			span class="type-$type"	$name';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				listing: [
+					{ name: 'Andi', type: 'cool' },
+					{ name: 'Tini', type: 'sassy' }
+				]
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' + 
+				'<div class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'<span class="type-cool">Andi</span>' +
+				'<span class="type-sassy">Tini</span>' +
 				'</div></body></html>'
 			);
 		});
