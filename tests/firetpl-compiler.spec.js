@@ -539,7 +539,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.if(c,function(data,parent){var s=\'\';s+=\'' + 
+				'var c=data;var r=h.if(c,function(data){var s=\'\';s+=\'' + 
 				'<div>Hello World</div>\';' +
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
@@ -565,10 +565,10 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.if(c,function(data,parent){var s=\'\';' +
+				'var c=data;var r=h.if(c,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
-				'if(!r){s+=h.else(c,function(data,parent){var s=\'\';' +
+				'if(!r){s+=h.else(c,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
@@ -591,7 +591,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.unless(data,function(data,parent){var s=\'\';' +
+				's+=h.unless(data,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -614,7 +614,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.each(data,function(data,parent){var s=\'\';' +
+				's+=h.each(data,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +

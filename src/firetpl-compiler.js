@@ -197,14 +197,14 @@
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		console.log('Parse helper', helper, content);
+		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = 'div',
 			tagAttrs = '';
 
 		if (helper === 'else') {
 			this.newScope('scope' + this.lastIfScope);
-			this.append('code', 'if(!r){s+=h.else(c,function(data,parent){var s=\'\';');
+			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
 			return;
 		}
@@ -237,11 +237,11 @@
 
 		if (helper === 'if') {
 			this.lastIfScope = scopeId;
-			this.append('code', 'var c=data;var r=h.if(c,function(data,parent){var s=\'\';');
+			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
 		else {
-			this.append('code', 's+=h.' + helper + '(data,function(data,parent){var s=\'\';');
+			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
@@ -297,6 +297,7 @@
 			.replace(/\'/g, '\\\'')
 			.replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
 
+					console.log('P!',p1);
 				if (/^this\b/.test(p1)) {
 					return opener + p1.replace(/^this/, 'data') + closer;
 				}
@@ -392,7 +393,7 @@
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:\$([a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
+		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
 		var attrs = [],
 			events = [],
 			content = [],
@@ -413,7 +414,7 @@
 				content.push('\'+lang.' + match[1] + '+\'');
 			}
 			if (match[2]) {
-				content.push('\'+' + this.parseVariables(match[2]) + '+\'');
+				content.push(this.parseVariables(match[2]));
 			}
 			if (match[3]) {
 				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);

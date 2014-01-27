@@ -3,8 +3,8 @@
 		var root = data,
 			parent = data;
 
-		scopes.scope001 = function(data) {
-			return h.each(data, function(data,parent) {
+		scopes.scope001 = function(data,parent) {
+			return h.each(data, function(data) {
 				var s='';
 				s+='<li><span class="name">'+data.name+'</span><span class="image xq-scope xq-scope002">';
 				var c=data.image;

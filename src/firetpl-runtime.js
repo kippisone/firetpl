@@ -77,7 +77,6 @@
 			template = fireTpl.precompile(template);
 		}
 
-		console.log(template);
 		return function(data, scopes) {
 			var h = FireTPL.helpers;
 			var s;

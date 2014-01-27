@@ -551,5 +551,45 @@ describe('FireTPL runtime', function() {
 
 			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001"><span>Andi</span><span>Andi</span></div></div>');
 		});
+
+		it('Should get the root scope with $root', function() {
+			var tmpl = 'div\n' +
+				'	:each $list.listing : div\n' +
+				'		span $root.name\n';
+
+			var template = FireTPL.compile(tmpl);
+			var html = template({
+				name: 'Andi',
+				list: {
+					name:'Donnie',
+					listing: [
+						{ key: 'A', value: 'AAA' },
+						{ key: 'B', value: 'BBB' }
+					]
+				}
+			});
+
+			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="list.listing" class="xq-scope xq-scope001"><span>Andi</span><span>Andi</span></div></div>');
+		});
+
+		it('Should get the current scope with $this', function() {
+			var tmpl = 'div\n' +
+				'	:each $list.listing : div\n' +
+				'		span $this.name\n';
+
+			var template = FireTPL.compile(tmpl);
+			var html = template({
+				name: 'Andi',
+				list: {
+					name:'Donnie',
+					listing: [
+						{ name: 'Berney', key: 'A', value: 'AAA' },
+						{ name: 'Donnie', key: 'B', value: 'BBB' }
+					]
+				}
+			});
+
+			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="list.listing" class="xq-scope xq-scope001"><span>Berney</span><span>Donnie</span></div></div>');
+		});
 	});
 });
