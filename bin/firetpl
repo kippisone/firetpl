@@ -96,7 +96,7 @@ else {
 	output = '(function() {';
 }
 
-output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {var h=FireTPL.helpers;' + precompiled + 'return s;};';
+output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {var h=new FireTPL.Runtime();' + precompiled + 'return s;};';
 
 if (program.commonjs) {
 

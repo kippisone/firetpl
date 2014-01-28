@@ -268,7 +268,7 @@ var FireTPL;
 
 		if (helper === 'else') {
 			this.newScope('scope' + this.lastIfScope);
-			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
 			return;
 		}
@@ -301,11 +301,11 @@ var FireTPL;
 
 		if (helper === 'if') {
 			this.lastIfScope = scopeId;
-			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
+			this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
 		else {
-			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
+			this.append('code', 's+=h.exec(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
@@ -667,22 +667,22 @@ var FireTPL;
 		this.registerHelper('if', function(context, fn) {
 			var s = '';
 
-			if (context) {
-				s += fn(context);
+			if (context.data) {
+				s += fn(context.parent, context.root);
 			}
 
 			return s;
 		});
 		
 		this.registerHelper('else', function(context, fn) {
-			return fn(context);
+			return fn(context.parent);
 		});
 
 		this.registerHelper('unless', function(context, fn) {
 			var s = '';
 
-			if (!(context)) {
-				s += fn(context);
+			if (!(context.data)) {
+				s += fn(context.parent);
 			}
 
 			return s;
@@ -691,14 +691,30 @@ var FireTPL;
 		this.registerHelper('each', function(context, fn) {
 			var s = '';
 
-			if (context) {
-				context.forEach(function(item) {
+			if (context.data) {
+				context.data.forEach(function(item) {
 					s += fn(item);
 				});
 			}
 
 			return s;
 		});
+	};
+
+	FireTPL.Runtime = function() {
+
+	};
+
+	FireTPL.Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+		if (!FireTPL.helpers[helper]) {
+			throw new Error('Helper ' + helper + ' not registered!');
+		}
+
+		return FireTPL.helpers[helper]({
+			data: data,
+			parent: parent,
+			root: root
+		}, fn);
 	};
 
 	/**
@@ -716,8 +732,9 @@ var FireTPL;
 		}
 
 		return function(data, scopes) {
-			var h = FireTPL.helpers;
+			var h = new FireTPL.Runtime();
 			var s;
+
 			//jshint evil:true
 			try {
 				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');

@@ -65,8 +65,9 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
+			expect(html).to.eql(
+				'<html><head></head><body>'+
+				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -125,7 +126,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
 				'</div></body></html>'
 			);
@@ -143,8 +144,9 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: false
 			});
-			expect(html).to.equal(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -205,7 +207,7 @@ describe('FireTPL runtime', function() {
 					{name: 'Donnie'}
 				]
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
@@ -224,7 +226,7 @@ describe('FireTPL runtime', function() {
 			};
 
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
 				'</body></html>'
@@ -241,7 +243,7 @@ describe('FireTPL runtime', function() {
 			};
 
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>'
@@ -258,7 +260,7 @@ describe('FireTPL runtime', function() {
 			};
 
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>'
@@ -268,12 +270,14 @@ describe('FireTPL runtime', function() {
 		it('Should compile a tmpl string with an if statement', function() {
 			var template = function(data, scopes) {
 				var s='';
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
-				scopes.scope001=function(data){
+				var parent = data;
+				var root = data;
+				scopes.scope001=function(data, parent){
 						var s='';
 						var c=data;
-						var r=h.if(c,function(data){
+						var r=h.exec('if', c, parent, root,function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -284,7 +288,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
-				s+=scopes.scope001(data.sayit);
+				s+=scopes.scope001(data.sayit, data);
 				s+='</div></body></html>';
 				return s;
 			};
@@ -300,12 +304,14 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with a truthy if..else statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
-				scopes.scope001=function(data){
+				var parent = data;
+				var root = data;
+				scopes.scope001=function(data, parent){
 						var s='';
 						var c=data;
-						var r=h.if(c,function(data){
+						var r=h.exec('if', c, parent, root,function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -313,7 +319,7 @@ describe('FireTPL runtime', function() {
 						});
 						s+=r;
 						if(!r){
-								s+=h.else(c,function(data){
+								s+=h.exec('else', c, parent, root, function(data){
 										var s='';
 										s+='<div>Good bye</div>';
 										return s;
@@ -325,7 +331,7 @@ describe('FireTPL runtime', function() {
 				};
 				var s='';
 				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
-				s+=scopes.scope001(data.sayit);
+				s+=scopes.scope001(data.sayit, data);
 				s+='</div></body></html>';
 				return s;
 			};
@@ -341,12 +347,14 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with a falsy if..else statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
+				var parent = data;
+				var root = data;
 				scopes.scope001=function(data){
 						var s='';
 						var c=data;
-						var r=h.if(c,function(data){
+						var r=h.exec('if', c, parent, root,function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -354,7 +362,7 @@ describe('FireTPL runtime', function() {
 						});
 						s+=r;
 						if(!r){
-								s+=h.else(c,function(data){
+								s+=h.exec('else', c, parent, root, function(data){
 										var s='';
 										s+='<div>Good bye</div>';
 										return s;
@@ -383,11 +391,13 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with an truthy unless statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
+				var parent = data;
+				var root = data;
 				scopes.scope001=function(data){
 						var s='';
-						s+=h.unless(data,function(data){
+						s+=h.exec('unless', data, parent, root, function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -414,11 +424,13 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with an falsy unless statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
+				var parent = data;
+				var root = data;
 				scopes.scope001=function(data){
 						var s='';
-						s+=h.unless(data,function(data){
+						s+=h.exec('unless', data, parent, root, function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -444,11 +456,13 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with an falsy each statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
-				scopes.scope001=function(data){
+				var parent = data;
+				var root = data;
+				scopes.scope001=function(data,parent){
 						var s='';
-						s+=h.each(data,function(data){
+						s+=h.exec('each',data,parent,root,function(data){
 								var s='';
 								s+='<div>Hello World</div>';
 								return s;
@@ -459,7 +473,7 @@ describe('FireTPL runtime', function() {
 				};
 				var s='';
 				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
-				s+=scopes.scope001(data.listing);
+				s+=scopes.scope001(data.listing,data);
 				s+='</div></body></html>';
 				return s;
 			};
@@ -475,11 +489,13 @@ describe('FireTPL runtime', function() {
 
 		it('Should compile a tmpl string with an truthy each statement', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
+				var parent = data;
+				var root = data;
 				scopes.scope001=function(data){
 						var s='';
-						s+=h.each(data,function(data){
+						s+=h.exec('each', data, parent, root, function(data){
 								var s='';
 								s+='<span>' + data.name + '</span>';
 								return s;
@@ -512,11 +528,13 @@ describe('FireTPL runtime', function() {
 	describe('Scopes', function() {
 		it('Should call a scope function of a FireTemplate', function() {
 			var template = function(data, scopes) {
-				var h=FireTPL.helpers;
+				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
+				var parent = data;
+				var root = data;
 				scopes.scope001=function(data){
 						var s='';
-						s+=h.each(data,function(data){
+						s+=h.exec('each', data, parent, root, function(data){
 								var s='';
 								s+='<span>' + data.name + '</span>';
 								return s;
@@ -613,6 +631,31 @@ describe('FireTPL runtime', function() {
 			});
 
 			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="list.listing" class="xq-scope xq-scope001"><span>Berney</span><span>Donnie</span></div></div>');
+		});
+	});
+
+	describe('template()', function() {
+		it('Should not create a new data scope in an :if helper', function() {
+			var tmpl = 'div\n' +
+				'	:if $listing : div\n' +
+				'		span $listing.name\n' +
+				'	:if $name : div\n' +
+				'		span $name\n';
+
+			var template = FireTPL.compile(tmpl);
+			var html = template({
+				name: 'Andi',
+				listing: {
+					name: 'Berney',
+					key: 'A',
+					value: 'AAA'
+				}
+			});
+
+			expect(html).to.eql('<div>' +
+				'<div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001"><span>Berney</span></div>' +
+				'<div xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002"><span>Andi</span></div>' +
+				'</div>');
 		});
 	});
 });

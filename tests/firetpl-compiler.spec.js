@@ -87,6 +87,10 @@ describe('FireTPL', function() {
 			expect(instance.curScope).to.eql(['scope001', 'root']);
 			expect(instance.out).to.eql({ root: '', scope001: '' });
 		});
+
+		it('Should add two if scopes', function() {
+			
+		});
 	});
 
 	describe('append', function() {
@@ -539,7 +543,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.if(c,function(data){var s=\'\';s+=\'' + 
+				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';s+=\'' + 
 				'<div>Hello World</div>\';' +
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
@@ -565,10 +569,10 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.if(c,function(data){var s=\'\';' +
+				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
-				'if(!r){s+=h.else(c,function(data){var s=\'\';' +
+				'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
@@ -591,7 +595,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.unless(data,function(data){var s=\'\';' +
+				's+=h.exec(\'unless\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -614,7 +618,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.each(data,function(data){var s=\'\';' +
+				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +

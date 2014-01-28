@@ -4,7 +4,7 @@
 			parent = data;
 
 		scopes.scope001 = function(data,parent) {
-			return h.each(data, function(data) {
+			return h.exec('each',data,parent,root, function(data) {
 				var s='';
 				s+='<li><span class="name">'+data.name+'</span><span class="image xq-scope xq-scope002">';
 				var c=data.image;
@@ -16,7 +16,7 @@
 		};
 
 		scopes.scope002 = function(data) {
-			return h.if(c,function(data){
+			return h.exec('if',c,parent,root,function(data){
 				var s='';
 				s+='<img src="'+data.image+'">';
 				return s;

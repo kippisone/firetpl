@@ -29,22 +29,22 @@
 		this.registerHelper('if', function(context, fn) {
 			var s = '';
 
-			if (context) {
-				s += fn(context);
+			if (context.data) {
+				s += fn(context.parent, context.root);
 			}
 
 			return s;
 		});
 		
 		this.registerHelper('else', function(context, fn) {
-			return fn(context);
+			return fn(context.parent);
 		});
 
 		this.registerHelper('unless', function(context, fn) {
 			var s = '';
 
-			if (!(context)) {
-				s += fn(context);
+			if (!(context.data)) {
+				s += fn(context.parent);
 			}
 
 			return s;
@@ -53,14 +53,30 @@
 		this.registerHelper('each', function(context, fn) {
 			var s = '';
 
-			if (context) {
-				context.forEach(function(item) {
+			if (context.data) {
+				context.data.forEach(function(item) {
 					s += fn(item);
 				});
 			}
 
 			return s;
 		});
+	};
+
+	FireTPL.Runtime = function() {
+
+	};
+
+	FireTPL.Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+		if (!FireTPL.helpers[helper]) {
+			throw new Error('Helper ' + helper + ' not registered!');
+		}
+
+		return FireTPL.helpers[helper]({
+			data: data,
+			parent: parent,
+			root: root
+		}, fn);
 	};
 
 	/**
@@ -78,8 +94,9 @@
 		}
 
 		return function(data, scopes) {
-			var h = FireTPL.helpers;
+			var h = new FireTPL.Runtime();
 			var s;
+
 			//jshint evil:true
 			try {
 				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');

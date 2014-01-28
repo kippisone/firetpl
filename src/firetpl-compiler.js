@@ -204,7 +204,7 @@
 
 		if (helper === 'else') {
 			this.newScope('scope' + this.lastIfScope);
-			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
 			return;
 		}
@@ -237,11 +237,11 @@
 
 		if (helper === 'if') {
 			this.lastIfScope = scopeId;
-			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
+			this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
 		else {
-			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
+			this.append('code', 's+=h.exec(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
