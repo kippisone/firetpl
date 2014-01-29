@@ -370,16 +370,18 @@ var FireTPL;
 
 		str = str
 			.replace(/\'/g, '\\\'')
-			.replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
-
-				if (/^this\b/.test(p1)) {
-					return opener + p1.replace(/^this/, 'data') + closer;
+			// .replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
+			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
+				var m = p3 || p4;
+				console.log('PS:', p1, p2, p3, p4, m);
+				if (/^this\b/.test(m)) {
+					return opener + m.replace(/^this/, 'data') + closer;
 				}
-				else if (/^(parent\b|root\b)/.test(p1)) {
-					return opener + p1 + closer;
+				else if (/^(parent\b|root\b)/.test(m)) {
+					return opener + m + closer;
 				}
 				
-				return opener + 'data.' + p1 + closer;
+				return opener + 'data.' + m + closer;
 				
 			})
 			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
