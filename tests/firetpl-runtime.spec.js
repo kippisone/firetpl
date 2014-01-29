@@ -1,4 +1,4 @@
-describe('FireTPL runtime', function() {
+describe.only('FireTPL runtime', function() {
 	describe('compile', function() {
 		it('Should compile a tmpl string', function() {
 			var template = 'html\n';
@@ -87,7 +87,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
 				'</body></html>'
 			);
@@ -108,7 +108,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: false
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div></div>' +
 				'</body></html>'
 			);
@@ -296,7 +296,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);

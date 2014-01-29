@@ -99,14 +99,53 @@
 
 			//jshint evil:true
 			try {
-				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');
+				var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+				return eval(tmpl);
 			}
 			catch (err) {
 				console.error('FireTPL parse error', err);
+				console.log('----- Template source -----');
+				console.log(prettify(tmpl));
+				console.log('----- Template source -----');
 			}
 
 			return s;
 		};
+	};
+
+	var prettify = function(str) {
+		var indention = 0,
+			out = '';
+
+		var repeat = function(str, i) {
+			var out = '';
+			while (i > 0) {
+				out += str;
+				i--;
+			}
+			return out;
+		};
+
+		for (var i = 0; i < str.length; i++) {
+			var c = str.charAt(i);
+			
+			if(c === '}' && str.charAt(i - 1) !== '{') {
+				indention--;
+				out += '\n' + repeat('\t', indention);
+			}
+
+			out += c;
+
+			if (c === '{' && str.charAt(i + 1) !== '}') {
+				indention++;
+				out += '\n' + repeat('\t', indention);
+			}
+			else if(c === ';') {
+				out += '\n' + repeat('\t', indention);
+			}
+		}
+
+		return out;
 	};
 
 	FireTPL.registerCoreHelper();

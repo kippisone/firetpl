@@ -232,6 +232,7 @@ var FireTPL;
 
 		if (this.lastItemType === 'str') {
 			this.out[this.curScope[0]] += '\';';
+			this.lastItemType = 'code';
 		}
 
 		// return this.out[this.curScope[0]];
@@ -256,6 +257,12 @@ var FireTPL;
 
 		outStream += 'var s=\'\';';
 		outStream += this.out.root;
+
+
+
+		if (this.lastItemType === 'str') {
+			outStream += '\';';
+		}
 
 		return outStream;
 	};
@@ -309,6 +316,7 @@ var FireTPL;
 			this.closer.push(['code', 'return s;});']);
 		}
 
+		this.closer.push('scope');
 		// this.appendCloser();
 	};
 
@@ -400,6 +408,8 @@ var FireTPL;
 		}
 
 		this.lastItemType = type;
+
+		return str;
 	};
 
 	/**
@@ -412,6 +422,7 @@ var FireTPL;
 		var el = this.closer.pop() || '';
 		if (el === 'scope') {
 			//Scope change
+			this.appendCloser();
 			this.append('code', '');
 			var scope = this.curScope.shift();
 			this.appendCloser();
@@ -533,13 +544,13 @@ var FireTPL;
 			newIndent = indention - this.indention,
 			el;
 
-		// console.log('Outdent', this.indention, indention, newIndent);
+		console.log('Outdent', this.indention, indention, newIndent);
 		if (newIndent === 0) {
 			this.appendCloser();
 		}
 		else {
 			while (newIndent < 1) {
-				// console.log('Outdent', this.closer);
+				console.log('Outdent', this.closer);
 				el = this.appendCloser();
 				newIndent++;
 			}
@@ -590,11 +601,9 @@ var FireTPL;
 	 * @param {String} scope New scope
 	 */
 	Compiler.prototype.newScope = function(scope) {
+		this.append('code', '');
 		this.curScope.unshift(scope);
 		this.out[scope] = this.out[scope] || '';
-		this.closer.push('scope');
-		//this.append('code', '');
-		this.lastItemType = 'code';
 	};
 
 	FireTPL.Compiler = Compiler;
@@ -737,14 +746,53 @@ var FireTPL;
 
 			//jshint evil:true
 			try {
-				return eval('(function(data, scopes) {\n' + template + 'return s;})(data, scopes)');
+				var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+				return eval(tmpl);
 			}
 			catch (err) {
 				console.error('FireTPL parse error', err);
+				console.log('----- Template source -----');
+				console.log(prettify(tmpl));
+				console.log('----- Template source -----');
 			}
 
 			return s;
 		};
+	};
+
+	var prettify = function(str) {
+		var indention = 0,
+			out = '';
+
+		var repeat = function(str, i) {
+			var out = '';
+			while (i > 0) {
+				out += str;
+				i--;
+			}
+			return out;
+		};
+
+		for (var i = 0; i < str.length; i++) {
+			var c = str.charAt(i);
+			
+			if(c === '}' && str.charAt(i - 1) !== '{') {
+				indention--;
+				out += '\n' + repeat('\t', indention);
+			}
+
+			out += c;
+
+			if (c === '{' && str.charAt(i + 1) !== '}') {
+				indention++;
+				out += '\n' + repeat('\t', indention);
+			}
+			else if(c === ';') {
+				out += '\n' + repeat('\t', indention);
+			}
+		}
+
+		return out;
 	};
 
 	FireTPL.registerCoreHelper();

@@ -159,29 +159,29 @@ describe('FireTPL', function() {
 		it('Should append a closer to the out stream', function() {
 			instance.out = { root: '', scope001: '' };
 			instance.curScope = ['scope001', 'root'];
-			instance.closer = ['</html>', '</div>', 'scope', '<img>'];
+			instance.closer = ['</html>', '</div>', '', 'scope', '<img>'];
 			instance.lastItemType = 'code';
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('s+=\'</div>');
-			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>');
+			expect(instance.out.root).to.eql('</div>');
+			expect(instance.out.scope001).to.eql('s+=\'<img>\';s+=\'');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';s+=\'return s;};var s=\'\';</div>');
 		});
 
 		it('Should append a closer to the out stream', function() {
 			instance.out = { root: '', scope001: '', scope002: '' };
 			instance.curScope = ['scope002', 'scope001', 'root'];
-			instance.closer = ['</html>', '</div>', 'scope', '<img>','scope', '<span>'];
+			instance.closer = ['</html>', '</div>', '', 'scope', '<img>','scope', '<span>'];
 			instance.lastItemType = 'code';
 			instance.appendCloser();
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('s+=\'</div>');
-			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
-			expect(instance.out.scope002).to.eql('s+=\'<span>\';');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span>\';return s;};scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>');
+			expect(instance.out.root).to.eql('</div></html>');
+			expect(instance.out.scope001).to.eql('\';s+=\'');
+			expect(instance.out.scope002).to.eql('s+=\'<span>\';s+=\'<img>');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span>\';s+=\'<img>return s;};scopes.scope001=function(data,parent){var s=\'\';\';s+=\'return s;};var s=\'\';</div></html>');
 		});
 	});
 

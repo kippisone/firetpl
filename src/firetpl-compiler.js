@@ -168,6 +168,7 @@
 
 		if (this.lastItemType === 'str') {
 			this.out[this.curScope[0]] += '\';';
+			this.lastItemType = 'code';
 		}
 
 		// return this.out[this.curScope[0]];
@@ -192,6 +193,12 @@
 
 		outStream += 'var s=\'\';';
 		outStream += this.out.root;
+
+
+
+		if (this.lastItemType === 'str') {
+			outStream += '\';';
+		}
 
 		return outStream;
 	};
@@ -245,6 +252,7 @@
 			this.closer.push(['code', 'return s;});']);
 		}
 
+		this.closer.push('scope');
 		// this.appendCloser();
 	};
 
@@ -336,6 +344,8 @@
 		}
 
 		this.lastItemType = type;
+
+		return str;
 	};
 
 	/**
@@ -348,6 +358,7 @@
 		var el = this.closer.pop() || '';
 		if (el === 'scope') {
 			//Scope change
+			this.appendCloser();
 			this.append('code', '');
 			var scope = this.curScope.shift();
 			this.appendCloser();
@@ -469,13 +480,13 @@
 			newIndent = indention - this.indention,
 			el;
 
-		// console.log('Outdent', this.indention, indention, newIndent);
+		console.log('Outdent', this.indention, indention, newIndent);
 		if (newIndent === 0) {
 			this.appendCloser();
 		}
 		else {
 			while (newIndent < 1) {
-				// console.log('Outdent', this.closer);
+				console.log('Outdent', this.closer);
 				el = this.appendCloser();
 				newIndent++;
 			}
@@ -526,11 +537,9 @@
 	 * @param {String} scope New scope
 	 */
 	Compiler.prototype.newScope = function(scope) {
+		this.append('code', '');
 		this.curScope.unshift(scope);
 		this.out[scope] = this.out[scope] || '';
-		this.closer.push('scope');
-		//this.append('code', '');
-		this.lastItemType = 'code';
 	};
 
 	FireTPL.Compiler = Compiler;
