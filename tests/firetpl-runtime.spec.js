@@ -1,4 +1,4 @@
-describe.only('FireTPL runtime', function() {
+describe('FireTPL runtime', function() {
 	describe('compile', function() {
 		it('Should compile a tmpl string', function() {
 			var template = 'html\n';
@@ -59,7 +59,7 @@ describe.only('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -67,7 +67,8 @@ describe.only('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>'+
-				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
+				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">'+
+				'<div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -211,6 +212,103 @@ describe.only('FireTPL runtime', function() {
 				'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a truthy if..else and an if statement', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+			template += '		:if $name : ul\n';
+			template += '			li class=item\n';
+			template += '				$name\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<div>Hello World</div>' +
+				'</div>' +
+				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'</ul>' +
+				'</body></html>'
+			);
+
+		});
+
+		it('Should compile a tmpl string with a truthy if..else and a nested if statement', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '			:if $name : ul\n';
+			template += '				li class=item\n';
+			template += '					$name\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<div>Hello World</div>' +
+				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'</ul>' +
+				'</div>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a truthy each and a nested if..else statement', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:each $listing : ul class=listing\n';
+			template += '			li\n';
+			template += '				:if $sayit\n';
+			template += '					div\n';
+			template += '						Hello World\n';
+			template += '				:else\n';
+			template += '					div\n';
+			template += '						Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				listing: [
+					{ sayit: true },
+					{ sayit: false }
+				]
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<ul class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'<li>' +
+				'<div xq-scope="scope002" xq-path="sayit" class="xq-scope xq-scope002">' +
+				'<div>Hello World</div>' +
+				'</div>' +
+				'</li>' +
+				'<li>' +
+				'<div xq-scope="scope002" xq-path="sayit" class="xq-scope xq-scope002">' +
+				'<div>Good bye</div>' +
+				'</div>' +
+				'</li>' +
+				'</ul>' +
+				'</body></html>'
 			);
 		});
 	});

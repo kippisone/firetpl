@@ -44,7 +44,6 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			fireTpl.indention = 2;
 			fireTpl.closer = ['a', 'b', 'c'];
-			console.log('SCOPE', fireTpl.curScope);
 			fireTpl.handleIndention('\t');
 
 			expect(fireTpl.indention).to.be(1);
@@ -145,7 +144,7 @@ describe('FireTPL', function() {
 			instance.closer = ['</html>', '</div>'];
 			instance.appendCloser();
 
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'</div>');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'</div>\';');
 		});
 
 		it('Should append a closer to the out stream', function() {
@@ -153,7 +152,7 @@ describe('FireTPL', function() {
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';data.bla;s+=\'</div>');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';data.bla;s+=\'</div>\';');
 		});
 
 		it('Should append a closer to the out stream', function() {
@@ -164,9 +163,9 @@ describe('FireTPL', function() {
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('</div>');
-			expect(instance.out.scope001).to.eql('s+=\'<img>\';s+=\'');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';s+=\'return s;};var s=\'\';</div>');
+			expect(instance.out.root).to.eql('s+=\'</div>');
+			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>\';');
 		});
 
 		it('Should append a closer to the out stream', function() {
@@ -178,10 +177,10 @@ describe('FireTPL', function() {
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('</div></html>');
-			expect(instance.out.scope001).to.eql('\';s+=\'');
-			expect(instance.out.scope002).to.eql('s+=\'<span>\';s+=\'<img>');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span>\';s+=\'<img>return s;};scopes.scope001=function(data,parent){var s=\'\';\';s+=\'return s;};var s=\'\';</div></html>');
+			expect(instance.out.root).to.eql('s+=\'</div></html>');
+			expect(instance.out.scope001).to.eql('s+=\'\';');
+			expect(instance.out.scope002).to.eql('s+=\'<span><img>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span><img>\';return s;};scopes.scope001=function(data,parent){var s=\'\';s+=\'\';return s;};var s=\'\';s+=\'</div></html>\';');
 		});
 	});
 
@@ -578,7 +577,7 @@ describe('FireTPL', function() {
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.sayit,data);' +
-				's+=\'</div></body></html>\';'
+				's+=\'</div>\';s+=\'</body></html>\';'
 			);
 		});
 

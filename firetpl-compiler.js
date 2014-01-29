@@ -161,7 +161,7 @@ var FireTPL;
 			}
 			else if (matchContent) {
 				//It's a string
-				this.append('str', matchContent.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
+				this.append('str', this.parseVariables(matchContent));
 				this.closer.push('');
 			}
 			else if (matchString) {
@@ -198,7 +198,7 @@ var FireTPL;
 					}
 				}
 
-				this.append('str', matchString.replace(/\'/g, '\\\'').replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\''));
+				this.append('str', this.parseVariables(matchString));
 				this.closer.push('');
 			}
 			else if (matchAttribute) {
@@ -210,7 +210,7 @@ var FireTPL;
 						this.registerEvent(res.events);
 					}
 
-					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
+					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
 				}
 				else {
 					throw 'FireTPL parse error (3)';
@@ -232,6 +232,7 @@ var FireTPL;
 
 		if (this.lastItemType === 'str') {
 			this.out[this.curScope[0]] += '\';';
+			this.lastItemType = 'code';
 		}
 
 		// return this.out[this.curScope[0]];
@@ -239,7 +240,7 @@ var FireTPL;
 	};
 
 	Compiler.prototype.getOutStream = function() {
-		var outStream = 'scopes=scopes||{};';
+		var outStream = 'scopes=scopes||{};var root=data,parent=data;';
 		var keys = Object.keys(this.out);
 
 		keys = keys.sort(function(a, b) {
@@ -251,28 +252,37 @@ var FireTPL;
 				return;
 			}
 
-			outStream += 'scopes.' + key + '=function(data){var s=\'\';' + this.out[key] + 'return s;};';
+			outStream += 'scopes.' + key + '=function(data,parent){var s=\'\';' + this.out[key] + 'return s;};';
 		}.bind(this));
 
 		outStream += 'var s=\'\';';
 		outStream += this.out.root;
 
+
+
+		if (this.lastItemType === 'str') {
+			outStream += '\';';
+		}
+
 		return outStream;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		console.log('Parse helper', helper, content);
+		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = 'div',
 			tagAttrs = '';
 
 		if (helper === 'else') {
-			this.newScope('scope' + this.lastIfScope);
-			this.append('code', 'if(!r){s+=h.else(c,function(data){var s=\'\';');
+			this.closer.push(['code', '']);
+			this.newScope(this.lastIfScope);
+			this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
+			this.closer.push('scope');
 			return;
 		}
-		this.lastIfScope= null;
+
+		// this.lastIfScope = null;
 		scopeId = this.getNextScope();
 
 		if (content) {
@@ -293,22 +303,23 @@ var FireTPL;
 
 		if (content) {
 			content = content.trim();
-			content = content.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
+			content = this.parseVariables(content, true);
 		}
 
-		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ');');
+		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ',data);');
 		this.newScope('scope' + scopeId);
 
 		if (helper === 'if') {
-			this.lastIfScope = scopeId;
-			this.append('code', 'var c=data;var r=h.if(c,function(data){var s=\'\';');
+			// this.lastIfScope = scopeId;
+			this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
 		else {
-			this.append('code', 's+=h.' + helper + '(data,function(data){var s=\'\';');
+			this.append('code', 's+=h.exec(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});']);
 		}
 
+		this.closer.push('scope');
 		// this.appendCloser();
 	};
 
@@ -343,9 +354,37 @@ var FireTPL;
 			}
 		}
 
-		this.append('str', '<' + tag + attrs.replace(/\$([a-zA-Z0-9._-]+)/g, '\'+data.$1+\'').replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'') + '>');
+		this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
 		this.append('str', tagContent);
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
+	};
+
+	Compiler.prototype.parseVariables = function(str, isCode) {
+		var opener = '',
+			closer = '';
+
+		if (!isCode) {
+			opener = '\'+';
+			closer = '+\'';
+		}
+
+		str = str
+			.replace(/\'/g, '\\\'')
+			.replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
+
+				if (/^this\b/.test(p1)) {
+					return opener + p1.replace(/^this/, 'data') + closer;
+				}
+				else if (/^(parent\b|root\b)/.test(p1)) {
+					return opener + p1 + closer;
+				}
+				
+				return opener + 'data.' + p1 + closer;
+				
+			})
+			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
+
+		return str;
 	};
 
 	/**
@@ -371,6 +410,8 @@ var FireTPL;
 		}
 
 		this.lastItemType = type;
+
+		return str;
 	};
 
 	/**
@@ -383,8 +424,10 @@ var FireTPL;
 		var el = this.closer.pop() || '';
 		if (el === 'scope') {
 			//Scope change
+			this.appendCloser();
 			this.append('code', '');
 			var scope = this.curScope.shift();
+			this.lastIfScope = scope;
 			this.appendCloser();
 		}
 		else if (Array.isArray(el)) {
@@ -428,7 +471,7 @@ var FireTPL;
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:\$([a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
+		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
 		var attrs = [],
 			events = [],
 			content = [],
@@ -449,12 +492,7 @@ var FireTPL;
 				content.push('\'+lang.' + match[1] + '+\'');
 			}
 			if (match[2]) {
-				if (match[2] === 'this') {
-					content.push('\'+data+\'');
-				}
-				else {
-					content.push('\'+data.' + match[2] + '+\'');
-				}
+				content.push(this.parseVariables(match[2]));
 			}
 			if (match[3]) {
 				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
@@ -484,7 +522,7 @@ var FireTPL;
 	Compiler.prototype.parseStatement = function(statement, str) {
 		if (str) {
 			str = str.trim();
-			str = str.replace(/\$([a-zA-Z0-9._-]+)/g, 'data.$1');
+			str = this.parseVariables(str);
 		}
 
 		if (statement === 'if') {
@@ -509,13 +547,11 @@ var FireTPL;
 			newIndent = indention - this.indention,
 			el;
 
-		// console.log('Outdent', this.indention, indention, newIndent);
 		if (newIndent === 0) {
 			this.appendCloser();
 		}
 		else {
 			while (newIndent < 1) {
-				// console.log('Outdent', this.closer);
 				el = this.appendCloser();
 				newIndent++;
 			}
@@ -566,11 +602,9 @@ var FireTPL;
 	 * @param {String} scope New scope
 	 */
 	Compiler.prototype.newScope = function(scope) {
+		this.append('code', '');
 		this.curScope.unshift(scope);
 		this.out[scope] = this.out[scope] || '';
-		this.closer.push('scope');
-		//this.append('code', '');
-		this.lastItemType = 'code';
 	};
 
 	FireTPL.Compiler = Compiler;

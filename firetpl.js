@@ -274,12 +274,15 @@ var FireTPL;
 			tagAttrs = '';
 
 		if (helper === 'else') {
-			this.newScope('scope' + this.lastIfScope);
+			this.closer.push(['code', '']);
+			this.newScope(this.lastIfScope);
 			this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});}']);
+			this.closer.push('scope');
 			return;
 		}
-		this.lastIfScope= null;
+
+		// this.lastIfScope = null;
 		scopeId = this.getNextScope();
 
 		if (content) {
@@ -307,7 +310,7 @@ var FireTPL;
 		this.newScope('scope' + scopeId);
 
 		if (helper === 'if') {
-			this.lastIfScope = scopeId;
+			// this.lastIfScope = scopeId;
 			this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
 			this.closer.push(['code', 'return s;});s+=r;']);
 		}
@@ -369,7 +372,6 @@ var FireTPL;
 			.replace(/\'/g, '\\\'')
 			.replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
 
-					console.log('P!',p1);
 				if (/^this\b/.test(p1)) {
 					return opener + p1.replace(/^this/, 'data') + closer;
 				}
@@ -425,6 +427,7 @@ var FireTPL;
 			this.appendCloser();
 			this.append('code', '');
 			var scope = this.curScope.shift();
+			this.lastIfScope = scope;
 			this.appendCloser();
 		}
 		else if (Array.isArray(el)) {
@@ -544,13 +547,11 @@ var FireTPL;
 			newIndent = indention - this.indention,
 			el;
 
-		console.log('Outdent', this.indention, indention, newIndent);
 		if (newIndent === 0) {
 			this.appendCloser();
 		}
 		else {
 			while (newIndent < 1) {
-				console.log('Outdent', this.closer);
 				el = this.appendCloser();
 				newIndent++;
 			}
