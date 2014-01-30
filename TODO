@@ -1,7 +1,6 @@
 FireTPL v1.0.0
 
-	- Add ${bla.blubb}.$superBlubb variable support
-	- Better condition suppoert. :if $bla == "blubb" && $isSuperBlubb
+	- Better condition support. :if $bla == "blubb" && $isSuperBlubb
 
 	- i18n support
 	- inline functions
