@@ -5,6 +5,8 @@ FireTPL v1.0.0
 	- i18n support
 	- inline functions
 	- inline html
+
+	- Better parser (For .fire and .hbs support)
 	
 	- Rename special vars. Maybe to $$parent, $$root
 	- Each helper add $first, $last, $odd

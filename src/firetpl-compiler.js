@@ -194,8 +194,6 @@
 		outStream += 'var s=\'\';';
 		outStream += this.out.root;
 
-
-
 		if (this.lastItemType === 'str') {
 			outStream += '\';';
 		}

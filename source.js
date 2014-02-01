@@ -25,7 +25,9 @@
 
 		var s='';
 		var h=FireTPL.helpers;
-		s+='<div class="example"><h1>'+data.title+'</h1><div class="description">'+data.description+'</div><ul class="listing xq-scope xq-scope001">';
+		s+='<div class="example"><h1>'+data.title+'</h1><div class="description">'+data.description+
+		'</div><ul class="listing xq-scope xq-scope001">';
+		s+='<!-- scope:scope001 path=data.listing parent=data -->';
 		s+=scopes.scope001(data.listing,data);
 		s+='</ul></div>';
 		return s;
