@@ -6,6 +6,141 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			expect(fireTpl).to.be.a(FireTPL.Compiler);
 		});
+
+		it('Should set a syntax config', function() {
+			var fireTpl = new FireTPL.Compiler();
+			expect(fireTpl.syntax).to.be.an('object');
+		});
+
+		it('Should set a .fire syntax config', function() {
+			var fireTpl = new FireTPL.Compiler();
+			expect(fireTpl.syntax).to.be.an('object');
+			expect(fireTpl.syntax.fire).to.be.an('object');
+		});
+
+		it('Should set a .hbs syntax config', function() {
+			var fireTpl = new FireTPL.Compiler();
+			expect(fireTpl.syntax).to.be.an('object');
+			expect(fireTpl.syntax.hbs).to.be.an('object');
+		});
+	});
+
+	describe('getPattern', function() {
+		var fireTpl;
+
+		beforeEach(function() {
+			fireTpl = new FireTPL.Compiler();
+			fireTpl._syntax = fireTpl.syntax;
+
+			fireTpl.syntax = {};
+			fireTpl.syntax.fire = {
+				"patterns": [
+					{
+						"name": "indention",
+						"match": "([ \\t]*)"
+					}, {
+						"name": "tag",
+						"match": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+					}, {
+						"name": "helper",
+						"match": "(:[a-zA-Z][a-zA-Z0-9_-]*)"
+					}, {
+						"name": "string",
+						"match": "(\\\"[^\\\"]*\\\")"
+					}
+				],
+				"modifer": "gm",
+				"scopes": {
+					"1": "indention",
+					"2": "tag",
+					"3": "helper",
+					"4": "string"
+				}
+			};
+
+			fireTpl.syntax.hbs = {
+				"patterns": [
+					{
+						"name": "tag",
+						"match": "(<[a-zA-Z][a-zA-Z0-9:_-]*[^>]*>)"
+					}, {
+						"name": "helper",
+						"match": "(:[a-zA-Z][a-zA-Z0-9_-]*)"
+					}, {
+						"name": "string",
+						"match": "(\"[^\"]*\")"
+					}
+				],
+				"modifer": "g",
+				"scopes": {
+					"2": "tag",
+					"3": "helper",
+					"4": "string"
+				}
+			};	
+		});
+
+		afterEach(function() {
+			fireTpl.syntax = fireTpl._syntax;
+		});
+
+		it('Should get a pattern of the current template type', function() {
+			var syntaxConf = fireTpl.getPattern('fire');
+			expect(syntaxConf.pattern.source).to.eql(/([ \t]*)|([a-zA-Z][a-zA-Z0-9:_-]*)|(:[a-zA-Z][a-zA-Z0-9_-]*)|(\"[^\"]*\")/gm.source);
+			expect(syntaxConf.scopes).to.eql({
+				"1": "indention",
+				"2": "tag",
+				"3": "helper",
+				"4": "string"
+			});
+		});
+	});
+
+	describe('parser', function() {
+		var fireTpl,
+			tmplWrap = function(str) {
+				return 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'' + str + '\';';
+			};
+
+		beforeEach(function() {
+			fireTpl = new FireTPL.Compiler();	
+		});
+
+		it('Should parse a template file', function() {
+			var template = 'div';
+			var html = fireTpl.parse(template, 'fire');
+			expect(html).to.eql(tmplWrap('<div></div>'));
+		});
+
+		it('Should parse a .hbs template file', function() {
+			var template = '<div>';
+			var html = fireTpl.parse(template, 'hbs');
+			expect(html).to.eql(tmplWrap('<div></div>'));
+		});
+
+		it('Should parse tags in a .fire file', function() {
+			var template = 'div\n\tspan';
+			var html = fireTpl.parse(template, 'fire');
+			expect(html).to.eql(tmplWrap('<div><span></span></div>'));
+		});
+
+		it('Should parse tags in a .hbs file', function() {
+			var template = '<div>\n\t<span></span>\n</div>';
+			var html = fireTpl.parse(template, 'hbs');
+			expect(html).to.eql(tmplWrap('<div><span></span></div>'));
+		});
+
+		it('Should parse a helper in a .fire file', function() {
+			var parseHelperSpy = sinon.spy(fireTpl, 'parseHelper');
+			
+			var template = 'div\n\tspan\n\t\t:if $bla';
+			var html = fireTpl.parse(template, 'fire');
+
+			expect(parseHelperSpy).was.calledOnce();
+			expect(parseHelperSpy).was.calledWith('if', '$bla');
+			expect(html).to.eql(tmplWrap('<div><span>\';s+=scopes.scope001(data.bla,data);s+=\'</span></div>'));
+			parseHelperSpy.restore();
+		});
 	});
 
 	describe('getIndention', function() {

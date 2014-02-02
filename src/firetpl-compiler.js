@@ -29,6 +29,91 @@
 		this.nextScope = 0;
 	};
 
+	Compiler.prototype.getPattern = function(type) {
+		var pattern = this.syntax[type].patterns.map(function(pat) {
+			return pat.match;
+		});
+
+		pattern = pattern.join('|');
+
+		var modifer = this.syntax[type].modifer;
+
+		var scopes = this.syntax[type].scopes;
+
+		return {
+			pattern: new RegExp(pattern, modifer),
+			scopes: scopes
+		};
+	};
+
+	Compiler.prototype.parse = function(tmpl, type) {
+		type = type || 'fire';
+
+		this.reset();
+		var syntaxConf = this.getPattern(type);
+
+		var match,
+			attrs = '',
+			res,
+			statement,
+			curItem = null,
+			prevItem = null,
+			cmd,
+			data;
+
+		if (!tmpl && this.tmpl) {
+			tmpl = this.tmpl;
+		}
+
+		var d = 10000;
+
+		prevItem = curItem;
+		curItem = null;
+
+		do {
+			match = syntaxConf.pattern.exec(tmpl);
+			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
+			console.log('Match', match);
+
+			if (!match) {
+				break;
+			}
+
+			cmd = 'error';
+			data = {};
+			for (var i = 1, len = match.length; i < len; i++) {
+				if (match[i]) {
+					cmd = syntaxConf.scopes[i];
+					data[cmd] = match[i];
+				}
+			}
+
+			switch(cmd) {
+				case 'indention':
+					this.handleIndention(data.indention);
+					break;
+				case 'tag':
+					this.parseTag(data.tag);
+					break;
+				case 'endtag':
+					this.parseEndTag(data.tag);
+					break;
+				case 'helper':
+					this.parseHelper(data.helper, data.expression);
+					break;
+				default:
+					throw new Error('Parse error!');
+			}
+
+		} while (match[0]);
+
+		while (this.closer.length > 0) {
+			this.appendCloser();
+		}
+
+		return this.getOutStream();
+	};
+
 	/**
 	 * Precompiles a .tmpl file
 	 * 
@@ -36,7 +121,7 @@
 	 * @param {String} tmpl Tmpl source
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
-	Compiler.prototype.precompile = function(tmpl) {
+	Compiler.prototype.precompile = function(tmpl, type) {
 		this.reset();
 		var match,
 			attrs = '',
@@ -293,6 +378,10 @@
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
+	Compiler.prototype.parseEndTag = function() {
+		this.appendCloser();
+	};
+
 	Compiler.prototype.parseVariables = function(str, isCode) {
 		var opener = '',
 			closer = '';
@@ -307,7 +396,6 @@
 			// .replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
 			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
 				var m = p3 || p4;
-				console.log('PS:', p1, p2, p3, p4, m);
 				if (/^this\b/.test(m)) {
 					return opener + m.replace(/^this/, 'data') + closer;
 				}

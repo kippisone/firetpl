@@ -5,6 +5,6 @@
 	"watch": "src/**/*.js",
 	"tests": "tests/**/*.spec.js",
 	"grunt": {
-		"task": "concat:build"
+		"task": ["json", "concat:build"]
 	}
 }

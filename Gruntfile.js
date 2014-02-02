@@ -4,6 +4,10 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		pkg: grunt.file.readJSON('package.json'),
+		syntax: {
+			fire: JSON.stringify(grunt.file.readJSON('syntax/fire/fire.json')),
+			hbs: JSON.stringify(grunt.file.readJSON('syntax/hbs/hbs.json'))
+		},
 
 		bumpup: {
 			file: 'package.json'
@@ -15,8 +19,8 @@ module.exports = function(grunt) {
 			build: {
 				src: [
 					'src/firetpl.js',
-					'src/firetpl-parser.js',
 					'src/firetpl-compiler.js',
+					'syntax/syntax.js',
 					'src/firetpl-runtime.js'
 				],
 				dest: 'firetpl.js'
@@ -31,8 +35,8 @@ module.exports = function(grunt) {
 			compiler: {
 				src: [
 					'src/firetpl.js',
-					'src/firetpl-parser.js',
-					'src/firetpl-compiler.js'
+					'src/firetpl-compiler.js',
+					'syntax/syntax.js'
 				],
 				dest: 'firetpl-compiler.js'
 			}
@@ -41,16 +45,27 @@ module.exports = function(grunt) {
 		// Lists of files to be linted with JSHint.
 		jshint: {
 			files: [
-				'src/**/*.js'
+				'src/**/*.js',
+				'syntax/**/*.json'
 			],
 			jshintrc: '.jshintrc'
+		},
+		json: {
+			main: {
+				options: {
+					namespace: 'FireTPL.Compiler.prototype.syntax'
+				},
+				src: ['syntax/**/*.json'],
+				dest: 'syntax/syntax.js'
+			}
 		}
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-bumpup');
+	grunt.loadNpmTasks('grunt-json');
 
 	grunt.registerTask('default', 'jshint');
-	grunt.registerTask('build', 'jshint', 'concat');
+	grunt.registerTask('build', ['jshint', 'json', 'concat']);
 };
