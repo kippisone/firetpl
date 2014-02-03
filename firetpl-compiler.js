@@ -33,43 +33,6 @@ var FireTPL;
 
 	return FireTPL;
 }));
-(function(FireTPL, undefined) {
-	'use strict';
-
-	var Parser = function() {
-		
-	};
-
-	Parser.prototype.parse = function(str) {
-		d = 0;
-
-		while (true) {
-			if (++d > 10000) {
-				throw new Error('Never ending loop!');
-			}
-
-			var match = tag.exec(str);
-		}
-	};
-
-	Parser.prototype.getSyntaxConf = function(type) {
-		var syntaxConf = FireTPL.loadFile('syntax/' + type + '/' + type + '.json');
-		if (syntaxConf) {
-			syntaxConf = JSON.parse(syntaxConf);
-		}
-
-		var pat = [];
-		syntaxConf.patterns.forEach(function(p) {
-			pat.push(p.match);
-		});
-
-		pat = '(' + pat.join(')|(') + ')';
-		return pat;
-	};
-
-	FireTPL.Parser = Parser;
-
-})(FireTPL);
 /**
  * FireTPL compiler module
  *
@@ -101,6 +64,93 @@ var FireTPL;
 		this.nextScope = 0;
 	};
 
+	Compiler.prototype.getPattern = function(type) {
+		var pattern = this.syntax[type].patterns.map(function(pat) {
+			return pat.match;
+		});
+
+		pattern = pattern.join('|');
+
+		var modifer = this.syntax[type].modifer;
+
+		var scopes = this.syntax[type].scopes;
+
+		return {
+			pattern: new RegExp(pattern, modifer),
+			scopes: scopes
+		};
+	};
+
+	Compiler.prototype.parse = function(tmpl, type) {
+		type = type || 'fire';
+
+		this.reset();
+		var syntaxConf = this.getPattern(type);
+
+		var match,
+			attrs = '',
+			res,
+			statement,
+			curItem = null,
+			prevItem = null,
+			cmd,
+			data;
+
+		if (!tmpl && this.tmpl) {
+			tmpl = this.tmpl;
+		}
+
+		var d = 10000;
+
+		prevItem = curItem;
+		curItem = null;
+
+		do {
+			match = syntaxConf.pattern.exec(tmpl);
+			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
+			console.log('Match', match);
+
+			if (!match) {
+				break;
+			}
+
+			cmd = 'error';
+			data = {};
+			for (var i = 1, len = match.length; i < len; i++) {
+				if (match[i]) {
+					cmd = syntaxConf.scopes[i];
+					data[cmd] = match[i];
+				}
+			}
+
+			console.log('CMD', cmd);
+
+			switch(cmd) {
+				case 'indention':
+					this.handleIndention(data.indention);
+					break;
+				case 'tag':
+					this.parseTag(data.tag);
+					break;
+				case 'endtag':
+					this.parseEndTag(data.tag);
+					break;
+				case 'helper':
+					this.parseHelper(data.helper, data.expression);
+					break;
+				default:
+					throw new Error('Parse error!');
+			}
+
+		} while (match[0]);
+
+		while (this.closer.length > 0) {
+			this.appendCloser();
+		}
+
+		return this.getOutStream();
+	};
+
 	/**
 	 * Precompiles a .tmpl file
 	 * 
@@ -108,7 +158,7 @@ var FireTPL;
 	 * @param {String} tmpl Tmpl source
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
-	Compiler.prototype.precompile = function(tmpl) {
+	Compiler.prototype.precompile = function(tmpl, type) {
 		this.reset();
 		var match,
 			attrs = '',
@@ -274,7 +324,7 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
+		console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = 'div',
 			tagAttrs = '';
@@ -330,7 +380,7 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseTag = function(tag, content) {
-		// console.log('Parse tag', tag, content);
+		console.log('Parse tag', tag, content);
 
 		var tagContent = '',
 			res,
@@ -365,6 +415,10 @@ var FireTPL;
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
+	Compiler.prototype.parseEndTag = function() {
+		this.appendCloser();
+	};
+
 	Compiler.prototype.parseVariables = function(str, isCode) {
 		var opener = '',
 			closer = '';
@@ -379,7 +433,6 @@ var FireTPL;
 			// .replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
 			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
 				var m = p3 || p4;
-				console.log('PS:', p1, p2, p3, p4, m);
 				if (/^this\b/.test(m)) {
 					return opener + m.replace(/^this/, 'data') + closer;
 				}
@@ -654,3 +707,54 @@ var FireTPL;
 	};
 
 })(FireTPL);
+var FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};
+FireTPL.Compiler.prototype.syntax["fire"] = {
+	"name": "FireTPL",
+	"patterns": [
+		{
+			"name": "indention",
+			"match": "([ \\t]+)"
+		}, {
+			"name": "tag",
+			"match": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+		}, {
+			"name": "helper",
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s(\\$[a-zA-Z][a-zA-Z0-9._-]*))"
+		}, {
+			"name": "string",
+			"match": "(\")"
+		}
+	],
+	"modifer": "gm",
+	"scopes": {
+		"1": "indention",
+		"2": "tag",
+		"3": "helper",
+		"4": "expression"
+	}
+};
+FireTPL.Compiler.prototype.syntax["hbs"] = {
+	"name": "Handelbars",
+	"patterns": [
+		{
+			"name": "tag",
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*[^>])*>)"
+		}, {
+			"name": "endtag",
+			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
+		}, {
+			"name": "helper",
+			"match": "(\\{\\{#[a-zA-Z][a-zA-Z0-9_-]*\\s(.*)\\}\\})"
+		}, {
+			"name": "string",
+			"match": "(\")"
+		}
+	],
+	"modifer": "gm",
+	"scopes": {
+		"1": "tag",
+		"2": "endtag",
+		"3": "helper",
+		"4": "expression"
+	}
+};

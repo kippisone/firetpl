@@ -67,6 +67,25 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>'+
+				'<div>Hello World</div>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with an if statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit: div\n';
+			template += '			div\n';
+			template += '				"Hello World"\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>'+
 				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">'+
 				'<div>Hello World</div></div>' +
 				'</body></html>'
@@ -78,6 +97,27 @@ describe('FireTPL runtime', function() {
 			template += '	head\n';
 			template += '	body\n';
 			template += '		:if $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body><div>Hello World</div>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a truthy if..else statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit: div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 			template += '		:else\n';
@@ -110,6 +150,27 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.eql(
+				'<html><head></head><body><div>Good bye</div>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a falsy if..else statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit : div\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: false
+			});
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div></div>' +
 				'</body></html>'
 			);
@@ -120,6 +181,24 @@ describe('FireTPL runtime', function() {
 			template += '	head\n';
 			template += '	body\n';
 			template += '		:unless $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with an truthy unless statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:unless $sayit : div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
@@ -147,12 +226,49 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' +
+				'<div>Hello World</div>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with an falsy unless statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:unless $sayit : div\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: false
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
 				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
 
 		it('Should compile a tmpl string with an falsy each statement', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:each $listing\n';
+			template += '			div\n';
+			template += '				"Hello World"\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				listing: undefined
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with an falsy each statement wrapped in a div', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
@@ -209,6 +325,28 @@ describe('FireTPL runtime', function() {
 				]
 			});
 			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<span>Andi</span><span>Donnie</span>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with an truthy each statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:each $listing : div\n';
+			template += '			span\n';
+			template += '				$name\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				listing: [
+					{name: 'Andi'},
+					{name: 'Donnie'}
+				]
+			});
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
@@ -220,6 +358,34 @@ describe('FireTPL runtime', function() {
 			template += '	head\n';
 			template += '	body\n';
 			template += '		:if $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+			template += '		ul\n';
+			template += '			:if $name\n';
+			template += '				li class=item\n';
+			template += '					$name\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<div>Hello World</div>' +
+				'<ul></ul>' +
+				'</body></html>'
+			);
+
+		});
+
+		it('Should compile a tmpl string with a truthy if..else and an if statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit : div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 			template += '		:else\n';
@@ -246,6 +412,34 @@ describe('FireTPL runtime', function() {
 		});
 
 		it('Should compile a tmpl string with a truthy if..else and a nested if statement', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '			ul\n';
+			template += '				:if $name\n';
+			template += '					li class=item\n';
+			template += '						$name\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				sayit: true
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<div>Hello World</div>' +
+				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'</ul>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a truthy if..else and a nested if statement wrapped in a div', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';

@@ -114,14 +114,19 @@ var FireTPL;
 				break;
 			}
 
-			cmd = 'error';
+			cmd = null;
 			data = {};
 			for (var i = 1, len = match.length; i < len; i++) {
 				if (match[i]) {
-					cmd = syntaxConf.scopes[i];
-					data[cmd] = match[i];
+					if (cmd === null) {
+						cmd = syntaxConf.scopes[i];
+					}
+
+					data[syntaxConf.scopes[i]] = match[i];
 				}
 			}
+
+			console.log('CMD', cmd, data);
 
 			switch(cmd) {
 				case 'indention':
@@ -134,7 +139,7 @@ var FireTPL;
 					this.parseEndTag(data.tag);
 					break;
 				case 'helper':
-					this.parseHelper(data.helper, data.expression);
+					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
 					break;
 				default:
 					throw new Error('Parse error!');
@@ -322,9 +327,9 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
+		console.log('Parse helper', helper, content);
 		var scopeId,
-			tag = 'div',
+			tag = null,
 			tagAttrs = '';
 
 		if (helper === 'else') {
@@ -354,6 +359,9 @@ var FireTPL;
 			this.parseTag(tag, tagAttrs + ' xq-scope=scope' + scopeId + ' xq-path=' + content.trim().replace(/^\$/, ''));
 			this.injectClass('xq-scope xq-scope' + scopeId);
 		}
+		else {
+			this.closer.push('');
+		}
 
 		if (content) {
 			content = content.trim();
@@ -378,7 +386,7 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseTag = function(tag, content) {
-		// console.log('Parse tag', tag, content);
+		console.log('Parse tag', tag, content);
 
 		var tagContent = '',
 			res,
@@ -742,7 +750,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
 		}, {
 			"name": "helper",
-			"match": "(\\{\\{#[a-zA-Z][a-zA-Z0-9_-]*\\s(.*)\\}\\})"
+			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s*([^\\}]*)\\}\\})?)"
 		}, {
 			"name": "string",
 			"match": "(\")"

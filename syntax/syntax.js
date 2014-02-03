@@ -35,7 +35,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
 		}, {
 			"name": "helper",
-			"match": "(\\{\\{#[a-zA-Z][a-zA-Z0-9_-]*\\s(.*)\\}\\})"
+			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s*([^\\}]*)\\}\\})?)"
 		}, {
 			"name": "string",
 			"match": "(\")"

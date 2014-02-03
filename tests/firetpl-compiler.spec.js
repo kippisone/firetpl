@@ -1,6 +1,25 @@
 describe('FireTPL', function() {
 	'use strict';
 
+	var tmplScope = {
+		out: 'scopes=scopes||{};var root=data,parent=data;',
+		if: function(str) {
+			this.out += 'scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'';
+			this.out += str;
+			this.out += '\';return s;});s+=r;return s;};';
+			return this;
+		},
+		each: function(str) {
+			return this;
+		},
+		root: function(str) {
+			this.out += 'var s=\'\';s+=\'' + str + '\';';
+			var out = this.out;
+			this.out = 'scopes=scopes||{};var root=data,parent=data;';
+			return out;
+		}
+	};
+
 	describe('constructor', function() {
 		it('Should create a FireTPL.Compiler instance', function() {
 			var fireTpl = new FireTPL.Compiler();
@@ -97,10 +116,7 @@ describe('FireTPL', function() {
 	});
 
 	describe('parser', function() {
-		var fireTpl,
-			tmplWrap = function(str) {
-				return 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'' + str + '\';';
-			};
+		var fireTpl;
 
 		beforeEach(function() {
 			fireTpl = new FireTPL.Compiler();	
@@ -109,25 +125,25 @@ describe('FireTPL', function() {
 		it('Should parse a template file', function() {
 			var template = 'div';
 			var html = fireTpl.parse(template, 'fire');
-			expect(html).to.eql(tmplWrap('<div></div>'));
+			expect(html).to.eql(tmplScope.root('<div></div>'));
 		});
 
 		it('Should parse a .hbs template file', function() {
 			var template = '<div>';
 			var html = fireTpl.parse(template, 'hbs');
-			expect(html).to.eql(tmplWrap('<div></div>'));
+			expect(html).to.eql(tmplScope.root('<div></div>'));
 		});
 
 		it('Should parse tags in a .fire file', function() {
 			var template = 'div\n\tspan';
 			var html = fireTpl.parse(template, 'fire');
-			expect(html).to.eql(tmplWrap('<div><span></span></div>'));
+			expect(html).to.eql(tmplScope.root('<div><span></span></div>'));
 		});
 
 		it('Should parse tags in a .hbs file', function() {
 			var template = '<div>\n\t<span></span>\n</div>';
 			var html = fireTpl.parse(template, 'hbs');
-			expect(html).to.eql(tmplWrap('<div><span></span></div>'));
+			expect(html).to.eql(tmplScope.root('<div><span></span></div>'));
 		});
 
 		it('Should parse a helper in a .fire file', function() {
@@ -138,7 +154,27 @@ describe('FireTPL', function() {
 
 			expect(parseHelperSpy).was.calledOnce();
 			expect(parseHelperSpy).was.calledWith('if', '$bla');
-			expect(html).to.eql(tmplWrap('<div><span>\';s+=scopes.scope001(data.bla,data);s+=\'</span></div>'));
+			expect(html).to.eql(
+				tmplScope
+				.if('')
+				.root('<div><span>\';s+=scopes.scope001(data.bla,data);s+=\'</span></div>')
+			);
+			parseHelperSpy.restore();
+		});
+
+		it('Should parse a helper in a .hbs file', function() {
+			var parseHelperSpy = sinon.spy(fireTpl, 'parseHelper');
+			
+			var template = '<div>\n\t<span>\n\t\t{{#if bla}}{{/if}}\n\t</span>\n</div>';
+			var html = fireTpl.parse(template, 'hbs');
+
+			expect(parseHelperSpy).was.calledOnce();
+			expect(parseHelperSpy).was.calledWith('if', '$bla');
+			expect(html).to.eql(
+				tmplScope
+				.if('')
+				.root('<div><span>\';s+=scopes.scope001(data.bla,data);s+=\'</span></div>')
+			);
 			parseHelperSpy.restore();
 		});
 	});
@@ -267,7 +303,7 @@ describe('FireTPL', function() {
 		});
 	});
 
-	describe('appendCloser', function() {
+	describe.skip('appendCloser', function() {
 		var instance;
 
 		beforeEach(function() {
@@ -293,7 +329,7 @@ describe('FireTPL', function() {
 		it('Should append a closer to the out stream', function() {
 			instance.out = { root: '', scope001: '' };
 			instance.curScope = ['scope001', 'root'];
-			instance.closer = ['</html>', '</div>', '', 'scope', '<img>'];
+			instance.closer = ['</html>', '</div>', 'scope', '<img>'];
 			instance.lastItemType = 'code';
 			instance.appendCloser();
 			instance.appendCloser();
@@ -306,7 +342,7 @@ describe('FireTPL', function() {
 		it('Should append a closer to the out stream', function() {
 			instance.out = { root: '', scope001: '', scope002: '' };
 			instance.curScope = ['scope002', 'scope001', 'root'];
-			instance.closer = ['</html>', '</div>', '', 'scope', '<img>','scope', '<span>'];
+			instance.closer = ['</html>', '</div>', 'scope', '<img>','scope', '<span>'];
 			instance.lastItemType = 'code';
 			instance.appendCloser();
 			instance.appendCloser();
@@ -710,6 +746,35 @@ describe('FireTPL', function() {
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
+				's+=\'<html><head></head><body>\';' +
+				's+=scopes.scope001(data.sayit,data);' +
+				's+=\'\';s+=\'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with a if..else statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:if $sayit : div\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+			template += '		:else\n';
+			template += '			div\n';
+			template += '				Good bye\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;' +
+				'scopes.scope001=function(data,parent){var s=\'\';' +
+				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
+				's+=\'<div>Hello World</div>\';' +
+				'return s;});s+=r;' +
+				'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';' +
+				's+=\'<div>Good bye</div>\';' +
+				'return s;});}return s;' +
+				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</div>\';s+=\'</body></html>\';'
@@ -733,6 +798,29 @@ describe('FireTPL', function() {
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
+				's+=\'<html><head></head><body>\';' +
+				's+=scopes.scope001(data.sayit,data);' +
+				's+=\'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with an unless statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:unless $sayit : div\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;' +
+				'scopes.scope001=function(data,parent){var s=\'\';' +
+				's+=h.exec(\'unless\',data,parent,root,function(data){var s=\'\';' +
+				's+=\'<div>Hello World</div>\';' +
+				'return s;});return s;' +
+				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">\';' +
 				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</div></body></html>\';'
@@ -744,6 +832,29 @@ describe('FireTPL', function() {
 			template += '	head\n';
 			template += '	body\n';
 			template += '		:each $listing\n';
+			template += '			div\n';
+			template += '				Hello World\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;' +
+				'scopes.scope001=function(data,parent){var s=\'\';' +
+				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=\'<div>Hello World</div>\';' +
+				'return s;});return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body>\';' +
+				's+=scopes.scope001(data.listing,data);' +
+				's+=\'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with an each statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		:each $listing : div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 
