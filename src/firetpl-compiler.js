@@ -98,13 +98,18 @@
 					this.handleIndention(data.indention);
 					break;
 				case 'tag':
-					this.parseTag(data.tag);
+					this.parseTag(data.tag, data.tagAttributes);
 					break;
 				case 'endtag':
 					this.parseEndTag(data.tag);
 					break;
 				case 'helper':
 					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+					break;
+				case 'attribute':
+					this.parseAttribute(data.attribute);
+					break;
+				case 'unused':
 					break;
 				default:
 					throw new Error('Parse error!');
@@ -386,6 +391,24 @@
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
+	Compiler.prototype.parseAttribute = function(attribute) {
+		var res = this.stripAttributes(attribute);
+		if (res) {
+			var attrs = ' ' + res.attrs.join(' ');
+
+			if (res.events.length !== 0) {
+				this.registerEvent(res.events);
+			}
+
+			this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
+		}
+		else {
+			throw 'FireTPL parse error (3)';
+		}
+
+		this.closer.push('');
+	};
+
 	Compiler.prototype.parseEndTag = function() {
 		this.appendCloser();
 	};
@@ -637,6 +660,15 @@
 		this.append('code', '');
 		this.curScope.unshift(scope);
 		this.out[scope] = this.out[scope] || '';
+	};
+
+	Compiler.prototype.getPatternByName = function(type, name) {
+		var pattern = this.syntax[type].patterns;
+		for (var i = 0, len = pattern.length; i < len; i++) {
+			if (pattern[i].name === name) {
+				return pattern[i].match;
+			} 
+		}
 	};
 
 	FireTPL.Compiler = Compiler;

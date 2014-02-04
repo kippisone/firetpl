@@ -133,13 +133,18 @@ var FireTPL;
 					this.handleIndention(data.indention);
 					break;
 				case 'tag':
-					this.parseTag(data.tag);
+					this.parseTag(data.tag, data.tagAttributes);
 					break;
 				case 'endtag':
 					this.parseEndTag(data.tag);
 					break;
 				case 'helper':
 					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+					break;
+				case 'attribute':
+					this.parseAttribute(data.attribute);
+					break;
+				case 'unused':
 					break;
 				default:
 					throw new Error('Parse error!');
@@ -421,6 +426,24 @@ var FireTPL;
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
+	Compiler.prototype.parseAttribute = function(attribute) {
+		var res = this.stripAttributes(attribute);
+		if (res) {
+			var attrs = ' ' + res.attrs.join(' ');
+
+			if (res.events.length !== 0) {
+				this.registerEvent(res.events);
+			}
+
+			this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
+		}
+		else {
+			throw 'FireTPL parse error (3)';
+		}
+
+		this.closer.push('');
+	};
+
 	Compiler.prototype.parseEndTag = function() {
 		this.appendCloser();
 	};
@@ -674,6 +697,15 @@ var FireTPL;
 		this.out[scope] = this.out[scope] || '';
 	};
 
+	Compiler.prototype.getPatternByName = function(type, name) {
+		var pattern = this.syntax[type].patterns;
+		for (var i = 0, len = pattern.length; i < len; i++) {
+			if (pattern[i].name === name) {
+				return pattern[i].match;
+			} 
+		}
+	};
+
 	FireTPL.Compiler = Compiler;
 
 	/* +---------- FireTPL methods ---------- */
@@ -719,32 +751,41 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 	"patterns": [
 		{
 			"name": "indention",
-			"match": "([ \\t]+)"
-		}, {
-			"name": "tag",
-			"match": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+			"match": "^([ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s(\\$[a-zA-Z][a-zA-Z0-9._-]*))"
+			"match": "(?:\\b:([a-zA-Z][a-zA-Z0-9_-]*)\\s(\\$[a-zA-Z][a-zA-Z0-9._-]*))"
+		}, {
+			"name": "attribute",
+			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
+		}, {
+			"name": "tag",
+			"match": "(?:(?:^|\\s+)([a-zA-Z][a-zA-Z0-9:_-]*)+(?=\\b)(?:(.*)\\n|$)?)"
 		}, {
 			"name": "string",
-			"match": "(\")"
+			"match": "(\\\"[^\\\"]*\\\"])"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "indention",
-		"2": "tag",
-		"3": "helper",
-		"4": "expression"
+		"2": "helper",
+		"3": "attribute",
+		"4": "tag",
+		"5": "tagAttributes",
+		"6": "expression",
+		"7": "string"
 	}
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"name": "Handelbars",
 	"patterns": [
 		{
+			"name": "unused",
+			"match": "^([ \\t]+)"
+		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*[^>])*>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]*)>)"
 		}, {
 			"name": "endtag",
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
@@ -752,16 +793,22 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s*([^\\}]*)\\}\\})?)"
 		}, {
+			"name": "attribute",
+			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
+		}, {
 			"name": "string",
-			"match": "(\")"
+			"match": "(.*(?=<\/?[a-zA-Z]))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
-		"1": "tag",
-		"2": "endtag",
-		"3": "helper",
-		"4": "expression"
+		"1": "unused",
+		"2": "tag",
+		"3":"tagAttributes",
+		"4": "endtag",
+		"5": "helper",
+		"6": "expression",
+		"7": "string"
 	}
 };
 /**

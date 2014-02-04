@@ -433,7 +433,7 @@ describe('FireTPL runtime', function() {
 			expect(html).to.eql(
 				'<html><head></head><body>' +
 				'<div>Hello World</div>' +
-				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'<ul>' +
 				'</ul>' +
 				'</body></html>'
 			);
@@ -443,7 +443,7 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
-			template += '		:if $sayit\n';
+			template += '		:if $sayit : div\n';
 			template += '			div\n';
 			template += '				Hello World\n';
 			template += '			:if $name : ul\n';
@@ -472,9 +472,44 @@ describe('FireTPL runtime', function() {
 			var template = 'html\n';
 			template += '	head\n';
 			template += '	body\n';
+			template += '		ul class=listing\n';
+			template += '			:each $listing\n';
+			template += '				li\n';
+			template += '					:if $sayit\n';
+			template += '						div\n';
+			template += '							Hello World\n';
+			template += '					:else\n';
+			template += '						div\n';
+			template += '							Good bye\n';
+
+			template = FireTPL.compile(template);
+			var html = template({
+				listing: [
+					{ sayit: true },
+					{ sayit: false }
+				]
+			});
+			expect(html).to.eql(
+				'<html><head></head><body>' +
+				'<ul class="listing">' +
+				'<li>' +
+				'<div>Hello World</div>' +
+				'</li>' +
+				'<li>' +
+				'<div>Good bye</div>' +
+				'</li>' +
+				'</ul>' +
+				'</body></html>'
+			);
+		});
+
+		it('Should compile a tmpl string with a truthy each and a nested if..else statement wrapped in a div', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
 			template += '		:each $listing : ul class=listing\n';
 			template += '			li\n';
-			template += '				:if $sayit\n';
+			template += '				:if $sayit : div\n';
 			template += '					div\n';
 			template += '						Hello World\n';
 			template += '				:else\n';

@@ -115,6 +115,33 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('FireTPL regular expressions', function() {
+		var strings = [
+			['tag', 'div'],
+			['tag', 'div class=listing'],
+			['tag', '\tdiv class=listing'],
+			['helper', ':if $bla'],
+			['helper', '\t:if $bla'],
+			['string', '"Hello World"'],
+			['string', '\t"Hello World"'],
+		];
+
+		var fireTpl;
+			fireTpl = new FireTPL.Compiler();	
+
+		['tag', 'helper'].forEach(function(type) {
+			strings.forEach(function(str) {
+				var matches = (str[0] === type),
+					pat = fireTpl.getPatternByName('fire', type),
+					title = (matches ? 'Should match as a ' + type + ' | ' + str[1] : 'Should not match as a ' + type + ' | ' + str[1]) + ' | using match ' + pat;
+
+				it(title, function() {
+					expect(new RegExp(pat).test(str[1])).to.be(matches);
+				});
+			});
+		});
+	});
+
 	describe('parser', function() {
 		var fireTpl;
 
@@ -176,6 +203,81 @@ describe('FireTPL', function() {
 				.root('<div><span>\';s+=scopes.scope001(data.bla,data);s+=\'</span></div>')
 			);
 			parseHelperSpy.restore();
+		});
+
+		it('Should parse tags with attributes in a .fire file', function() {
+			var template = 'div id=mydiv\n\tspan class="listing blue"';
+			var html = fireTpl.parse(template, 'fire');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv"><span class="listing blue"></span></div>')
+			);
+		});
+
+		it('Should parse tags with attributes in a .hbs file', function() {
+			var template = '<div id="mydiv">\n\t<span class="listing blue"></span>\n</div>';
+			var html = fireTpl.parse(template, 'hbs');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv"><span class="listing blue"></span></div>')
+			);
+		});
+
+		it('Should parse tags with new line attributes in a .fire file', function() {
+			var template = 'div id=mydiv\n' +
+				'	class="bla blubb"\n' +
+				'	span class="listing blue"';
+
+			var html = fireTpl.parse(template, 'fire');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv" class="bla blubb"><span class="listing blue"></span></div>')
+			);
+		});
+
+		it('Should parse tags with new line attributes in a .hbs file', function() {
+			var template = '<div id="mydiv"\n' +
+			'	class="bla blubb">\n' +
+			'	<span class="listing blue"></span>\n' +
+			'</div>';
+
+			var html = fireTpl.parse(template, 'hbs');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv" class="bla blubb"><span class="listing blue"></span></div>')
+			);
+		});
+
+		it('Should parse strings in a .fire file', function() {
+			var template = 'div id=mydiv\n' +
+				'	"Hello World"\n' +
+				'	span class="listing blue"\n' +
+				'		"I\'m DrTest!"';
+
+			var html = fireTpl.parse(template, 'fire');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv">Hello World<span class="listing blue">I\'m DrTest!/span></div>')
+			);
+		});
+
+		it('Should parse strings in a .hbs file', function() {
+			var template = '<div id="mydiv">\n' +
+			'	Hello World\n' +
+			'	<span class="listing blue">I\'m DrTest!</span>\n' +
+			'</div>';
+
+			var html = fireTpl.parse(template, 'hbs');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv">Hello World<span class="listing blue">I\'m DrTest!</span></div>')
+			);
 		});
 	});
 
