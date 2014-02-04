@@ -141,8 +141,14 @@ var FireTPL;
 				case 'helper':
 					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
 					break;
+				case 'helperEnd':
+					this.parseHelperEnd(data.helperEnd);
+					break;
 				case 'attribute':
 					this.parseAttribute(data.attribute);
+					break;
+				case 'string':
+					this.parseString(data.string);
 					break;
 				case 'unused':
 					break;
@@ -232,40 +238,7 @@ var FireTPL;
 			}
 			else if (matchString) {
 				//It's a string
-				
-				var strPattern,
-					strMatch;
-
-				if (matchString.substr(-1) === '"') {
-					matchString = matchString.substr(1, matchString.length - 2);
-				}
-				else {
-					strPattern = /([^\"]*)\"/g;
-					strPattern.lastIndex = this.pattern.lastIndex;
-					strMatch = strPattern.exec(tmpl);
-					matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
-					this.pattern.lastIndex = strPattern.lastIndex;
-				}
-
-				//Check for multi text blocks
-				while (true) {
-					strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
-					strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
-					if (strMatch) {
-						this.pattern.lastIndex += strPattern.lastIndex;
-						if (strMatch[2]) {
-							matchString += '<br>';
-						}
-
-						matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
-					}
-					else {
-						break;
-					}
-				}
-
-				this.append('str', this.parseVariables(matchString));
-				this.closer.push('');
+				this.parseString(matchString);
 			}
 			else if (matchAttribute) {
 				res = this.stripAttributes(matchAttribute);
@@ -444,7 +417,48 @@ var FireTPL;
 		this.closer.push('');
 	};
 
+	Compiler.prototype.parseString = function(matchString) {
+		var strPattern,
+			strMatch;
+
+		if (matchString.substr(-1) === '"') {
+			matchString = matchString.substr(1, matchString.length - 2);
+		}
+		/*else {
+			strPattern = /([^\"]*)\"/g;
+			strPattern.lastIndex = this.pattern.lastIndex;
+			strMatch = strPattern.exec(tmpl);
+			matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+			this.pattern.lastIndex = strPattern.lastIndex;
+		}
+
+		//Check for multi text blocks
+		while (true) {
+			strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+			strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
+			if (strMatch) {
+				this.pattern.lastIndex += strPattern.lastIndex;
+				if (strMatch[2]) {
+					matchString += '<br>';
+				}
+
+				matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+			}
+			else {
+				break;
+			}
+		}*/
+
+
+		this.append('str', this.parseVariables(matchString));
+		this.closer.push('');
+	};
+
 	Compiler.prototype.parseEndTag = function() {
+		this.appendCloser();
+	};
+
+	Compiler.prototype.parseHelperEnd = function() {
 		this.appendCloser();
 	};
 
@@ -754,27 +768,27 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "^([ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?:\\b:([a-zA-Z][a-zA-Z0-9_-]*)\\s(\\$[a-zA-Z][a-zA-Z0-9._-]*))"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*(\\$[a-zA-Z][a-zA-Z0-9._-]*)?)"
+		}, {
+			"name": "string",
+			"match": "(\\\"[^\\\"]*\\\")"
 		}, {
 			"name": "attribute",
 			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
 		}, {
 			"name": "tag",
-			"match": "(?:(?:^|\\s+)([a-zA-Z][a-zA-Z0-9:_-]*)+(?=\\b)(?:(.*)\\n|$)?)"
-		}, {
-			"name": "string",
-			"match": "(\\\"[^\\\"]*\\\"])"
+			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*)\\n|$)?)"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "indention",
 		"2": "helper",
-		"3": "attribute",
-		"4": "tag",
-		"5": "tagAttributes",
-		"6": "expression",
-		"7": "string"
+		"3": "expression",
+		"4": "string",
+		"5": "attribute",
+		"6": "tag",
+		"7": "tagAttributes"
 	}
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
@@ -791,24 +805,29 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
 		}, {
 			"name": "helper",
-			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s*([^\\}]*)\\}\\})?)"
+			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
+		}, {
+			"name": "helperEnd",
+			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
 			"name": "attribute",
 			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
 		}, {
 			"name": "string",
-			"match": "(.*(?=<\/?[a-zA-Z]))"
+			"match": "(?:(.(?!<\\/?[a-zA-Z0-9_-]+>)*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
 		"2": "tag",
-		"3":"tagAttributes",
+		"3": "tagAttributes",
 		"4": "endtag",
 		"5": "helper",
 		"6": "expression",
-		"7": "string"
+		"7": "helperEnd",
+		"8": "attributes",
+		"9": "string"
 	}
 };
 /**

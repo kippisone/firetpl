@@ -106,8 +106,14 @@
 				case 'helper':
 					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
 					break;
+				case 'helperEnd':
+					this.parseHelperEnd(data.helperEnd);
+					break;
 				case 'attribute':
 					this.parseAttribute(data.attribute);
+					break;
+				case 'string':
+					this.parseString(data.string);
 					break;
 				case 'unused':
 					break;
@@ -197,40 +203,7 @@
 			}
 			else if (matchString) {
 				//It's a string
-				
-				var strPattern,
-					strMatch;
-
-				if (matchString.substr(-1) === '"') {
-					matchString = matchString.substr(1, matchString.length - 2);
-				}
-				else {
-					strPattern = /([^\"]*)\"/g;
-					strPattern.lastIndex = this.pattern.lastIndex;
-					strMatch = strPattern.exec(tmpl);
-					matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
-					this.pattern.lastIndex = strPattern.lastIndex;
-				}
-
-				//Check for multi text blocks
-				while (true) {
-					strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
-					strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
-					if (strMatch) {
-						this.pattern.lastIndex += strPattern.lastIndex;
-						if (strMatch[2]) {
-							matchString += '<br>';
-						}
-
-						matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
-					}
-					else {
-						break;
-					}
-				}
-
-				this.append('str', this.parseVariables(matchString));
-				this.closer.push('');
+				this.parseString(matchString);
 			}
 			else if (matchAttribute) {
 				res = this.stripAttributes(matchAttribute);
@@ -409,7 +382,48 @@
 		this.closer.push('');
 	};
 
+	Compiler.prototype.parseString = function(matchString) {
+		var strPattern,
+			strMatch;
+
+		if (matchString.substr(-1) === '"') {
+			matchString = matchString.substr(1, matchString.length - 2);
+		}
+		/*else {
+			strPattern = /([^\"]*)\"/g;
+			strPattern.lastIndex = this.pattern.lastIndex;
+			strMatch = strPattern.exec(tmpl);
+			matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+			this.pattern.lastIndex = strPattern.lastIndex;
+		}
+
+		//Check for multi text blocks
+		while (true) {
+			strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+			strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
+			if (strMatch) {
+				this.pattern.lastIndex += strPattern.lastIndex;
+				if (strMatch[2]) {
+					matchString += '<br>';
+				}
+
+				matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+			}
+			else {
+				break;
+			}
+		}*/
+
+
+		this.append('str', this.parseVariables(matchString));
+		this.closer.push('');
+	};
+
 	Compiler.prototype.parseEndTag = function() {
+		this.appendCloser();
+	};
+
+	Compiler.prototype.parseHelperEnd = function() {
 		this.appendCloser();
 	};
 

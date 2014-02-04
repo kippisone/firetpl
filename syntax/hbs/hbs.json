@@ -12,23 +12,28 @@
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
 		}, {
 			"name": "helper",
-			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s*([^\\}]*)\\}\\})?)"
+			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
+		}, {
+			"name": "helperEnd",
+			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
 			"name": "attribute",
 			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
 		}, {
 			"name": "string",
-			"match": "(.*(?=<\/?[a-zA-Z]))"
+			"match": "(?:(.(?!<\\/?[a-zA-Z0-9_-]+>)*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
 		"2": "tag",
-		"3":"tagAttributes",
+		"3": "tagAttributes",
 		"4": "endtag",
 		"5": "helper",
 		"6": "expression",
-		"7": "string"
+		"7": "helperEnd",
+		"8": "attributes",
+		"9": "string"
 	}
 }
