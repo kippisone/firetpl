@@ -62,6 +62,7 @@ var FireTPL;
 		this.out = { root: '' };
 		this.lastItemType = 'code';
 		this.nextScope = 0;
+		this.pos = 0;
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -106,37 +107,57 @@ var FireTPL;
 		curItem = null;
 
 		do {
+			syntaxConf.pattern.lastIndex = this.pos;
 			match = syntaxConf.pattern.exec(tmpl);
+			this.pos = syntaxConf.pattern.lastIndex;
 			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
-			console.log('Match', match);
+			// console.log('Match', match);
+			// console.log('Pos start:', this.pos, tmpl.substr(this.pos, 20));
 
 			if (!match) {
 				break;
 			}
 
-			cmd = 'error';
+			cmd = null;
 			data = {};
 			for (var i = 1, len = match.length; i < len; i++) {
-				if (match[i]) {
-					cmd = syntaxConf.scopes[i];
-					data[cmd] = match[i];
+				if (match[i] !== undefined) {
+					if (cmd === null) {
+						cmd = syntaxConf.scopes[i];
+					}
+
+					data[syntaxConf.scopes[i]] = match[i];
 				}
 			}
 
-			console.log('CMD', cmd);
+			// console.log('CMD', cmd, data);
 
 			switch(cmd) {
 				case 'indention':
 					this.handleIndention(data.indention);
 					break;
 				case 'tag':
-					this.parseTag(data.tag);
+					this.parseTag(data.tag, data.tagAttributes);
 					break;
 				case 'endtag':
 					this.parseEndTag(data.tag);
 					break;
 				case 'helper':
-					this.parseHelper(data.helper, data.expression);
+					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+					break;
+				case 'helperEnd':
+					this.parseHelperEnd(data.helperEnd);
+					break;
+				case 'attribute':
+					this.parseAttribute(data.attribute);
+					break;
+				case 'string':
+					this.parseString(tmpl, data.string);
+					break;
+				case 'variable':
+					this.parseVariable(data.variable);
+					break;
+				case 'unused':
 					break;
 				default:
 					throw new Error('Parse error!');
@@ -159,142 +180,7 @@ var FireTPL;
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
 	Compiler.prototype.precompile = function(tmpl, type) {
-		this.reset();
-		var match,
-			attrs = '',
-			res,
-			statement,
-			curItem = null,
-			prevItem = null;
-
-		if (!tmpl && this.tmpl) {
-			tmpl = this.tmpl;
-		}
-
-		var d = 10000;
-
-		prevItem = curItem;
-		curItem = null;
-
-		do {
-			// console.log('Pat:', this.pattern, tmpl);
-			match = this.pattern.exec(tmpl);
-
-			if (!match) {
-				break;
-			}
-
-			// console.log('Match', match);
-			var isEmptyLine = /^\s*$/.test(match[0]),
-				matchIndention = match[1],
-				matchComment = match[2],
-				matchHelper = match[3],
-				matchAttribute = match[4],
-				matchTag = match[5],
-				matchString = match[6],
-				matchHTML = match[7],
-				matchContent = match[8];
-
-			//Reset attributes
-			attrs = '';
-
-			if (--d < 0) {
-				throw 'Never ending loop!';
-			}
-
-			//It's an empty line or a comment
-			if (!match[0] || isEmptyLine || matchComment) {
-				continue;
-			}
-
-			//Handle indention
-			this.handleIndention(matchIndention);
-
-			if (matchHelper) {
-				var helper = this.parseHelper(matchHelper, matchContent);
-
-			}
-			else if (matchTag) {
-				this.parseTag(matchTag, matchContent);
-			}
-			else if (matchContent) {
-				//It's a string
-				this.append('str', this.parseVariables(matchContent));
-				this.closer.push('');
-			}
-			else if (matchString) {
-				//It's a string
-				
-				var strPattern,
-					strMatch;
-
-				if (matchString.substr(-1) === '"') {
-					matchString = matchString.substr(1, matchString.length - 2);
-				}
-				else {
-					strPattern = /([^\"]*)\"/g;
-					strPattern.lastIndex = this.pattern.lastIndex;
-					strMatch = strPattern.exec(tmpl);
-					matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
-					this.pattern.lastIndex = strPattern.lastIndex;
-				}
-
-				//Check for multi text blocks
-				while (true) {
-					strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
-					strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
-					if (strMatch) {
-						this.pattern.lastIndex += strPattern.lastIndex;
-						if (strMatch[2]) {
-							matchString += '<br>';
-						}
-
-						matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
-					}
-					else {
-						break;
-					}
-				}
-
-				this.append('str', this.parseVariables(matchString));
-				this.closer.push('');
-			}
-			else if (matchAttribute) {
-				res = this.stripAttributes(matchAttribute);
-				if (res) {
-					attrs = ' ' + res.attrs.join(' ');
-
-					if (res.events.length !== 0) {
-						this.registerEvent(res.events);
-					}
-
-					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
-				}
-				else {
-					throw 'FireTPL parse error (3)';
-				}
-
-				this.closer.push('');
-			}
-			else {
-				throw 'FireTPL parse error (1)';
-			}
-
-
-		} while (match[0]);
-
-		// console.log('Closer', this.closer.length, this.closer);
-		while (this.closer.length > 0) {
-			this.appendCloser();
-		}
-
-		if (this.lastItemType === 'str') {
-			this.out[this.curScope[0]] += '\';';
-			this.lastItemType = 'code';
-		}
-
-		// return this.out[this.curScope[0]];
-		return this.getOutStream();
+		return this.parse(tmpl, type);
 	};
 
 	Compiler.prototype.getOutStream = function() {
@@ -324,9 +210,9 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		console.log('Parse helper', helper, content);
+		// console.log('Parse helper', helper, content);
 		var scopeId,
-			tag = 'div',
+			tag = null,
 			tagAttrs = '';
 
 		if (helper === 'else') {
@@ -356,6 +242,9 @@ var FireTPL;
 			this.parseTag(tag, tagAttrs + ' xq-scope=scope' + scopeId + ' xq-path=' + content.trim().replace(/^\$/, ''));
 			this.injectClass('xq-scope xq-scope' + scopeId);
 		}
+		else {
+			this.closer.push('');
+		}
 
 		if (content) {
 			content = content.trim();
@@ -380,7 +269,7 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseTag = function(tag, content) {
-		console.log('Parse tag', tag, content);
+		// console.log('Parse tag', tag, content);
 
 		var tagContent = '',
 			res,
@@ -415,7 +304,70 @@ var FireTPL;
 		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
 	};
 
+	Compiler.prototype.parseAttribute = function(attribute) {
+		var res = this.stripAttributes(attribute);
+		if (res) {
+			var attrs = ' ' + res.attrs.join(' ');
+
+			if (res.events.length !== 0) {
+				this.registerEvent(res.events);
+			}
+
+			this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
+		}
+		else {
+			throw 'FireTPL parse error (3)';
+		}
+
+		this.closer.push('');
+	};
+
+	Compiler.prototype.parseString = function(tmpl, matchString) {
+		var strPattern,
+			strMatch;
+
+		//Remove multiplr whitespaces
+		matchString = matchString.replace(/\s+/g, ' ');
+
+		if (matchString.charAt(0) === '"') {
+			if (matchString.substr(-1) === '"') {
+				matchString = matchString.substr(1, matchString.length - 2);
+			}
+			else {
+				strPattern = /([^\"]*)\"/g;
+				strPattern.lastIndex = this.pos;
+				strMatch = strPattern.exec(tmpl);
+				matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+				this.pos = strPattern.lastIndex;
+			}
+
+			//Check for multi text blocks
+			while (true) {
+				strPattern = /^(\n[\t]*)?(\n[\t]*)*\"([^\"]*)\"/g;
+				strMatch = strPattern.exec(tmpl.substr(this.pos));
+				if (strMatch) {
+					this.pos += strPattern.lastIndex;
+					if (strMatch[2]) {
+						matchString += '<br>';
+					}
+
+					matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+				}
+				else {
+					break;
+				}
+			}
+		}
+
+		this.append('str', this.parseVariables(matchString));
+		this.closer.push('');
+	};
+
 	Compiler.prototype.parseEndTag = function() {
+		this.appendCloser();
+	};
+
+	Compiler.prototype.parseHelperEnd = function() {
 		this.appendCloser();
 	};
 
@@ -446,6 +398,11 @@ var FireTPL;
 			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
 
 		return str;
+	};
+
+	Compiler.prototype.parseVariable = function(matchVariable) {
+		this.append('str', this.parseVariables(matchVariable));
+		this.closer.push('');
 	};
 
 	/**
@@ -668,6 +625,15 @@ var FireTPL;
 		this.out[scope] = this.out[scope] || '';
 	};
 
+	Compiler.prototype.getPatternByName = function(type, name) {
+		var pattern = this.syntax[type].patterns;
+		for (var i = 0, len = pattern.length; i < len; i++) {
+			if (pattern[i].name === name) {
+				return pattern[i].match;
+			} 
+		}
+	};
+
 	FireTPL.Compiler = Compiler;
 
 	/* +---------- FireTPL methods ---------- */
@@ -707,54 +673,82 @@ var FireTPL;
 	};
 
 })(FireTPL);
-var FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};
+FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};
 FireTPL.Compiler.prototype.syntax["fire"] = {
 	"name": "FireTPL",
 	"patterns": [
 		{
-			"name": "indention",
-			"match": "([ \\t]+)"
+			"name": "empty-line",
+			"match": "(^\\s*$)"
 		}, {
-			"name": "tag",
-			"match": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+			"name": "indention",
+			"match": "^([ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s(\\$[a-zA-Z][a-zA-Z0-9._-]*))"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*$)?)?)"
 		}, {
 			"name": "string",
-			"match": "(\")"
+			"match": "(\\\"[^\\\"]*\\\")"
+		}, {
+			"name": "attribute",
+			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
+		}, {
+			"name": "tag",
+			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*)\\n|$)?)"
+		}, {
+			"name": "variable",
+			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
-		"1": "indention",
-		"2": "tag",
+		"1": "unused",
+		"2": "indention",
 		"3": "helper",
-		"4": "expression"
+		"4": "expression",
+		"5": "string",
+		"6": "attribute",
+		"7": "tag",
+		"8": "tagAttributes",
+		"9": "variable"
 	}
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"name": "Handelbars",
 	"patterns": [
 		{
+			"name": "unused",
+			"match": "^([ \\t]+)"
+		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*[^>])*>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]*)>)"
 		}, {
 			"name": "endtag",
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
 		}, {
 			"name": "helper",
-			"match": "(\\{\\{#[a-zA-Z][a-zA-Z0-9_-]*\\s(.*)\\}\\})"
+			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
+		}, {
+			"name": "helperEnd",
+			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
+		}, {
+			"name": "attribute",
+			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
 		}, {
 			"name": "string",
-			"match": "(\")"
+			"match": "(?:(.(?!<\\/?[a-zA-Z0-9_-]+>)*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
-		"1": "tag",
-		"2": "endtag",
-		"3": "helper",
-		"4": "expression"
+		"1": "unused",
+		"2": "tag",
+		"3": "tagAttributes",
+		"4": "endtag",
+		"5": "helper",
+		"6": "expression",
+		"7": "helperEnd",
+		"8": "attributes",
+		"9": "string"
 	}
 };
