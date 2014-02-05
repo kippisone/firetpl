@@ -9,7 +9,7 @@ describe('FireTPL runtime', function() {
 
 			template = FireTPL.compile(template);
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
 				'</body></html>'
@@ -22,11 +22,11 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		div id=myDiv\n';
 			template += '		div id=mySecondDiv class=myClass\n';
-			template += '			Hello World\n';
+			template += '			"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>'
@@ -42,11 +42,11 @@ describe('FireTPL runtime', function() {
 			template += '			id=mySecondDiv\n';
 			template += '			class=myClass\n';
 			template += '			\n';
-			template += '			Hello World\n';
+			template += '			"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template();
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
 				'</body></html>'
@@ -98,10 +98,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -119,10 +119,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit: div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -140,10 +140,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -161,10 +161,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -182,7 +182,7 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:unless $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -200,7 +200,7 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:unless $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -218,7 +218,7 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:unless $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -237,7 +237,7 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:unless $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -359,10 +359,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 			template += '		ul\n';
 			template += '			:if $name\n';
 			template += '				li class=item\n';
@@ -387,10 +387,10 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 			template += '		:if $name : ul\n';
 			template += '			li class=item\n';
 			template += '				$name\n';
@@ -417,14 +417,14 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '			ul\n';
 			template += '				:if $name\n';
 			template += '					li class=item\n';
 			template += '						$name\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -445,13 +445,13 @@ describe('FireTPL runtime', function() {
 			template += '	body\n';
 			template += '		:if $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '			:if $name : ul\n';
 			template += '				li class=item\n';
 			template += '					$name\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -477,10 +477,10 @@ describe('FireTPL runtime', function() {
 			template += '				li\n';
 			template += '					:if $sayit\n';
 			template += '						div\n';
-			template += '							Hello World\n';
+			template += '							"Hello World"\n';
 			template += '					:else\n';
 			template += '						div\n';
-			template += '							Good bye\n';
+			template += '							"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -511,10 +511,10 @@ describe('FireTPL runtime', function() {
 			template += '			li\n';
 			template += '				:if $sayit : div\n';
 			template += '					div\n';
-			template += '						Hello World\n';
+			template += '						"Hello World"\n';
 			template += '				:else\n';
 			template += '					div\n';
-			template += '						Good bye\n';
+			template += '						"Good bye"\n';
 
 			template = FireTPL.compile(template);
 			var html = template({
@@ -666,7 +666,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
@@ -710,7 +710,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: false
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div>' +
 				'</div></body></html>'
 			);
@@ -743,7 +743,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: true
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
 				'</div></body></html>'
 			);
@@ -775,7 +775,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				sayit: false
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
 				'</div></body></html>'
 			);
@@ -808,7 +808,7 @@ describe('FireTPL runtime', function() {
 			var html = template({
 				listing: undefined
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
 				'</div></body></html>'
 			);
@@ -844,7 +844,7 @@ describe('FireTPL runtime', function() {
 					{name: 'Donnie'}
 				]
 			});
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
@@ -888,7 +888,7 @@ describe('FireTPL runtime', function() {
 			expect(scopes).to.be.an('object');
 			expect(scopes.scope001).to.be.a('function');
 
-			expect(html).to.equal(
+			expect(html).to.eql(
 				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'

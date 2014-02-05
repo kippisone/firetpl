@@ -115,39 +115,6 @@ describe('FireTPL', function() {
 		});
 	});
 
-	xdescribe('FireTPL regular expressions', function() {
-		var strings = [
-			['tag', 'div'],
-			['tag', 'div class=listing'],
-			['tag', '\tdiv class=listing'],
-			['helper', ':if $bla'],
-			['helper', '\t:if $bla'],
-			['string', '"Hello World"'],
-			['string', '\t"Hello World"'],
-		];
-
-		var callCommandStub,
-			fireTpl = new FireTPL.Compiler();
-
-		beforeEach(function() {
-			callCommandStub = sinon.stub(fireTpl, 'callCommand');
-		});
-
-		afterEach(function() {
-			callCommandStub.restore();	
-		});
-
-		strings.forEach(function(str) {
-			var title = 'Should match as a ' + str[0] + ' | ' + str[1];
-
-			it(title, function() {
-				fireTpl.parse(str);
-				expect(callCommandStub).was.called();
-				expect(callCommandStub.firstCall).was.calledWith(str[0]);
-			});
-		});
-	});
-
 	describe('parser', function() {
 		var fireTpl;
 
@@ -383,7 +350,7 @@ describe('FireTPL', function() {
 			fireTpl.append('str', 'Good bye');
 			fireTpl.append('code', '}');
 			fireTpl.append('str', '</div>');
-			expect(fireTpl.out.root).to.equal('s+=\'<div>\';if(data.bla){s+=\'Hello\';}else{s+=\'Good bye\';}s+=\'</div>');
+			expect(fireTpl.out.root).to.eql('s+=\'<div>\';if(data.bla){s+=\'Hello\';}else{s+=\'Good bye\';}s+=\'</div>');
 		});
 	});
 
@@ -411,7 +378,7 @@ describe('FireTPL', function() {
 		});
 	});
 
-	describe.skip('appendCloser', function() {
+	describe('appendCloser', function() {
 		var instance;
 
 		beforeEach(function() {
@@ -442,9 +409,9 @@ describe('FireTPL', function() {
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('s+=\'</div>');
-			expect(instance.out.scope001).to.eql('s+=\'<img>\';');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img>\';return s;};var s=\'\';s+=\'</div>\';');
+			expect(instance.out.root).to.eql('s+=\'</html>');
+			expect(instance.out.scope001).to.eql('s+=\'<img></div>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';s+=\'<img></div>\';return s;};var s=\'\';s+=\'</html>\';');
 		});
 
 		it('Should append a closer to the out stream', function() {
@@ -456,10 +423,10 @@ describe('FireTPL', function() {
 			instance.appendCloser();
 			instance.appendCloser();
 
-			expect(instance.out.root).to.eql('s+=\'</div></html>');
-			expect(instance.out.scope001).to.eql('s+=\'\';');
+			expect(instance.out.root).to.eql('s+=\'</html>');
+			expect(instance.out.scope001).to.eql('s+=\'</div>\';');
 			expect(instance.out.scope002).to.eql('s+=\'<span><img>\';');
-			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span><img>\';return s;};scopes.scope001=function(data,parent){var s=\'\';s+=\'\';return s;};var s=\'\';s+=\'</div></html>\';');
+			expect(instance.getOutStream()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope002=function(data,parent){var s=\'\';s+=\'<span><img>\';return s;};scopes.scope001=function(data,parent){var s=\'\';s+=\'</div>\';return s;};var s=\'\';s+=\'</html>\';');
 		});
 	});
 
@@ -747,7 +714,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			fireTpl.out.root = '<div><span>';
 			fireTpl.injectClass('injected');
-			expect(fireTpl.out.root).to.equal('<div><span class="injected">');
+			expect(fireTpl.out.root).to.eql('<div><span class="injected">');
 		});
 	});
 
@@ -994,7 +961,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="content">I\\\'m a multiline\n\t\t\tString</div>' +
+				'<div class="content">I\\\'m a multiline String</div>' +
 				'</body></html>\';'
 			);
 		});
@@ -1016,7 +983,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="content">I\\\'m a multiline\n\t\t\tString<br>' +
+				'<div class="content">I\\\'m a multiline String<br>' +
 				'And a line break<br><br>And a paragraph Block</div>' +
 				'</body></html>\';'
 			);

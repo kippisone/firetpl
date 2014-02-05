@@ -20,6 +20,9 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		}, {
 			"name": "tag",
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*)\\n|$)?)"
+		}, {
+			"name": "variable",
+			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
 		}
 	],
 	"modifer": "gm",
@@ -31,7 +34,8 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		"5": "string",
 		"6": "attribute",
 		"7": "tag",
-		"8": "tagAttributes"
+		"8": "tagAttributes",
+		"9": "variable"
 	}
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {

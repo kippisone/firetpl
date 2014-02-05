@@ -74,8 +74,10 @@
 		do {
 			syntaxConf.pattern.lastIndex = this.pos;
 			match = syntaxConf.pattern.exec(tmpl);
+			this.pos = syntaxConf.pattern.lastIndex;
 			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
-			console.log('Match', match);
+			// console.log('Match', match);
+			// console.log('Pos start:', this.pos, tmpl.substr(this.pos, 20));
 
 			if (!match) {
 				break;
@@ -93,7 +95,7 @@
 				}
 			}
 
-			console.log('CMD', cmd, data);
+			// console.log('CMD', cmd, data);
 
 			switch(cmd) {
 				case 'indention':
@@ -117,13 +119,15 @@
 				case 'string':
 					this.parseString(tmpl, data.string);
 					break;
+				case 'variable':
+					this.parseVariable(data.variable);
+					break;
 				case 'unused':
 					break;
 				default:
 					throw new Error('Parse error!');
 			}
 
-			this.pos = syntaxConf.pattern.lastIndex;
 		} while (match[0]);
 
 		while (this.closer.length > 0) {
@@ -142,111 +146,6 @@
 	 */
 	Compiler.prototype.precompile = function(tmpl, type) {
 		return this.parse(tmpl, type);
-
-
-		this.reset();
-		var match,
-			attrs = '',
-			res,
-			statement,
-			curItem = null,
-			prevItem = null;
-
-		if (!tmpl && this.tmpl) {
-			tmpl = this.tmpl;
-		}
-
-		var d = 10000;
-
-		prevItem = curItem;
-		curItem = null;
-
-		do {
-			// console.log('Pat:', this.pattern, tmpl);
-			match = this.pattern.exec(tmpl);
-
-			if (!match) {
-				break;
-			}
-
-			// console.log('Match', match);
-			var isEmptyLine = /^\s*$/.test(match[0]),
-				matchIndention = match[1],
-				matchComment = match[2],
-				matchHelper = match[3],
-				matchAttribute = match[4],
-				matchTag = match[5],
-				matchString = match[6],
-				matchHTML = match[7],
-				matchContent = match[8];
-
-			//Reset attributes
-			attrs = '';
-
-			if (--d < 0) {
-				throw 'Never ending loop!';
-			}
-
-			//It's an empty line or a comment
-			if (!match[0] || isEmptyLine || matchComment) {
-				continue;
-			}
-
-			//Handle indention
-			this.handleIndention(matchIndention);
-
-			if (matchHelper) {
-				var helper = this.parseHelper(matchHelper, matchContent);
-
-			}
-			else if (matchTag) {
-				this.parseTag(matchTag, matchContent);
-			}
-			else if (matchContent) {
-				//It's a string
-				this.append('str', this.parseVariables(matchContent));
-				this.closer.push('');
-			}
-			else if (matchString) {
-				//It's a string
-				this.parseString(matchString);
-			}
-			else if (matchAttribute) {
-				res = this.stripAttributes(matchAttribute);
-				if (res) {
-					attrs = ' ' + res.attrs.join(' ');
-
-					if (res.events.length !== 0) {
-						this.registerEvent(res.events);
-					}
-
-					this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
-				}
-				else {
-					throw 'FireTPL parse error (3)';
-				}
-
-				this.closer.push('');
-			}
-			else {
-				throw 'FireTPL parse error (1)';
-			}
-
-
-		} while (match[0]);
-
-		// console.log('Closer', this.closer.length, this.closer);
-		while (this.closer.length > 0) {
-			this.appendCloser();
-		}
-
-		if (this.lastItemType === 'str') {
-			this.out[this.curScope[0]] += '\';';
-			this.lastItemType = 'code';
-		}
-
-		// return this.out[this.curScope[0]];
-		return this.getOutStream();
 	};
 
 	Compiler.prototype.getOutStream = function() {
@@ -276,7 +175,7 @@
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		console.log('Parse helper', helper, content);
+		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = null,
 			tagAttrs = '';
@@ -335,7 +234,7 @@
 	};
 
 	Compiler.prototype.parseTag = function(tag, content) {
-		console.log('Parse tag', tag, content);
+		// console.log('Parse tag', tag, content);
 
 		var tagContent = '',
 			res,
@@ -392,13 +291,14 @@
 		var strPattern,
 			strMatch;
 
+		//Remove multiplr whitespaces
+		matchString = matchString.replace(/\s+/g, ' ');
+
 		if (matchString.charAt(0) === '"') {
 			if (matchString.substr(-1) === '"') {
-				console.log('S1');
 				matchString = matchString.substr(1, matchString.length - 2);
 			}
 			else {
-				console.log('S2');
 				strPattern = /([^\"]*)\"/g;
 				strPattern.lastIndex = this.pos;
 				strMatch = strPattern.exec(tmpl);
@@ -408,9 +308,8 @@
 
 			//Check for multi text blocks
 			while (true) {
-				strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+				strPattern = /^(\n[\t]*)?(\n[\t]*)*\"([^\"]*)\"/g;
 				strMatch = strPattern.exec(tmpl.substr(this.pos));
-				console.log('S3', strMatch);
 				if (strMatch) {
 					this.pos += strPattern.lastIndex;
 					if (strMatch[2]) {
@@ -424,7 +323,6 @@
 				}
 			}
 		}
-
 
 		this.append('str', this.parseVariables(matchString));
 		this.closer.push('');
@@ -465,6 +363,11 @@
 			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
 
 		return str;
+	};
+
+	Compiler.prototype.parseVariable = function(matchVariable) {
+		this.append('str', this.parseVariables(matchVariable));
+		this.closer.push('');
 	};
 
 	/**
