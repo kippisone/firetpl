@@ -775,7 +775,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		div id=myDiv\n';
 			template += '		div id=mySecondDiv class=myClass\n';
-			template += '			Hello World\n';
+			template += '			"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -796,7 +796,7 @@ describe('FireTPL', function() {
 			template += '			id=mySecondDiv\n';
 			template += '			class=myClass\n';
 			template += '			\n';
-			template += '			Hello World\n';
+			template += '			"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -814,7 +814,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:if $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -837,10 +837,10 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:if $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -866,10 +866,10 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:if $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 			template += '		:else\n';
 			template += '			div\n';
-			template += '				Good bye\n';
+			template += '				"Good bye"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -895,7 +895,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:unless $sayit\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -918,7 +918,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:unless $sayit : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -941,7 +941,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:each $listing\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -964,7 +964,7 @@ describe('FireTPL', function() {
 			template += '	body\n';
 			template += '		:each $listing : div\n';
 			template += '			div\n';
-			template += '				Hello World\n';
+			template += '				"Hello World"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);
@@ -994,7 +994,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="content">I\\\'m a multiline String</div>' +
+				'<div class="content">I\\\'m a multiline\n\t\t\tString</div>' +
 				'</body></html>\';'
 			);
 		});
@@ -1016,7 +1016,7 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="content">I\\\'m a multiline String<br>' +
+				'<div class="content">I\\\'m a multiline\n\t\t\tString<br>' +
 				'And a line break<br><br>And a paragraph Block</div>' +
 				'</body></html>\';'
 			);

@@ -27,6 +27,7 @@
 		this.out = { root: '' };
 		this.lastItemType = 'code';
 		this.nextScope = 0;
+		this.pos = 0;
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -71,6 +72,7 @@
 		curItem = null;
 
 		do {
+			syntaxConf.pattern.lastIndex = this.pos;
 			match = syntaxConf.pattern.exec(tmpl);
 			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
 			console.log('Match', match);
@@ -82,7 +84,7 @@
 			cmd = null;
 			data = {};
 			for (var i = 1, len = match.length; i < len; i++) {
-				if (match[i]) {
+				if (match[i] !== undefined) {
 					if (cmd === null) {
 						cmd = syntaxConf.scopes[i];
 					}
@@ -113,7 +115,7 @@
 					this.parseAttribute(data.attribute);
 					break;
 				case 'string':
-					this.parseString(data.string);
+					this.parseString(tmpl, data.string);
 					break;
 				case 'unused':
 					break;
@@ -121,6 +123,7 @@
 					throw new Error('Parse error!');
 			}
 
+			this.pos = syntaxConf.pattern.lastIndex;
 		} while (match[0]);
 
 		while (this.closer.length > 0) {
@@ -138,6 +141,9 @@
 	 * @return {Function} Returns a parsed tmpl source as a function.
 	 */
 	Compiler.prototype.precompile = function(tmpl, type) {
+		return this.parse(tmpl, type);
+
+
 		this.reset();
 		var match,
 			attrs = '',
@@ -382,37 +388,42 @@
 		this.closer.push('');
 	};
 
-	Compiler.prototype.parseString = function(matchString) {
+	Compiler.prototype.parseString = function(tmpl, matchString) {
 		var strPattern,
 			strMatch;
 
-		if (matchString.substr(-1) === '"') {
-			matchString = matchString.substr(1, matchString.length - 2);
-		}
-		/*else {
-			strPattern = /([^\"]*)\"/g;
-			strPattern.lastIndex = this.pattern.lastIndex;
-			strMatch = strPattern.exec(tmpl);
-			matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
-			this.pattern.lastIndex = strPattern.lastIndex;
-		}
-
-		//Check for multi text blocks
-		while (true) {
-			strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
-			strMatch = strPattern.exec(tmpl.substr(this.pattern.lastIndex));
-			if (strMatch) {
-				this.pattern.lastIndex += strPattern.lastIndex;
-				if (strMatch[2]) {
-					matchString += '<br>';
-				}
-
-				matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+		if (matchString.charAt(0) === '"') {
+			if (matchString.substr(-1) === '"') {
+				console.log('S1');
+				matchString = matchString.substr(1, matchString.length - 2);
 			}
 			else {
-				break;
+				console.log('S2');
+				strPattern = /([^\"]*)\"/g;
+				strPattern.lastIndex = this.pos;
+				strMatch = strPattern.exec(tmpl);
+				matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
+				this.pos = strPattern.lastIndex;
 			}
-		}*/
+
+			//Check for multi text blocks
+			while (true) {
+				strPattern = /^(\n[\t]*)(\n[\t]*)?\"([^\"]*)\"/g;
+				strMatch = strPattern.exec(tmpl.substr(this.pos));
+				console.log('S3', strMatch);
+				if (strMatch) {
+					this.pos += strPattern.lastIndex;
+					if (strMatch[2]) {
+						matchString += '<br>';
+					}
+
+					matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+				}
+				else {
+					break;
+				}
+			}
+		}
 
 
 		this.append('str', this.parseVariables(matchString));

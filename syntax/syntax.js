@@ -3,11 +3,14 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 	"name": "FireTPL",
 	"patterns": [
 		{
+			"name": "empty-line",
+			"match": "(^\\s*$)"
+		}, {
 			"name": "indention",
 			"match": "^([ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*(\\$[a-zA-Z][a-zA-Z0-9._-]*)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*$)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
@@ -21,13 +24,14 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 	],
 	"modifer": "gm",
 	"scopes": {
-		"1": "indention",
-		"2": "helper",
-		"3": "expression",
-		"4": "string",
-		"5": "attribute",
-		"6": "tag",
-		"7": "tagAttributes"
+		"1": "unused",
+		"2": "indention",
+		"3": "helper",
+		"4": "expression",
+		"5": "string",
+		"6": "attribute",
+		"7": "tag",
+		"8": "tagAttributes"
 	}
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
