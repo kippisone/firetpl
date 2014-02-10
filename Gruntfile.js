@@ -42,6 +42,17 @@ module.exports = function(grunt) {
 			}
 		},
 
+		copy: {
+			component: {
+				files: [
+					{
+						src: ['firetpl.js'],
+						dest: '../component-builds/nonamemedia-firetpl/firetpl.js'
+					}
+				]
+			}
+		},
+
 		// Lists of files to be linted with JSHint.
 		jshint: {
 			files: [
@@ -58,14 +69,28 @@ module.exports = function(grunt) {
 				src: ['syntax/**/*.json'],
 				dest: 'syntax/syntax.js'
 			}
+		},
+		version: {
+			component: {
+				src: ['../component-builds/nonamemedia-xqcore/component.json']
+			}
 		}
 	});
 
 	grunt.loadNpmTasks('grunt-contrib-concat');
+	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-bumpup');
 	grunt.loadNpmTasks('grunt-json');
+	grunt.loadNpmTasks('grunt-version');
 
 	grunt.registerTask('default', 'jshint');
-	grunt.registerTask('build', ['jshint', 'json', 'concat']);
+	grunt.registerTask('build', ['jshint', 'json', 'concat', 'component-build', 'bumpup:prerelease']);
+
+	
+
+	grunt.registerTask('component-build', [
+		'copy:component',
+		'version:component'
+	]);
 };

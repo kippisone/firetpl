@@ -52,17 +52,32 @@ var FireTPL;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
+		
+		/**
+		 * Set the log level.
+		 * 
+		 * Levels are:
+		 *
+		 * 4 DEBUG
+		 * 3 INFO
+		 * 2 WARN
+		 * 1 ERROR
+		 * @type {Number}
+		 */
+		this.logLevel = 1;
 	};
 
 	Compiler.prototype.reset = function() {
 		this.pattern.lastIndex = 0;
-		this.indention = -1;
+		this.indention = 0;
 		this.closer = [];
 		this.curScope = ['root'];
 		this.out = { root: '' };
 		this.lastItemType = 'code';
 		this.nextScope = 0;
 		this.pos = 0;
+		this.addEmptyCloseTags = false;
+
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -85,7 +100,12 @@ var FireTPL;
 	Compiler.prototype.parse = function(tmpl, type) {
 		type = type || 'fire';
 
+		if (this.logLevel & 4) {
+			console.log('Parse a .' + type + ' Template');
+		}
+
 		this.reset();
+		this.addEmptyCloseTags = this.syntax[type].addEmptyCloseTags || false;
 		var syntaxConf = this.getPattern(type);
 
 		var match,
@@ -110,8 +130,11 @@ var FireTPL;
 			syntaxConf.pattern.lastIndex = this.pos;
 			match = syntaxConf.pattern.exec(tmpl);
 			this.pos = syntaxConf.pattern.lastIndex;
+
 			// console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
-			// console.log('Match', match);
+			if (this.logLevel & 4) {
+				console.log('Match:', match);
+			}
 			// console.log('Pos start:', this.pos, tmpl.substr(this.pos, 20));
 
 			if (!match) {
@@ -130,7 +153,9 @@ var FireTPL;
 				}
 			}
 
-			// console.log('CMD', cmd, data);
+			if (this.logLevel & 4) {
+				console.log('  cmd:', cmd, 'data:', data);
+			}
 
 			switch(cmd) {
 				case 'indention':
@@ -140,7 +165,7 @@ var FireTPL;
 					this.parseTag(data.tag, data.tagAttributes);
 					break;
 				case 'endtag':
-					this.parseEndTag(data.tag);
+					this.parseEndTag(data.endtag);
 					break;
 				case 'helper':
 					this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
@@ -157,13 +182,17 @@ var FireTPL;
 				case 'variable':
 					this.parseVariable(data.variable);
 					break;
+				case 'newline':
+					this.handleIndention(data.newline);
+					break;
 				case 'unused':
 					break;
 				default:
 					throw new Error('Parse error!');
 			}
 
-		} while (match[0]);
+
+		} while (true);
 
 		while (this.closer.length > 0) {
 			this.appendCloser();
@@ -269,28 +298,22 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseTag = function(tag, content) {
-		// console.log('Parse tag', tag, content);
-
 		var tagContent = '',
 			res,
-			attrs = '';
+			attrs = [];
 
 		if (content) {
 			res = this.stripAttributes(content);
 			if (res) {
 				if (res.attrs) {
-					attrs += ' ' + res.attrs.join(' ');
+					attrs = attrs.concat(res.attrs);
 				}
 
 				if (res.events.length !== 0) {
 					//this.registerEvent(res.events);
 					//TODO better event register method
 					var events = res.events;
-					attrs += ' on="' + events.join(';') + '"';
-				}
-
-				if (attrs === ' ') {
-					attrs = '';
+					attrs.push('on="' + events.join(';') + '"');
 				}
 
 				if (res.content) {
@@ -299,9 +322,21 @@ var FireTPL;
 			}
 		}
 
+		attrs = attrs.join(' ');
+		if (attrs) {
+			attrs = ' ' + attrs;
+		}
+
 		this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
 		this.append('str', tagContent);
-		this.closer.push(this.voidElements.indexOf(tag) === -1 ? '</' + tag + '>' : '');
+		if (this.voidElements.indexOf(tag) === -1) {
+				this.closer.push('</' + tag + '>');
+		}
+		else {
+			if (this.addEmptyCloseTags) {
+				this.closer.push('');
+			}
+		}
 	};
 
 	Compiler.prototype.parseAttribute = function(attribute) {
@@ -360,10 +395,13 @@ var FireTPL;
 		}
 
 		this.append('str', this.parseVariables(matchString));
-		this.closer.push('');
+		if (this.addEmptyCloseTags) {
+			this.closer.push('');
+		}
 	};
 
-	Compiler.prototype.parseEndTag = function() {
+	Compiler.prototype.parseEndTag = function(tag) {
+		// console.log('Parse end tag', tag, this.closer);
 		this.appendCloser();
 	};
 
@@ -440,6 +478,10 @@ var FireTPL;
 	 */
 	Compiler.prototype.appendCloser = function() {
 		var el = this.closer.pop() || '';
+		if (!el) {
+			return;
+		}
+
 		if (el === 'scope') {
 			//Scope change
 			this.appendCloser();
@@ -489,7 +531,7 @@ var FireTPL;
 	 * @return {Object}     Returns an object with all atttibutes and events or null
 	 */
 	Compiler.prototype.stripAttributes = function(str) {
-		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))/g;
+		var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
 		var attrs = [],
 			events = [],
 			content = [],
@@ -513,10 +555,13 @@ var FireTPL;
 				content.push(this.parseVariables(match[2]));
 			}
 			if (match[3]) {
-				events.push(match[3].substr(2).toLowerCase() + ':' + match[5]);
+				events.push(match[3].substr(2).toLowerCase() + ':' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
 			}
 			else if (match[4]) {
 				attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
+			}
+			else if (match[6]) {
+				content.push(match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
 			}
 
 			match = pattern.exec(str);
@@ -564,6 +609,10 @@ var FireTPL;
 		var indention = this.getIndention(str),
 			newIndent = indention - this.indention,
 			el;
+
+		if (this.logLevel & 4) {
+			console.log('  Parse indention:', indention, this.indention, newIndent);
+		}
 
 		if (newIndent === 0) {
 			this.appendCloser();
@@ -679,13 +728,13 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 	"patterns": [
 		{
 			"name": "empty-line",
-			"match": "(^\\s*$)"
+			"match": "(\\n?^\\s+$)"
 		}, {
 			"name": "indention",
-			"match": "^([ \\t]+)"
+			"match": "(^[ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*$)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
@@ -694,10 +743,13 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
 		}, {
 			"name": "tag",
-			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*)\\n|$)?)"
+			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
 		}, {
 			"name": "variable",
 			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
+		}, {
+			"name": "new-line",
+			"match": "(?:\n([ \\t]*))"
 		}
 	],
 	"modifer": "gm",
@@ -710,8 +762,10 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		"6": "attribute",
 		"7": "tag",
 		"8": "tagAttributes",
-		"9": "variable"
-	}
+		"9": "variable",
+		"10": "newline"
+	},
+	"addEmptyCloseTags": true
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"name": "Handelbars",
@@ -736,7 +790,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
 		}, {
 			"name": "string",
-			"match": "(?:(.(?!<\\/?[a-zA-Z0-9_-]+>)*))"
+			"match": "((?:.(?!<))+.)"
 		}
 	],
 	"modifer": "gm",

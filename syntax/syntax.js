@@ -4,13 +4,13 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 	"patterns": [
 		{
 			"name": "empty-line",
-			"match": "(^\\s*$)"
+			"match": "(\\n?^\\s+$)"
 		}, {
 			"name": "indention",
-			"match": "^([ \\t]+)"
+			"match": "(^[ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*$)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
@@ -19,10 +19,13 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
 		}, {
 			"name": "tag",
-			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*)\\n|$)?)"
+			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
 		}, {
 			"name": "variable",
 			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
+		}, {
+			"name": "new-line",
+			"match": "(?:\n([ \\t]*))"
 		}
 	],
 	"modifer": "gm",
@@ -35,8 +38,10 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		"6": "attribute",
 		"7": "tag",
 		"8": "tagAttributes",
-		"9": "variable"
-	}
+		"9": "variable",
+		"10": "newline"
+	},
+	"addEmptyCloseTags": true
 };
 FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"name": "Handelbars",
@@ -61,7 +66,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
 		}, {
 			"name": "string",
-			"match": "(?:(.(?!<\\/?[a-zA-Z0-9_-]+>)*))"
+			"match": "((?:.(?!<))+.)"
 		}
 	],
 	"modifer": "gm",

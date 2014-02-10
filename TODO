@@ -1,6 +1,7 @@
 FireTPL v1.0.0
 
 	- Better condition support. :if $bla == "blubb" && $isSuperBlubb
+	- Ignore empty lines after string blocks and tags
 
 	- i18n support
 	- inline functions
