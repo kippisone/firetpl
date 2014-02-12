@@ -15,6 +15,7 @@ program.version('0.0.1')
 	.option('-c, --commonjs <path>', 'Precompile as CommonJS module. <path> is the FireTPL module path')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-p, --pretty', 'Prettify output')
+	.option('-s, --scopeTags', 'Insert scope tags')
 	.option('-v, --verbose', 'Output more infos')
 	.parse(process.argv);
 
@@ -37,7 +38,13 @@ if (program.verbose) {
 }
 
 
-var precompiled = FireTPL.precompile(source);
+var options = {};
+
+if (program.scopeTags) {
+	options.scopeTags = true;
+}
+
+var precompiled = FireTPL.precompile(source, 'fire', options);
 
 if (program.verbose) {
 	console.log('---------- begin of precompiled file ----------');

@@ -11,7 +11,11 @@
 	/*global define:false */
 	'use strict';
 
-	var Compiler = function() {
+	var Compiler = function(options) {
+		options = options || {};
+
+		this.scopeTags = !!options.scopeTags;
+
 		this.indentionPattern = /\t/g;
 		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
@@ -376,12 +380,72 @@
 
 	Compiler.prototype.parseVariables = function(str, isCode) {
 		var opener = '',
-			closer = '';
+			closer = '',
+			altOpener = '',
+			altCloser = '',
+			prefix = 'data.',
+			self = this;
 
-		if (!isCode) {
+		if (this.scopeTags && !isCode) {
+			opener = '<scope path="';
+			closer = '"></scope>';
+			altOpener = '\'+';
+			altCloser = '+\'';
+			prefix = '';
+		}
+		else if (!this.scopeTags && !isCode) {
 			opener = '\'+';
 			closer = '+\'';
 		}
+
+		var parseVar = function(m) {
+			if (m === '') {
+				if (self.scopeTags) {
+					return '\'+data+\'';
+				}
+				return opener + 'data' + closer;
+			}
+
+			if (/^(parent\b)/.test(m) && (self.curScope[1] === 'root' || !self.scopeTags)) {
+				if (self.scopeTags) {
+					m = m.replace(/^parent\.?/, '');
+				}
+
+				if (m) {
+					return opener + m + closer;
+				}
+				else if (self.scopeTags) {
+					return altOpener + 'parent' + altCloser;
+				}
+				else {
+					return opener + 'parent' + closer;
+				}
+			}
+			else if (/^(root\b)/.test(m)) {
+				if (self.scopeTags) {
+					m = m.replace(/^root\.?/, '');
+				}
+				
+				if (m) {
+					return opener + m + closer;
+				}
+				else if (self.scopeTags) {
+					return altOpener + 'root' + altCloser;
+				}
+				else {
+					return opener + 'root' + closer;
+				}
+			}
+			else if (self.curScope[0] === 'root' && !isCode) {
+				return opener + prefix + m + closer;
+			}
+			else if (self.scopeTags) {
+				return altOpener + 'data.' + m + altCloser;
+			}
+			else {
+				return opener + 'data.' + m + closer;
+			}
+		};
 
 		str = str
 			.replace(/\'/g, '\\\'')
@@ -389,13 +453,10 @@
 			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
 				var m = p3 || p4;
 				if (/^this\b/.test(m)) {
-					return opener + m.replace(/^this/, 'data') + closer;
-				}
-				else if (/^(parent\b|root\b)/.test(m)) {
-					return opener + m + closer;
+					return parseVar(m.replace(/^this\.?/, ''));
 				}
 				
-				return opener + 'data.' + m + closer;
+				return parseVar(m);
 				
 			})
 			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
@@ -680,9 +741,9 @@
 		return content;
 	};
 
-	FireTPL.precompile = function(tmpl) {
-		var compiler = new FireTPL.Compiler();
-		compiler.precompile(tmpl);
+	FireTPL.precompile = function(tmpl, type, options) {
+		var compiler = new FireTPL.Compiler(options);
+		compiler.precompile(tmpl, type);
 		return compiler.getOutStream();
 	};
 

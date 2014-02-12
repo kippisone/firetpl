@@ -378,7 +378,6 @@ describe('FireTPL runtime', function() {
 				'<ul></ul>' +
 				'</body></html>'
 			);
-
 		});
 
 		it('Should compile a tmpl string with a truthy if..else and an if statement wrapped in a div', function() {

@@ -42,6 +42,27 @@ describe('FireTPL', function() {
 			expect(fireTpl.syntax).to.be.an('object');
 			expect(fireTpl.syntax.hbs).to.be.an('object');
 		});
+
+		it('Should enable scope tags', function() {
+			var fireTpl = new FireTPL.Compiler({
+				scopeTags: true
+			});
+
+			expect(fireTpl.scopeTags).to.be(true);
+		});
+	});
+
+	describe('shorthand functions', function() {
+		it('Should enable scope tags', function() {
+			var constructorSpy = sinon.spy(FireTPL, 'Compiler');
+			
+			FireTPL.precompile('', 'fire', {
+				scopeTags: true
+			});
+
+			expect(constructorSpy.thisValues[0].scopeTags).to.be(true);
+			constructorSpy.restore();
+		});
 	});
 
 	describe('getPattern', function() {
@@ -1529,6 +1550,81 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('parseVariables scopeTags are enabled', function() {
+		it('Should parse a string for variables', function() {
+			var str = 'Hello $name!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('Hello <scope path="name"></scope>!');
+		});
+
+		it('Should parse a string for locale tags', function() {
+			var str = '@hello $name!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>!');
+		});
+
+		it('Should parse a string for multiple variables and locale tags', function() {
+			var str = '@hello $name! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+		});
+
+		it('Should parse a string ', function() {
+			var str = '@hello $name! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+		});
+
+		it('Should parse a string and $this should point to data', function() {
+			var str = '@hello $this! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' \'+data+\'! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+		});
+
+		it('Should parse a string and $this.name should point to data', function() {
+			var str = '@hello $this.name! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+		});
+
+		it('Should parse a string and $parent.name should point to data (in a scope)', function() {
+			var str = '@hello $parent.name! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			fireTpl.curScope.unshift('scope001');
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+		});
+
+		it('Should parse a string and $parent should not be replaced by a scope tag (in a scope)', function() {
+			var str = '@hello $parent! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			fireTpl.curScope.unshift('scope001');
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' \'+parent+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+		});
+
+		it('Should parse a string and $root.name should point to data', function() {
+			var str = '@hello $root.name! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+		});
+
+		it('Should parse a string and $root should not be replaced by a scope tag (in a scope)', function() {
+			var str = '@hello $root! I\'m $reporter and live in $country!';
+			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
+			fireTpl.curScope.unshift('scope001');
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('\'+lang.hello+\' \'+root+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+		});
+	});
+
 	describe('injectClass', function() {
 		it('Should inject a class into the last tag', function() {
 			var fireTpl = new FireTPL.Compiler();
@@ -1876,6 +1972,34 @@ describe('FireTPL', function() {
 				's+=\'<html><head></head><body>' +
 				'<div class="description">\'+lang.txt.description+\'</div>' +
 				'<button>\'+lang.btn.submit+\'</button></body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with an each statement wrapped in a div scopeTags are enabled', function() {
+			var template = 'html\n';
+			template += '	head\n';
+			template += '	body\n';
+			template += '		h1 $title\n';
+			template += '		:each $listing : div\n';
+			template += '			div\n';
+			template += '				"Hello $name"\n';
+
+			var fireTpl = new FireTPL.Compiler({
+				scopeTags: true
+			});
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;' +
+				'scopes.scope001=function(data,parent){var s=\'\';' +
+				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=\'<div>Hello \'+data.name+\'</div>\';' +
+				'return s;});return s;' +
+				'};var s=\'\';' +
+				's+=\'<html><head></head><body>' +
+				'<h1><scope path="title"></scope></h1>' +
+				'<div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">\';' +
+				's+=scopes.scope001(data.listing,data);' +
+				's+=\'</div></body></html>\';'
 			);
 		});
 	});
