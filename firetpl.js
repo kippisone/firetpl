@@ -272,8 +272,7 @@ var FireTPL;
 		}
 
 		if (tag) {
-			this.parseTag(tag, tagAttrs + ' xq-scope=scope' + scopeId + ' xq-path=' + content.trim().replace(/^\$/, ''));
-			this.injectClass('xq-scope xq-scope' + scopeId);
+			this.parseTag(tag, tagAttrs);
 		}
 		else {
 			this.closer.push('');
@@ -284,7 +283,13 @@ var FireTPL;
 			content = this.parseVariables(content, true);
 		}
 
-		this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ',data);');
+		if (this.scopeTags) {
+			this.append('str', '<scope id="scope' + scopeId + '" path="' + content + '"></scope>');
+		}
+		else {
+			this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ',data);');
+		}
+		
 		this.newScope('scope' + scopeId);
 
 		if (helper === 'if') {
@@ -475,7 +480,8 @@ var FireTPL;
 				return opener + prefix + m + closer;
 			}
 			else if (self.scopeTags) {
-				return altOpener + 'data.' + m + altCloser;
+				prefix = isCode ? '' : 'data.';
+				return altOpener + prefix + m + altCloser;
 			}
 			else {
 				return opener + 'data.' + m + closer;

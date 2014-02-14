@@ -86,7 +86,7 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>'+
-				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">'+
+				'<div>'+
 				'<div>Hello World</div></div>' +
 				'</body></html>'
 			);
@@ -129,7 +129,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div></div>' +
+				'<html><head></head><body><div><div>Hello World</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -171,7 +171,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div></div>' +
+				'<html><head></head><body><div><div>Good bye</div></div>' +
 				'</body></html>'
 			);
 		});
@@ -207,7 +207,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div>' +
 				'</div></body></html>'
 			);
 		});
@@ -245,7 +245,7 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' +
-				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<div><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -281,7 +281,7 @@ describe('FireTPL runtime', function() {
 				listing: undefined
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'<html><head></head><body><div class="listing">' +
 				'</div></body></html>'
 			);
 		});
@@ -302,7 +302,7 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' + 
-				'<div class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'<div class="listing">' +
 				'<span class="type-cool">Andi</span>' +
 				'<span class="type-sassy">Tini</span>' +
 				'</div></body></html>'
@@ -347,7 +347,7 @@ describe('FireTPL runtime', function() {
 				]
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div>' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
 			);
@@ -400,10 +400,10 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' +
-				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<div>' +
 				'<div>Hello World</div>' +
 				'</div>' +
-				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'<ul>' +
 				'</ul>' +
 				'</body></html>'
 			);
@@ -458,9 +458,9 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' +
-				'<div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<div>' +
 				'<div>Hello World</div>' +
-				'<ul xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002">' +
+				'<ul>' +
 				'</ul>' +
 				'</div>' +
 				'</body></html>'
@@ -524,14 +524,14 @@ describe('FireTPL runtime', function() {
 			});
 			expect(html).to.eql(
 				'<html><head></head><body>' +
-				'<ul class="listing xq-scope xq-scope001" xq-scope="scope001" xq-path="listing">' +
+				'<ul class="listing">' +
 				'<li>' +
-				'<div xq-scope="scope002" xq-path="sayit" class="xq-scope xq-scope002">' +
+				'<div>' +
 				'<div>Hello World</div>' +
 				'</div>' +
 				'</li>' +
 				'<li>' +
-				'<div xq-scope="scope002" xq-path="sayit" class="xq-scope xq-scope002">' +
+				'<div>' +
 				'<div>Good bye</div>' +
 				'</div>' +
 				'</li>' +
@@ -613,7 +613,7 @@ describe('FireTPL runtime', function() {
 						return s;
 
 				};
-				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div>';
 				s+=scopes.scope001(data.sayit, data);
 				s+='</div></body></html>';
 				return s;
@@ -623,7 +623,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -656,7 +656,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div>';
 				s+=scopes.scope001(data.sayit, data);
 				s+='</div></body></html>';
 				return s;
@@ -666,7 +666,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -699,7 +699,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div>';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -710,7 +710,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Good bye</div>' +
+				'<html><head></head><body><div><div>Good bye</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -733,7 +733,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div>';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -743,7 +743,7 @@ describe('FireTPL runtime', function() {
 				sayit: true
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">' +
+				'<html><head></head><body><div>' +
 				'</div></body></html>'
 			);
 		});
@@ -765,7 +765,7 @@ describe('FireTPL runtime', function() {
 						return s;
 				};
 				var s='';
-				s+='<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001">';
+				s+='<html><head></head><body><div>';
 				s+=scopes.scope001(data.sayit);
 				s+='</div></body></html>';
 				return s;
@@ -775,7 +775,7 @@ describe('FireTPL runtime', function() {
 				sayit: false
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div xq-scope="scope001" xq-path="sayit" class="xq-scope xq-scope001"><div>Hello World</div>' +
+				'<html><head></head><body><div><div>Hello World</div>' +
 				'</div></body></html>'
 			);
 		});
@@ -798,7 +798,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+='<html><head></head><body><div class="listing">';
 				s+=scopes.scope001(data.listing,data);
 				s+='</div></body></html>';
 				return s;
@@ -808,7 +808,7 @@ describe('FireTPL runtime', function() {
 				listing: undefined
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'<html><head></head><body><div class="listing">' +
 				'</div></body></html>'
 			);
 		});
@@ -831,7 +831,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+='<html><head></head><body><div class="listing">';
 				s+=scopes.scope001(data.listing);
 				s+='</div></body></html>';
 				return s;
@@ -844,7 +844,7 @@ describe('FireTPL runtime', function() {
 				]
 			});
 			expect(html).to.eql(
-				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'<html><head></head><body><div class="listing">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
 			);
@@ -870,7 +870,7 @@ describe('FireTPL runtime', function() {
 
 				};
 				var s='';
-				s+='<html><head></head><body><div class="listing xq-scope xq-scope001">';
+				s+='<html><head></head><body><div class="listing">';
 				s+=scopes.scope001(data.listing);
 				s+='</div></body></html>';
 				return s;
@@ -888,7 +888,7 @@ describe('FireTPL runtime', function() {
 			expect(scopes.scope001).to.be.a('function');
 
 			expect(html).to.eql(
-				'<html><head></head><body><div class="listing xq-scope xq-scope001">' +
+				'<html><head></head><body><div class="listing">' +
 				'<span>Andi</span><span>Donnie</span>' +
 				'</div></body></html>'
 			);
@@ -916,7 +916,7 @@ describe('FireTPL runtime', function() {
 				]
 			});
 
-			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001"><span>Andi</span><span>Andi</span></div></div>');
+			expect(html).to.eql('<div><div><span>Andi</span><span>Andi</span></div></div>');
 		});
 
 		it('Should get the root scope with $root', function() {
@@ -936,7 +936,7 @@ describe('FireTPL runtime', function() {
 				}
 			});
 
-			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="list.listing" class="xq-scope xq-scope001"><span>Andi</span><span>Andi</span></div></div>');
+			expect(html).to.eql('<div><div><span>Andi</span><span>Andi</span></div></div>');
 		});
 
 		it('Should get the current scope with $this', function() {
@@ -956,7 +956,7 @@ describe('FireTPL runtime', function() {
 				}
 			});
 
-			expect(html).to.eql('<div><div xq-scope="scope001" xq-path="list.listing" class="xq-scope xq-scope001"><span>Berney</span><span>Donnie</span></div></div>');
+			expect(html).to.eql('<div><div><span>Berney</span><span>Donnie</span></div></div>');
 		});
 	});
 
@@ -979,8 +979,8 @@ describe('FireTPL runtime', function() {
 			});
 
 			expect(html).to.eql('<div>' +
-				'<div xq-scope="scope001" xq-path="listing" class="xq-scope xq-scope001"><span>Berney</span></div>' +
-				'<div xq-scope="scope002" xq-path="name" class="xq-scope xq-scope002"><span>Andi</span></div>' +
+				'<div><span>Berney</span></div>' +
+				'<div><span>Andi</span></div>' +
 				'</div>');
 		});
 	});

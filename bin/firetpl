@@ -16,6 +16,7 @@ program.version('0.0.1')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-p, --pretty', 'Prettify output')
 	.option('-s, --scopeTags', 'Insert scope tags')
+	.option('-f, --file', 'Read from file')
 	.option('-v, --verbose', 'Output more infos')
 	.parse(process.argv);
 
