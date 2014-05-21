@@ -1,5 +1,8 @@
 module.exports = function(grunt) {
 	'use strict';
+	
+	var pkg = grunt.file.readJSON('package.json'),
+		version = pkg.version.replace(/-\d+$/g, '');
 
 	// Project configuration.
 	grunt.initConfig({
@@ -44,10 +47,18 @@ module.exports = function(grunt) {
 
 		copy: {
 			component: {
+				options: {
+					processContent: function (content, srcpath) {
+						return content.replace('<%= version %>', version);
+					}
+				},
 				files: [
 					{
 						src: ['firetpl.js'],
-						dest: '../component-builds/nonamemedia-firetpl/firetpl.js'
+						dest: '../component-builds/nonamemedia/firetpl/' + version + '/firetpl.js'
+					}, {
+						src: ['component.json'],
+						dest: '../component-builds/nonamemedia/firetpl/' + version + '/',
 					}
 				]
 			}
