@@ -11,8 +11,12 @@ var FireTPL = require('../firetpl');
 program.version('0.0.1')
 	.usage('[options] <file ...>')
 	.option('-o, --out <outfile>', 'Write precompiled file to <outfile>. If this option is not present write to STDOUT')
-	.option('-a, --amd <path>', 'Precompile as AMD module. <path> is the FireTPL module path')
-	.option('-c, --commonjs <path>', 'Precompile as CommonJS module. <path> is the FireTPL module path')
+	.option('-a, --amd', 'Precompile as an AMD module.')
+	.option('-c, --commonjs', 'Precompile as CommonJS module.')
+	.option('-f, --firetpl-module <name>', 'Set the name of FireTPL module for AMD and CommonJS ( var FireTPL = require(\'myFireTPLModule\'))')
+	.option('-m, --module-name <name>', 'Set the name of the AMD module ( define(\'myname\', [\'firetpl\'] ... ); )')
+	.option('-s, --no-scope', 'Don\'t wrap a scope function. (Ignored if the AMD or CommonJS option is set)')
+	.option('-n, --name <name>', 'Set the template name. If this option isn\'t set, the name will be extracted from the tempalte filename')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-p, --pretty', 'Prettify output')
 	.option('-v, --verbose', 'Output more infos')
@@ -21,7 +25,7 @@ program.version('0.0.1')
 // console.log('Args', program.args);
 var src = program.args[0],
 	source = fs.readFileSync(src, 'utf8'),
-	tplName = path.basename(src, path.extname(src));
+	tplName = program.name || path.basename(src, path.extname(src));
 
 //Set debug mode
 FireTPL.debug = !!program.debug;
@@ -36,15 +40,15 @@ if (program.verbose) {
 	console.log('');
 }
 
-
-var precompiled = FireTPL.precompile(source);
-
-if (program.verbose) {
-	console.log('---------- begin of precompiled file ----------');
-	console.log(precompiled);
-	console.log('---------- end of precompiled file ----------');
-	console.log('size: ', precompiled.length, 'chars');
-}
+var precompiled = FireTPL.precompile(source, {
+	name: tplName,
+	moduleName: program.moduleName,
+	firetplModule: program.firetplModule,
+	amd: program.amd,
+	commonjs: program.commonjs,
+	scope: program.scope,
+	verbose: program.verbose
+});
 
 var beforeOut = function(str) {
 	if (!program.pretty) {
@@ -85,36 +89,13 @@ var beforeOut = function(str) {
 	return out;
 };
 
-var output = '';
-if (program.commonjs) {
-	output += 'var FireTPL = require(\'' + program.commonjs + '\');';
-}
-else if (program.amd) {
-	output += 'define([\'' + program.amd + '\'], function(FireTPL) {';
-}
-else {
-	output = '(function() {';
-}
-
-output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {\n\tvar h=new FireTPL.Runtime();\n\t' + precompiled + '\n\treturn s;};';
-
-if (program.commonjs) {
-
-}
-else if(program.amd) {
-	output += '});';
-}
-else {
-	output += '})();';
-}
-
 if (program.out) {
 	console.log('Write to', program.out);
 	var dir = path.dirname(program.out);
 	if (dir) {
 		mkdirp.sync(dir);
 	}
-	fs.writeFileSync(program.out, beforeOut(output));
+	fs.writeFileSync(program.out, beforeOut(precompiled));
 } else {
-	console.log(beforeOut(output));
+	console.log(beforeOut(precompiled));
 }
