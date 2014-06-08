@@ -748,6 +748,11 @@
 	};
 
 	FireTPL.precompile = function(tmpl, type, options) {
+		if (arguments.length === 2 && typeof type === 'object') {
+			options = type;
+			type = null;
+		}
+
 		var compiler = new FireTPL.Compiler(options);
 		compiler.precompile(tmpl, type);
 		return compiler.getOutStream();

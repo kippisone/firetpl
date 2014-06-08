@@ -14,3 +14,11 @@ FireTPL v1.0.0
 	- Handlebars syntax support (convert hbs2fire and parse it then)
 	- RUPAR (Render Append Prepend Update Remove) support in FireTPL (Maybe with DOM watcher)
 
+
+Bugs:
+
+	- Set view path to load views fromsubdirs ( views/test/test.fire  => test/test )
+	- Detailed error message
+	- Log errors as errors, add error links to errors
+	- Ignore missing objects. data = undefined; data.description triggers an exception.
+	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
