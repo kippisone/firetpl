@@ -760,6 +760,7 @@
 		var compiler = new FireTPL.Compiler(),
 			tplName = options.name;
 
+		compiler.precompile(tmpl);
 		var precompiled = compiler.getOutStream();
 
 		if (options.verbose) {
@@ -780,7 +781,7 @@
 			output = ';(function(FireTPL) {';
 		}
 
-		output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {var h=new FireTPL.Runtime();' + precompiled + 'return s;};';
+		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),lang=FireTPL.languageCache;' + precompiled + 'return s;};';
 
 		if (options.commonjs) {
 			output += '})(require);';
