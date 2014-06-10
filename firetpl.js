@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-5
+ * FireTPL template engine v0.1.0-6
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-5'
+		version: '0.1.0-6'
 	};
 
 	return FireTPL;
@@ -51,7 +51,7 @@ var FireTPL;
 
 		this.scopeTags = !!options.scopeTags;
 
-		this.indentionPattern = /\t/g;
+		this.indentionPattern = /\t| {4}/g;
 		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 

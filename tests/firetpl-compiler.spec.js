@@ -1159,6 +1159,46 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('getIndention (using spaces)', function() {
+		it('Should get the number of indention', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention('        Bla');
+			expect(indention).to.eql(2);
+		});
+
+		it('Should get indention from an empty string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention('');
+			expect(indention).to.eql(0);
+		});
+
+		it('Should get indention from a null object', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention(null);
+			expect(indention).to.eql(0);
+		});
+	});
+
+	describe('getIndention (using spaces and tabs)', function() {
+		it('Should get the number of indention', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention('\t    Bla');
+			expect(indention).to.eql(2);
+		});
+
+		it('Should get indention from an empty string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention('');
+			expect(indention).to.eql(0);
+		});
+
+		it('Should get indention from a null object', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var indention = fireTpl.getIndention(null);
+			expect(indention).to.eql(0);
+		});
+	});
+
 	describe('handleIndention', function() {
 		it('Should handle indention on indent', function() {
 			var fireTpl = new FireTPL.Compiler();
