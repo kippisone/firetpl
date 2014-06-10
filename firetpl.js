@@ -51,7 +51,7 @@ var FireTPL;
 
 		this.scopeTags = !!options.scopeTags;
 
-		this.indentionPattern = /\t/g;
+		this.indentionPattern = /\t| {4}/g;
 		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
