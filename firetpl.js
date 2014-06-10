@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-6
+ * FireTPL template engine v0.1.0-20
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-6'
+		version: '0.1.0-20'
 	};
 
 	return FireTPL;
@@ -782,15 +782,52 @@ var FireTPL;
 		return content;
 	};
 
-	FireTPL.precompile = function(tmpl, type, options) {
-		if (arguments.length === 2 && typeof type === 'object') {
-			options = type;
-			type = null;
+	FireTPL.precompile = function(tmpl, options) {
+		options = options || {};
+
+		if (!options.name) {
+			console.error('Precompilation not possible! The options.name flag must be set!');
+			return;
 		}
 
-		var compiler = new FireTPL.Compiler(options);
-		compiler.precompile(tmpl, type);
-		return compiler.getOutStream();
+		options.firetplModule = options.firetplModule || 'firetpl';
+
+		var compiler = new FireTPL.Compiler(),
+			tplName = options.name;
+
+		var precompiled = compiler.getOutStream();
+
+		if (options.verbose) {
+			console.log('\n---------- begin of precompiled file ----------\n');
+			console.log(precompiled);
+			console.log('\n----------- end of precompiled file -----------\n');
+			console.log('size: ', precompiled.length, 'chars\n');
+		}
+
+		var output = '';
+		if (options.commonjs) {
+			output += ';(function(require) {var FireTPL = require(\'' + options.firetplModule + '\');';
+		}
+		else if (options.amd) {
+			output += 'define(' + (options.moduleName ? '\'' + options.moduleName + '\',' : '') + '[\'' + options.firetplModule + '\'],function(FireTPL) {';
+		}
+		else if (options.scope) {
+			output = ';(function(FireTPL) {';
+		}
+
+		output += 'FireTPL.templateCache.' + tplName + '=function(data,scopes) {var h=new FireTPL.Runtime();' + precompiled + 'return s;};';
+
+		if (options.commonjs) {
+			output += '})(require);';
+		}
+		else if(options.amd) {
+			output += '});';
+		}
+		else if (options.scope) {
+			output += '})(FireTPL);';
+		}
+
+		return output;
 	};
 
 })(FireTPL);
