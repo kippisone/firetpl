@@ -56,8 +56,9 @@ describe('FireTPL', function() {
 		it('Should enable scope tags', function() {
 			var constructorSpy = sinon.spy(FireTPL, 'Compiler');
 			
-			FireTPL.precompile('', 'fire', {
-				scopeTags: true
+			FireTPL.precompile('', {
+				scopeTags: true,
+				name: 'test'
 			});
 
 			expect(constructorSpy.thisValues[0].scopeTags).to.be(true);
@@ -1245,6 +1246,52 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('handleIndention (using spaces)', function() {
+		it('Should handle indention on indent', function() {
+			var fireTpl = new FireTPL.Compiler();
+			fireTpl.indention = 2;
+			fireTpl.closer = ['a', 'b', 'c'];
+			fireTpl.handleIndention('            ');
+
+			expect(fireTpl.indention).to.be(3);
+			expect(fireTpl.closer).to.length(3);
+			expect(fireTpl.closer).to.eql(['a', 'b', 'c']);
+		});
+
+		it('Should handle indention on outdent', function() {
+			var fireTpl = new FireTPL.Compiler();
+			fireTpl.indention = 2;
+			fireTpl.closer = ['a', 'b', 'c'];
+			fireTpl.handleIndention('    ');
+
+			expect(fireTpl.indention).to.be(1);
+			expect(fireTpl.closer).to.length(1);
+			expect(fireTpl.closer).to.eql(['a']);
+		});
+
+		it('Should handle indention on same indention', function() {
+			var fireTpl = new FireTPL.Compiler();
+			fireTpl.indention = 2;
+			fireTpl.closer = ['a', 'b', 'c'];
+			fireTpl.handleIndention('        ');
+
+			expect(fireTpl.indention).to.be(2);
+			expect(fireTpl.closer).to.length(2);
+			expect(fireTpl.closer).to.eql(['a', 'b']);
+		});
+
+		it('Should handle 5 step outdention', function() {
+			var fireTpl = new FireTPL.Compiler();
+			fireTpl.indention = 8;
+			fireTpl.closer = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
+			fireTpl.handleIndention('            ');
+
+			expect(fireTpl.indention).to.be(3);
+			expect(fireTpl.closer).to.length(3);
+			expect(fireTpl.closer).to.eql(['a', 'b', 'c']);
+		});
+	});
+
 	describe('newScope', function() {
 		var instance;
 
@@ -1692,6 +1739,40 @@ describe('FireTPL', function() {
 			);
 		});
 
+		it('Should precompile a tmpl string (using spaces)', function() {
+			var template = 'html\n';
+			template += '    head\n';
+			template += '    body\n';
+			template += '        div id=myDiv\n';
+			template += '        div id=mySecondDiv class=myClass\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
+				's+=\'<html><head></head><body><div id="myDiv"></div>' +
+				'<div id="mySecondDiv" class="myClass"></div>' +
+				'</body></html>\';'
+			);
+		});
+		
+		it('Should precompile a tmpl string (using spaces and tabs)', function() {
+			var template = 'html\n';
+			template += '    head\n';
+			template += '    body\n';
+			template += '\t    div id=myDiv\n';
+			template += '\t    div id=mySecondDiv class=myClass\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
+				's+=\'<html><head></head><body><div id="myDiv"></div>' +
+				'<div id="mySecondDiv" class="myClass"></div>' +
+				'</body></html>\';'
+			);
+		});
+
 		it('Should precompile a tmpl string with inline text', function() {
 			var template = 'html\n';
 			template += '	head\n';
@@ -1911,6 +1992,24 @@ describe('FireTPL', function() {
 			template += '		div class=content\n';
 			template += '			"I\'m a multiline\n';
 			template += '			String"\n';
+
+			var fireTpl = new FireTPL.Compiler();
+			template = fireTpl.precompile(template);
+			expect(template).to.eql(
+				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
+				's+=\'<html><head></head><body>' +
+				'<div class="content">I\\\'m a multiline String</div>' +
+				'</body></html>\';'
+			);
+		});
+
+		it('Should precompile a tmpl string with a multiline string (using spaces)', function() {
+			var template = 'html\n';
+			template += '    head\n';
+			template += '    body\n';
+			template += '        div class=content\n';
+			template += '            "I\'m a multiline\n';
+			template += '            String"\n';
 
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template);

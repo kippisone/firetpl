@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-23
+ * FireTPL template engine v0.1.0-24
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-23'
+		version: '0.1.0-24'
 	};
 
 	return FireTPL;
@@ -52,7 +52,7 @@ var FireTPL;
 		this.scopeTags = !!options.scopeTags;
 
 		this.indentionPattern = /\t| {4}/g;
-		this.pattern = /^([ \t]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
+		this.pattern = /^([ \t| {4}]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
@@ -387,7 +387,7 @@ var FireTPL;
 
 			//Check for multi text blocks
 			while (true) {
-				strPattern = /^(\n[\t]*)?(\n[\t]*)*\"([^\"]*)\"/g;
+				strPattern = /^(\n[\t| {4}]*)?(\n[\t| {4}]*)*\"([^\"]*)\"/g;
 				strMatch = strPattern.exec(tmpl.substr(this.pos));
 				if (strMatch) {
 					this.pos += strPattern.lastIndex;
@@ -792,7 +792,7 @@ var FireTPL;
 
 		options.firetplModule = options.firetplModule || 'firetpl';
 
-		var compiler = new FireTPL.Compiler(),
+		var compiler = new FireTPL.Compiler(options),
 			tplName = options.name;
 
 		compiler.precompile(tmpl);
@@ -816,7 +816,7 @@ var FireTPL;
 			output = ';(function(FireTPL) {';
 		}
 
-		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime();' + precompiled + 'return s;};';
+		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),lang=FireTPL.languageCache;' + precompiled + 'return s;};';
 
 		if (options.commonjs) {
 			output += '})(require);';

@@ -715,7 +715,7 @@ describe('FireTPL runtime', function() {
 			);
 		});
 
-		it('Should compile a tmpl string with an truthy unless statement', function() {
+		it('Should compile a tmpl string with a truthy unless statement', function() {
 			var template = function(data, scopes) {
 				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
@@ -748,7 +748,7 @@ describe('FireTPL runtime', function() {
 			);
 		});
 
-		it('Should compile a tmpl string with an falsy unless statement', function() {
+		it('Should compile a tmpl string with a falsy unless statement', function() {
 			var template = function(data, scopes) {
 				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
@@ -780,7 +780,7 @@ describe('FireTPL runtime', function() {
 			);
 		});
 
-		it('Should compile a tmpl string with an falsy each statement', function() {
+		it('Should compile a tmpl string with a falsy each statement', function() {
 			var template = function(data, scopes) {
 				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
@@ -813,7 +813,7 @@ describe('FireTPL runtime', function() {
 			);
 		});
 
-		it('Should compile a tmpl string with an truthy each statement', function() {
+		it('Should compile a tmpl string with a truthy each statement', function() {
 			var template = function(data, scopes) {
 				var h = new FireTPL.Runtime();
 				scopes=scopes||{};
