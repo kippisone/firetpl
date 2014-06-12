@@ -1,6 +1,6 @@
 {
   "name": "firetpl",
-  "version": "0.1.0-24",
+  "version": "0.1.0-25",
   "description": "FireTPL is a pretty Javascript template engine",
   "main": "firetpl.js",
   "scripts": {
@@ -28,6 +28,7 @@
   "dependencies": {
     "mkdirp": "~0.3.5",
     "commander": "~2.1.0",
-    "express": "~3.4.8"
+    "express": "~3.4.8",
+    "glob": "^4.0.2"
   }
 }

@@ -95,6 +95,7 @@
 
 		return function(data, scopes) {
 			var h = new FireTPL.Runtime();
+			var l = FireTPL.locale;
 			var s;
 
 			//jshint evil:true

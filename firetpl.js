@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-24
+ * FireTPL template engine v0.1.0-25
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-24'
+		version: '0.1.0-25'
 	};
 
 	return FireTPL;
@@ -500,7 +500,7 @@ var FireTPL;
 				return parseVar(m);
 				
 			})
-			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
+			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
 
 		return str;
 	};
@@ -616,7 +616,7 @@ var FireTPL;
 			}
 
 			if (match[1]) {
-				content.push('\'+lang.' + match[1] + '+\'');
+				content.push('\'+l.' + match[1] + '+\'');
 			}
 			if (match[2]) {
 				content.push(this.parseVariables(match[2]));
@@ -816,7 +816,7 @@ var FireTPL;
 			output = ';(function(FireTPL) {';
 		}
 
-		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),lang=FireTPL.languageCache;' + precompiled + 'return s;};';
+		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale;' + precompiled + 'return s;};';
 
 		if (options.commonjs) {
 			output += '})(require);';
@@ -1013,6 +1013,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 
 		return function(data, scopes) {
 			var h = new FireTPL.Runtime();
+			var l = FireTPL.locale;
 			var s;
 
 			//jshint evil:true

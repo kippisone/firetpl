@@ -267,14 +267,14 @@ describe('FireTPL', function() {
 		it('Should parse a tag with a inline lang-variable', function() {
 			fireTpl.parseTag('section', '@title');
 
-			expect(fireTpl.out.root).to.eql('s+=\'<section>\'+lang.title+\'');
+			expect(fireTpl.out.root).to.eql('s+=\'<section>\'+l.title+\'');
 			expect(fireTpl.closer).to.eql(['</section>']);
 		});
 
 		it('Should parse a tag with attributes and a inline lang-variable', function() {
 			fireTpl.parseTag('section', 'class=listing @title');
 
-			expect(fireTpl.out.root).to.eql('s+=\'<section class="listing">\'+lang.title+\'');
+			expect(fireTpl.out.root).to.eql('s+=\'<section class="listing">\'+l.title+\'');
 			expect(fireTpl.closer).to.eql(['</section>']);
 		});
 
@@ -1591,49 +1591,49 @@ describe('FireTPL', function() {
 			var str = '@hello $name!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data.name+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+data.name+\'!');
 		});
 
 		it('Should parse a string for multiple variables and locale tags', function() {
 			var str = '@hello $name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string ', function() {
 			var str = '@hello $name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $this should point to data', function() {
 			var str = '@hello $this! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+data+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $this.name should point to data', function() {
 			var str = '@hello $this.name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+data.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $parent.name should point to data', function() {
 			var str = '@hello $parent.name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+parent.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+parent.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $root.name should point to data', function() {
 			var str = '@hello $root.name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+root.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+root.name+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 	});
 
@@ -1649,35 +1649,35 @@ describe('FireTPL', function() {
 			var str = '@hello $name!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>!');
 		});
 
 		it('Should parse a string for multiple variables and locale tags', function() {
 			var str = '@hello $name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
 		});
 
 		it('Should parse a string ', function() {
 			var str = '@hello $name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
 		});
 
 		it('Should parse a string and $this should point to data', function() {
 			var str = '@hello $this! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+data+\'! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' \'+data+\'! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
 		});
 
 		it('Should parse a string and $this.name should point to data', function() {
 			var str = '@hello $this.name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
 		});
 
 		it('Should parse a string and $parent.name should point to data (in a scope)', function() {
@@ -1685,7 +1685,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			fireTpl.curScope.unshift('scope001');
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $parent should not be replaced by a scope tag (in a scope)', function() {
@@ -1693,14 +1693,14 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			fireTpl.curScope.unshift('scope001');
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+parent+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+parent+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 
 		it('Should parse a string and $root.name should point to data', function() {
 			var str = '@hello $root.name! I\'m $reporter and live in $country!';
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
+			expect(out).to.eql('\'+l.hello+\' <scope path="name"></scope>! I\\\'m <scope path="reporter"></scope> and live in <scope path="country"></scope>!');
 		});
 
 		it('Should parse a string and $root should not be replaced by a scope tag (in a scope)', function() {
@@ -1708,7 +1708,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler({ scopeTags: true });
 			fireTpl.curScope.unshift('scope001');
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('\'+lang.hello+\' \'+root+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+			expect(out).to.eql('\'+l.hello+\' \'+root+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
 		});
 	});
 
@@ -2109,8 +2109,8 @@ describe('FireTPL', function() {
 			expect(template).to.eql(
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="description">\'+lang.txt.description+\'</div>' +
-				'<button>\'+lang.btn.submit+\'</button></body></html>\';'
+				'<div class="description">\'+l.txt.description+\'</div>' +
+				'<button>\'+l.btn.submit+\'</button></body></html>\';'
 			);
 		});
 

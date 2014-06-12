@@ -465,7 +465,7 @@
 				return parseVar(m);
 				
 			})
-			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+lang.$1+\'');
+			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
 
 		return str;
 	};
@@ -581,7 +581,7 @@
 			}
 
 			if (match[1]) {
-				content.push('\'+lang.' + match[1] + '+\'');
+				content.push('\'+l.' + match[1] + '+\'');
 			}
 			if (match[2]) {
 				content.push(this.parseVariables(match[2]));
@@ -781,7 +781,7 @@
 			output = ';(function(FireTPL) {';
 		}
 
-		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),lang=FireTPL.languageCache;' + precompiled + 'return s;};';
+		output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale;' + precompiled + 'return s;};';
 
 		if (options.commonjs) {
 			output += '})(require);';
