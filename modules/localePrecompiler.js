@@ -1,3 +1,6 @@
+var fs = require('fs'),
+	path = require('path');
+
 var extend = require('node.extend'),
 	FireTPL = require('../firetpl'),
 	glob = require('glob');
@@ -11,22 +14,40 @@ module.exports = function() {
 
 	LocalePrecompiler.prototype.compile = function(options) {
 		options = extend({
-			baseDir: path.join(process.cwd(), 'locale')
+			baseDir: path.join(process.cwd(), 'locale'),
+			verbose: false
 		}, options);
+
+		this.verbose = options.verbose;
+
+		if (this.verbose) {
+			console.log('Scan folder %s', options.baseDir);
+		}
 
 		var locales = this.parseFolder(options.baseDir);
 	};
 
 	LocalePrecompiler.prototype.parseFolder = function(dir) {
-		fs.fileExists(dir, function(err, state) {
-			if (err) {
-				throw new Error('No locales found on ' + dir);
-			}
+		fs.exists(dir, function(state) {
+			var opts = {
+				cwd: dir,
+				stat: true
+			};
 
-			glob(dir, function(file) {
+			glob('**/*.*', opts, function(err, files) {
+				if (err) {
+					throw err;
+				}
 
-			});
-		});
+				files.forEach(function(file) {
+					if (this.verbose) {
+						console.log(' >> parse locale %s', file);
+					}
+
+					
+				}.bind(this));
+			}.bind(this));
+		}.bind(this));
 	};
 
 	return LocalePrecompiler;

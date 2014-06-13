@@ -4,11 +4,12 @@ var fs = require('fs'),
 	path = require('path');
 
 var mkdirp = require('mkdirp'),
-	program = require('commander');
+	program = require('commander'),
+	pkg = require('../package.json');
 
 var FireTPL = require('../firetpl');
 
-program.version('0.0.1')
+program.version(pkg.version)
 	.usage('[options] <file ...>')
 	.option('-o, --out <outfile>', 'Write precompiled file to <outfile>. If this option is not present write to STDOUT')
 	.option('-a, --amd', 'Precompile as an AMD module.')
@@ -21,7 +22,7 @@ program.version('0.0.1')
 	.option('-p, --pretty', 'Prettify output')
 	.option('-s, --scopeTags', 'Insert scope tags')
 	.option('-f, --file', 'Read from file')
-	.option('-v, --verbose', 'Output more infos')
+	.option('-v, --verbose', 'Print more infos')
 	.parse(process.argv);
 
 // console.log('Args', program.args);
