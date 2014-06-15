@@ -13,6 +13,7 @@ var FireTPL = require('../firetpl'),
 program.version(pkg.version)
 	.description('Parse a locale dir (i18n support)')
 	.usage('[options] <localeDir>')
+	.option('-o, --out <outdir>', 'Write precompiled file to <outdir>. Default is current working dir')
 	.option('-v, --verbose', 'Print more infos')
 	.parse(process.argv);
 
@@ -20,4 +21,28 @@ var compiler = new LocalePrecompiler();
 compiler.compile({
 	baseDir: program.args[0],
 	verbose: program.verbose
+}, function(err, locales) {
+	var dir = program.out || process.cwd();
+
+	if (program.verbose) {
+		console.log('\nWrite locales to %s', dir);
+	}
+
+	mkdirp.sync(dir, {
+		mode: 0755
+	});
+
+	Object.keys(locales).forEach(function(locale) {
+		var outfile = path.join(dir, locale + '.json');
+
+		if (program.verbose) {
+			console.log(' >> write locale %s', outfile);
+		}
+
+		fs.writeFileSync(outfile, JSON.stringify(locales[locale]), {
+			mode: 0644,
+			flag: 'w'
+		});
+	});
+
 });

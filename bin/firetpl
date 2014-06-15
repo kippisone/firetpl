@@ -96,9 +96,14 @@ if (program.out) {
 	console.log('Write to', program.out);
 	var dir = path.dirname(program.out);
 	if (dir) {
-		mkdirp.sync(dir);
+		mkdirp.sync(dir, {
+			mode: 0755
+		});
 	}
-	fs.writeFileSync(program.out, beforeOut(precompiled));
+	fs.writeFileSync(program.out, beforeOut(precompiled), {
+		mode: 0644,
+		flag: 'w'
+	});
 } else {
 	console.log(beforeOut(precompiled));
 }

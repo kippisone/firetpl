@@ -43,4 +43,12 @@ describe('Shorthand Functions', function() {
 			expect(precompiled).to.eql('define([\'firetpl\'],function(FireTPL) {FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};});');
 		});
 	});
+
+	describe('fire2html', function() {
+		it('Should convert a firetpl into html', function() {
+			var tmpl = FireTPL.compile('div class="test"\n\t"Hello $name"');
+			var html = tmpl({ name: 'Andi' });
+			expect(html).to.eql('<div class="test">Hello Andi</div>');
+		});
+	});
 });
