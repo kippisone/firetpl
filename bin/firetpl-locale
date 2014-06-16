@@ -18,31 +18,30 @@ program.version(pkg.version)
 	.parse(process.argv);
 
 var compiler = new LocalePrecompiler();
-compiler.compile({
+var locales = compiler.compile({
 	baseDir: program.args[0],
 	verbose: program.verbose
-}, function(err, locales) {
-	var dir = program.out || process.cwd();
+});
+
+var dir = program.out || process.cwd();
+
+if (program.verbose) {
+	console.log('\nWrite locales to %s', dir);
+}
+
+mkdirp.sync(dir, {
+	mode: 0755
+});
+
+Object.keys(locales).forEach(function(locale) {
+	var outfile = path.join(dir, locale + '.json');
 
 	if (program.verbose) {
-		console.log('\nWrite locales to %s', dir);
+		console.log(' >> write locale %s', outfile);
 	}
 
-	mkdirp.sync(dir, {
-		mode: 0755
+	fs.writeFileSync(outfile, JSON.stringify(locales[locale]), {
+		mode: 0644,
+		flag: 'w'
 	});
-
-	Object.keys(locales).forEach(function(locale) {
-		var outfile = path.join(dir, locale + '.json');
-
-		if (program.verbose) {
-			console.log(' >> write locale %s', outfile);
-		}
-
-		fs.writeFileSync(outfile, JSON.stringify(locales[locale]), {
-			mode: 0644,
-			flag: 'w'
-		});
-	});
-
 });

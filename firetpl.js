@@ -834,9 +834,10 @@ var FireTPL;
 	FireTPL.fire2html = function(tmpl, data) {
 		data = data || {};
 
-		template = FireTPL.Compile(tmpl);
+		var template = FireTPL.compile(tmpl);
 		return template(data);
 	};
+
 
 })(FireTPL);
 FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};

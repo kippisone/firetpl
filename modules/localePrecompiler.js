@@ -15,7 +15,7 @@ module.exports = function() {
 	//Makes glob better testable
 	LocalePrecompiler.prototype.glob = glob.sync;
 
-	LocalePrecompiler.prototype.compile = function(options, callback) {
+	LocalePrecompiler.prototype.compile = function(options) {
 		options = options = options || {};
 		this.verbose = options.verbose || false;
 		this.defaultLocale = options.defaultLocale || 'en-US';
@@ -25,7 +25,7 @@ module.exports = function() {
 			console.log('Scan folder %s', options.baseDir);
 		}
 
-		this.parseFolder(options.baseDir, callback);
+		return this.parseFolder(options.baseDir);
 	};
 
 	LocalePrecompiler.prototype.parseFolder = function(dir) {
@@ -36,7 +36,7 @@ module.exports = function() {
 			};
 
 			var files = this.glob('**/*.*', opts);
-
+			
 			//Strip default locale
 			var defaultLocale,
 				locales = {},
@@ -67,10 +67,13 @@ module.exports = function() {
 					}
 
 					source = files.splice(i, 1);
+					i--;
+					len--;
 					source = this.readFile(source[0]);
 					locales[curLocale] = source;
 				}
 			}
+
 
 			//Parse templates
 			if (files.length > 0) {
@@ -89,6 +92,8 @@ module.exports = function() {
 					
 						if (/^[a-z]{2}-[A-Z]{2}$/.test(curLocale)) {
 							source = files.splice(i, 1);
+							i--;
+							len--;
 							source = this.readFile(source[0]);
 							extend(locales[curLocale], source);
 						}
@@ -113,6 +118,7 @@ module.exports = function() {
 
 			return locales;
 		}
+		
 	};
 
 	LocalePrecompiler.prototype.readFile = function(file) {
@@ -132,10 +138,10 @@ module.exports = function() {
 				}
 			});
 
-			console.log(path.basename(file));
 			var match = path.basename(file).match(/^(.+)\.[a-z]{2}-[A-Z]{2}\.fire/);
 
 			d[match[1]] = FireTPL.fire2html(source, 'fire');
+			
 			return data;
 		}
 

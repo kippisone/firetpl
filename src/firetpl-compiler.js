@@ -799,7 +799,7 @@
 	FireTPL.fire2html = function(tmpl, data) {
 		data = data || {};
 
-		template = FireTPL.Compile(tmpl);
+		var template = FireTPL.compile(tmpl);
 		return template(data);
 	};
 
