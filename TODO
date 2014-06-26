@@ -22,3 +22,4 @@ Bugs:
 	- Log errors as errors, add error links to errors
 	- Ignore missing objects. data = undefined; data.description triggers an exception.
 	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
+	 - Parse h1 "Hello $name"
