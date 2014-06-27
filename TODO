@@ -3,9 +3,15 @@ FireTPL v1.0.0
 	- Better condition support. :if $bla == "blubb" && $isSuperBlubb
 	- Ignore empty lines after string blocks and tags
 
-	- i18n support
 	- inline functions
 	- inline html
+	- <!DOCTYPE>
+	- Pretty error messages
+
+	  Syntax error in file main.fire in line 23
+
+	  div class=bla blub
+	  				^ Unknown tag or attribute
 
 	- Better parser (For .fire and .hbs support)
 	
@@ -22,3 +28,13 @@ Bugs:
 	- Log errors as errors, add error links to errors
 	- Ignore missing objects. data = undefined; data.description triggers an exception.
 	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
+
+Documentation:
+
+	- Tags
+	- Helper
+	- Strings
+	- Events
+	- CLI interface
+	- Grunt plugins
+	- How to
