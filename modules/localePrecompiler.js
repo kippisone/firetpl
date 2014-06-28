@@ -95,7 +95,7 @@ module.exports = function() {
 							i--;
 							len--;
 							source = this.readFile(source[0]);
-							extend(locales[curLocale], source);
+							extend(true, locales[curLocale], source);
 						}
 					}
 				}
