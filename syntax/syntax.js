@@ -10,7 +10,7 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(^[ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\t ]*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"

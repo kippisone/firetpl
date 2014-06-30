@@ -1143,7 +1143,7 @@ describe('FireTPL', function() {
 	describe('getIndention', function() {
 		it('Should get the number of indention', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var indention = fireTpl.getIndention('\t\tBla');
+			var indention = fireTpl.getIndention('\t\t');
 			expect(indention).to.eql(2);
 		});
 
@@ -1163,7 +1163,7 @@ describe('FireTPL', function() {
 	describe('getIndention (using spaces)', function() {
 		it('Should get the number of indention', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var indention = fireTpl.getIndention('        Bla');
+			var indention = fireTpl.getIndention('        ');
 			expect(indention).to.eql(2);
 		});
 
@@ -1177,13 +1177,21 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			var indention = fireTpl.getIndention(null);
 			expect(indention).to.eql(0);
+		});
+
+		it('Should throw an invalid indention error', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var fn = function() {
+				fireTpl.getIndention('       ');
+			};
+			expect(fn).to.throwError('Invalid indention');
 		});
 	});
 
 	describe('getIndention (using spaces and tabs)', function() {
 		it('Should get the number of indention', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var indention = fireTpl.getIndention('\t    Bla');
+			var indention = fireTpl.getIndention('\t    ');
 			expect(indention).to.eql(2);
 		});
 
@@ -1197,6 +1205,14 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			var indention = fireTpl.getIndention(null);
 			expect(indention).to.eql(0);
+		});
+
+		it('Should throw an invalid indention error (using spaces and tabs)', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var fn = function() {
+				fireTpl.getIndention('\t       ');
+			};
+			expect(fn).to.throwError('Invalid indention');
 		});
 	});
 

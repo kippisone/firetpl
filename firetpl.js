@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-28
+ * FireTPL template engine v0.1.0-30
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,11 +28,59 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-28'
+		version: '0.1.0-30'
 	};
 
 	return FireTPL;
 }));
+(function(FireTPL, undefined) {
+
+	FireTPL.Error = function(instance, msg) {
+		if (typeof instance === 'object') {
+			if (instance instanceof FireTPL.Compiler) {
+				var pos = instance.pos;
+				msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
+			}
+		}
+		else if (arguments.length) {
+			msg = instance;
+		}
+
+		return new Error(msg);
+	};
+
+	FireTPL.Error.prototype.stripSource = function(pos, tmpl) {
+		var sourceStr,
+			counter = 0;
+
+		var source = tmpl.split('\n');
+		for (var i = 0, len = source.length; i < len; i++) {
+			counter += source[i].length + 1; //Add +1 because line breaks
+			if (counter > pos) {
+				sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
+				sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
+				break;
+			} 
+		}
+
+		return sourceStr;
+	};
+
+	FireTPL.Error.prototype.strRepeat = function(num, str) {
+		var out = '';
+
+		while(--num) {
+			out += str;
+
+			if (num === -10) {
+				throw 'Loop error';
+			}
+		}
+
+		return out;
+	};
+
+})(FireTPL);
 /**
  * FireTPL compiler module
  *
@@ -51,8 +99,7 @@ var FireTPL;
 
 		this.scopeTags = !!options.scopeTags;
 
-		this.indentionPattern = /\t| {4}/g;
-		this.pattern = /^([ \t| {4}]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
+		this.indentionPattern = /\t| {1,4}/g;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
@@ -72,7 +119,6 @@ var FireTPL;
 	};
 
 	Compiler.prototype.reset = function() {
-		this.pattern.lastIndex = 0;
 		this.indention = 0;
 		this.closer = [];
 		this.curScope = ['root'];
@@ -81,7 +127,6 @@ var FireTPL;
 		this.nextScope = 0;
 		this.pos = 0;
 		this.addEmptyCloseTags = false;
-
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -123,6 +168,9 @@ var FireTPL;
 
 		if (!tmpl && this.tmpl) {
 			tmpl = this.tmpl;
+		}
+		else {
+			this.tmpl = tmpl;
 		}
 
 		var d = 10000;
@@ -243,7 +291,6 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = null,
 			tagAttrs = '';
@@ -577,8 +624,21 @@ var FireTPL;
 		var i = 0;
 
 		this.indentionPattern.lastIndex = 0;
-		while(this.indentionPattern.test(str)) {
+		// console.log('Get indention of str:', str, ': length:', str.length);
+		while(true) {
+			var match = this.indentionPattern.exec(str);
+			if (!match) {
+				break;
+			}
+
+			if (match[0] !== '\t' && match[0] !== '    ') {
+				throw new FireTPL.Error(this, 'Invalid indention!');
+			}
+			
 			i++;
+		}
+
+		if (this.indentionPattern.lastIndex) {
 		}
 
 		return i;
@@ -851,7 +911,7 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(^[ \\t]+)"
 		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\t ]*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"

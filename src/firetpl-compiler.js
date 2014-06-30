@@ -16,8 +16,7 @@
 
 		this.scopeTags = !!options.scopeTags;
 
-		this.indentionPattern = /\t| {4}/g;
-		this.pattern = /^([ \t| {4}]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
+		this.indentionPattern = /\t| {1,4}/g;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
@@ -37,7 +36,6 @@
 	};
 
 	Compiler.prototype.reset = function() {
-		this.pattern.lastIndex = 0;
 		this.indention = 0;
 		this.closer = [];
 		this.curScope = ['root'];
@@ -46,7 +44,6 @@
 		this.nextScope = 0;
 		this.pos = 0;
 		this.addEmptyCloseTags = false;
-
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -88,6 +85,9 @@
 
 		if (!tmpl && this.tmpl) {
 			tmpl = this.tmpl;
+		}
+		else {
+			this.tmpl = tmpl;
 		}
 
 		var d = 10000;
@@ -208,7 +208,6 @@
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = null,
 			tagAttrs = '';
@@ -542,8 +541,21 @@
 		var i = 0;
 
 		this.indentionPattern.lastIndex = 0;
-		while(this.indentionPattern.test(str)) {
+		// console.log('Get indention of str:', str, ': length:', str.length);
+		while(true) {
+			var match = this.indentionPattern.exec(str);
+			if (!match) {
+				break;
+			}
+
+			if (match[0] !== '\t' && match[0] !== '    ') {
+				throw new FireTPL.Error(this, 'Invalid indention!');
+			}
+			
 			i++;
+		}
+
+		if (this.indentionPattern.lastIndex) {
 		}
 
 		return i;

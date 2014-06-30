@@ -22,6 +22,7 @@ module.exports = function(grunt) {
 			build: {
 				src: [
 					'src/firetpl.js',
+					'src/firetpl-error.js',
 					'src/firetpl-compiler.js',
 					'syntax/syntax.js',
 					'src/firetpl-runtime.js'
@@ -31,6 +32,7 @@ module.exports = function(grunt) {
 			runtime: {
 				src: [
 					'src/firetpl.js',
+					'src/firetpl-error.js',
 					'src/firetpl-runtime.js'
 				],
 				dest: 'firetpl-runtime.js'
@@ -38,6 +40,7 @@ module.exports = function(grunt) {
 			compiler: {
 				src: [
 					'src/firetpl.js',
+					'src/firetpl-error.js',
 					'src/firetpl-compiler.js',
 					'syntax/syntax.js'
 				],
