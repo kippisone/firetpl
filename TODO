@@ -3,6 +3,7 @@ FireTPL v1.0.0
 	- Better condition support. :if $bla == "blubb" && $isSuperBlubb
 	- Ignore empty lines after string blocks and tags
 
+	- add escape func to $bla and {{bla}}
 	- inline functions
 	- inline html
 	- <!DOCTYPE>

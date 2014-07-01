@@ -9,14 +9,20 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"name": "indention",
 			"match": "(^[ \\t]+)"
 		}, {
+			"name": "comment",
+			"match": "(//.*)"
+		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\t ]*:.*)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\\t ]*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
 		}, {
+			"name": "htmlstring",
+			"match": "(\\'[^\\']*\\')"
+		}, {
 			"name": "attribute",
-			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
+			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))"
 		}, {
 			"name": "tag",
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
@@ -25,21 +31,23 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
 		}, {
 			"name": "new-line",
-			"match": "(?:\n([ \\t]*))"
+			"match": "(?:\\n([ \\t]*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
 		"2": "indention",
-		"3": "helper",
-		"4": "expression",
-		"5": "string",
-		"6": "attribute",
-		"7": "tag",
-		"8": "tagAttributes",
-		"9": "variable",
-		"10": "newline"
+		"3": "comment",
+		"4": "helper",
+		"5": "expression",
+		"6": "string",
+		"7": "htmlstring",
+		"8": "attribute",
+		"9": "tag",
+		"10": "tagAttributes",
+		"11": "variable",
+		"12": "newline"
 	},
 	"addEmptyCloseTags": true
 };
@@ -48,13 +56,16 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"patterns": [
 		{
 			"name": "unused",
-			"match": "^([ \\t]+)"
+			"match": "(\\s+)"
+		}, {
+			"name": "comment",
+			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]*)>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
-			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
+			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
 		}, {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
@@ -62,23 +73,21 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "attribute",
-			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
-		}, {
 			"name": "string",
-			"match": "((?:.(?!<))+.)"
+			"xmatch": "((?:.(?!<))+.)",
+			"match": "([^<]+)"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
-		"2": "tag",
-		"3": "tagAttributes",
-		"4": "endtag",
-		"5": "helper",
-		"6": "expression",
-		"7": "helperEnd",
-		"8": "attributes",
+		"2": "comment",
+		"3": "tag",
+		"4": "tagAttributes",
+		"5": "endtag",
+		"6": "helper",
+		"7": "expression",
+		"8": "helperEnd",
 		"9": "string"
 	}
 };

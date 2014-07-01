@@ -65,6 +65,7 @@
 
 	Compiler.prototype.parse = function(tmpl, type) {
 		type = type || 'fire';
+		this.tmplType = type;
 
 		if (this.logLevel & 4) {
 			console.log('Parse a .' + type + ' Template');
@@ -334,8 +335,10 @@
 		var strPattern,
 			strMatch;
 
+		// console.log('Str', matchString);
 		//Remove multiplr whitespaces
-		matchString = matchString.replace(/\s+/g, ' ');
+		matchString = matchString.trim().replace(/\s+/g, ' ');
+
 
 		if (matchString.charAt(0) === '"') {
 			if (matchString.substr(-1) === '"') {
@@ -452,19 +455,28 @@
 			}
 		};
 
-		str = str
-			.replace(/\'/g, '\\\'')
-			// .replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
-			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
-				var m = p3 || p4;
-				if (/^this\b/.test(m)) {
-					return parseVar(m.replace(/^this\.?/, ''));
-				}
-				
-				return parseVar(m);
-				
-			})
-			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+		if (this.tmplType === 'hbs') {
+			str = str
+				.replace(/\'/g, '\\\'')
+				.replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
+				.replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
+				.replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'')
+				.replace(/\$([a-zA-Z0-9._-]+)/g, opener + 'data.$1' + closer);
+		}
+		else {
+			str = str
+				.replace(/\'/g, '\\\'')
+				.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
+					var m = p3 || p4;
+					if (/^this\b/.test(m)) {
+						return parseVar(m.replace(/^this\.?/, ''));
+					}
+					
+					return parseVar(m);
+					
+				})
+				.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+		}
 
 		return str;
 	};

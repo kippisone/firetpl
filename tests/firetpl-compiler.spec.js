@@ -1418,23 +1418,29 @@ describe('FireTPL', function() {
 		});
 	});
 
-	describe('check pattern', function() {
+	describe('check pattern (fire)', function() {
 		it('Should match an empty line', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var handleIndentionStub = sinon.stub(fireTpl, 'handleIndention');
-			
-			var match = fireTpl.pattern.exec('\t\t\t\n');
+			var syntaxConf = fireTpl.getPattern('fire');
+
+			expect(syntaxConf).to.be.an('object');
+			expect(syntaxConf.pattern).to.be.an('regexp');
+
+			var match = syntaxConf.pattern.exec('\t\t\t\n');
 			expect(/^\s*$/.test(match[0])).to.be(true);
-			expect(handleIndentionStub).was.notCalled();
-			handleIndentionStub.restore();
 		});
 
 		it('Should match a line comment', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t//I\'m a comment');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('//I\'m a comment');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
 				'//I\'m a comment',
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				undefined,
@@ -1446,24 +1452,34 @@ describe('FireTPL', function() {
 
 		it('Should match a statement', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t:if $bla');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec(':if $bla');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
 				undefined,
 				'if',
+				'$bla',
 				undefined,
 				undefined,
 				undefined,
 				undefined,
-				' $bla'
+				undefined,
+				undefined,
+				undefined
 			]);
 		});
 
 		it('Should match a line attribute', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tfoo=bar');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('foo=bar');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				'foo=bar',
@@ -1476,9 +1492,14 @@ describe('FireTPL', function() {
 
 		it('Should match a line attribute, value is enclosed with doublequotes', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tbla="Super bla"');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('bla="Super bla"');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				'bla="Super bla"',
@@ -1491,9 +1512,14 @@ describe('FireTPL', function() {
 
 		it('Should match a line attribute, value is enclosed with singlequotes', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tbla=\'Super bla\'');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('bla=\'Super bla\'');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				'bla=\'Super bla\'',
@@ -1506,9 +1532,14 @@ describe('FireTPL', function() {
 
 		it('Should match a tag', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tdiv');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('div');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				undefined,
@@ -1521,44 +1552,59 @@ describe('FireTPL', function() {
 
 		it('Should match a tag with attributes', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\tdiv id="myDiv class="bla blubb"');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('div id="myDiv class="bla blubb"');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined,
 				undefined,
 				'div',
+				' id="myDiv class="bla blubb"',
 				undefined,
-				undefined,
-				' id="myDiv class="bla blubb"'
+				undefined
 			]);
 		});
 
 		it('Should match a string', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t"Hi, I\'m a string"');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('"Hi, I\'m a string"');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
 				undefined,
 				undefined,
 				undefined,
 				undefined,
 				'"Hi, I\'m a string"',
 				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined
 			]);
 		});
 
-		it('Should match the begin of a multiline string', function() {
+		it('Should match a multiline string', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t"Hi, I\'m a multiline string');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('"Hi, I\'m a multiline string\n\t\t\tend"');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
 				undefined,
 				undefined,
 				undefined,
 				undefined,
-				'"Hi, I\'m a multiline string',
+				undefined,
+				'"Hi, I\'m a multiline string\n\t\t\tend"',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined,
 				undefined
 			]);
@@ -1566,31 +1612,173 @@ describe('FireTPL', function() {
 
 		it('Should match a html string', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t\'<b>Hi, I&#39;m a html string</b>\'');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('\'<b>Hi, I&#39;m a html string</b>\'');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
+				undefined,
 				undefined,
 				undefined,
 				undefined,
 				undefined,
 				undefined,
 				'\'<b>Hi, I&#39;m a html string</b>\'',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined
 			]);
 		});
 
-		it('Should match the begin of a multiline html string', function() {
+		it('Should match a multiline html string', function() {
 			var fireTpl = new FireTPL.Compiler();
-			var match = fireTpl.pattern.exec('\t\t\t\'<b>Hi, I&#39;m a multiline html string</b>');
+			var syntaxConf = fireTpl.getPattern('fire');
+			var match = syntaxConf.pattern.exec('\'<b>Hi, I&#39;m a multiline html string</b>\n\t\t\tend\'');
 			expect(match.slice(1)).to.eql([
-				'\t\t\t',
 				undefined,
 				undefined,
 				undefined,
 				undefined,
 				undefined,
-				'\'<b>Hi, I&#39;m a multiline html string</b>',
+				undefined,
+				'\'<b>Hi, I&#39;m a multiline html string</b>\n\t\t\tend\'',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
 				undefined
+			]);
+		});
+	});
+
+	describe('check pattern (hbs)', function() {
+		it('Should match an empty line', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+
+			expect(syntaxConf).to.be.an('object');
+			expect(syntaxConf.pattern).to.be.an('regexp');
+
+			var match = syntaxConf.pattern.exec('\t\t\t\n');
+			expect(/^\s*$/.test(match[0])).to.be(true);
+		});
+
+		it('Should match a line comment', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('{{! I\'m a comment }}');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				'{{! I\'m a comment }}',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a line comment ({{!-- --}})', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('{{!-- I\'m a comment --}}');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				'{{!-- I\'m a comment --}}',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a statement', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('{{#if $bla}}');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'if',
+				'$bla',
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a statement closer', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('{{/if}}');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'if',
+				undefined
+			]);
+		});
+
+		it('Should match a tag', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('<div>');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				undefined,
+				'div',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a tag with attributes', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('<div id="myDiv class="bla blubb">');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				undefined,
+				'div',
+				' id="myDiv class="bla blubb"',
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined
+			]);
+		});
+
+		it('Should match a string', function() {
+			var fireTpl = new FireTPL.Compiler();
+			var syntaxConf = fireTpl.getPattern('hbs');
+			var match = syntaxConf.pattern.exec('Hi, I\'m a string');
+			expect(match.slice(1)).to.eql([
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				'Hi, I\'m a string'
 			]);
 		});
 	});

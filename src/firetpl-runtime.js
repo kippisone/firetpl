@@ -87,10 +87,10 @@
 	 * 
 	 * @returns {String} Returns executed template
 	 */
-	FireTPL.compile = function(template) {
+	FireTPL.compile = function(template, type) {
 		if (!/^scopes=scopes/.test(template)) {
 			var fireTpl = new FireTPL.Compiler();
-			template = fireTpl.precompile(template);
+			template = fireTpl.precompile(template, type);
 		}
 
 		return function(data, scopes) {

@@ -3,13 +3,16 @@
 	"patterns": [
 		{
 			"name": "unused",
-			"match": "^([ \\t]+)"
+			"match": "(\\s+)"
+		}, {
+			"name": "comment",
+			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]*)>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
-			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
+			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
 		}, {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
@@ -17,23 +20,21 @@
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "attribute",
-			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
-		}, {
 			"name": "string",
-			"match": "((?:.(?!<))+.)"
+			"xmatch": "((?:.(?!<))+.)",
+			"match": "([^<]+)"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
-		"2": "tag",
-		"3": "tagAttributes",
-		"4": "endtag",
-		"5": "helper",
-		"6": "expression",
-		"7": "helperEnd",
-		"8": "attributes",
+		"2": "comment",
+		"3": "tag",
+		"4": "tagAttributes",
+		"5": "endtag",
+		"6": "helper",
+		"7": "expression",
+		"8": "helperEnd",
 		"9": "string"
 	}
 }

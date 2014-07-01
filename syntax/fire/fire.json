@@ -8,14 +8,20 @@
 			"name": "indention",
 			"match": "(^[ \\t]+)"
 		}, {
+			"name": "comment",
+			"match": "(//.*)"
+		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\t ]*:.*)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\\t ]*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
 		}, {
+			"name": "htmlstring",
+			"match": "(\\'[^\\']*\\')"
+		}, {
 			"name": "attribute",
-			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
+			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))"
 		}, {
 			"name": "tag",
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
@@ -24,21 +30,23 @@
 			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
 		}, {
 			"name": "new-line",
-			"match": "(?:\n([ \\t]*))"
+			"match": "(?:\\n([ \\t]*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
 		"2": "indention",
-		"3": "helper",
-		"4": "expression",
-		"5": "string",
-		"6": "attribute",
-		"7": "tag",
-		"8": "tagAttributes",
-		"9": "variable",
-		"10": "newline"
+		"3": "comment",
+		"4": "helper",
+		"5": "expression",
+		"6": "string",
+		"7": "htmlstring",
+		"8": "attribute",
+		"9": "tag",
+		"10": "tagAttributes",
+		"11": "variable",
+		"12": "newline"
 	},
 	"addEmptyCloseTags": true
 }
