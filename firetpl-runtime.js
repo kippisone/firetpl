@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-29
+ * FireTPL template engine v0.1.0-36
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,11 +28,59 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-29'
+		version: '0.1.0-36'
 	};
 
 	return FireTPL;
 }));
+(function(FireTPL, undefined) {
+
+	FireTPL.Error = function(instance, msg) {
+		if (typeof instance === 'object') {
+			if (instance instanceof FireTPL.Compiler) {
+				var pos = instance.pos;
+				msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
+			}
+		}
+		else if (arguments.length) {
+			msg = instance;
+		}
+
+		return new Error(msg);
+	};
+
+	FireTPL.Error.prototype.stripSource = function(pos, tmpl) {
+		var sourceStr,
+			counter = 0;
+
+		var source = tmpl.split('\n');
+		for (var i = 0, len = source.length; i < len; i++) {
+			counter += source[i].length + 1; //Add +1 because line breaks
+			if (counter > pos) {
+				sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
+				sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
+				break;
+			} 
+		}
+
+		return sourceStr;
+	};
+
+	FireTPL.Error.prototype.strRepeat = function(num, str) {
+		var out = '';
+
+		while(--num) {
+			out += str;
+
+			if (num === -10) {
+				throw 'Loop error';
+			}
+		}
+
+		return out;
+	};
+
+})(FireTPL);
 /**
  * FireTPL runtime module
  */
@@ -122,10 +170,11 @@ var FireTPL;
 	 * 
 	 * @returns {String} Returns executed template
 	 */
-	FireTPL.compile = function(template) {
+	FireTPL.compile = function(template, options) {
 		if (!/^scopes=scopes/.test(template)) {
-			var fireTpl = new FireTPL.Compiler();
-			template = fireTpl.precompile(template);
+			var fireTpl = new FireTPL.Compiler(options);
+			var type = options && options.type ? options.type : null;
+			template = fireTpl.precompile(template, type);
 		}
 
 		return function(data, scopes) {

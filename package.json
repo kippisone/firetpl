@@ -1,6 +1,6 @@
 {
   "name": "firetpl",
-  "version": "0.1.0-30",
+  "version": "0.1.0-37",
   "description": "FireTPL is a pretty Javascript template engine",
   "main": "firetpl.js",
   "scripts": {

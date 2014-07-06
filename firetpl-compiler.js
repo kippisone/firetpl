@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-29
+ * FireTPL template engine v0.1.0-36
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,11 +28,59 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-29'
+		version: '0.1.0-36'
 	};
 
 	return FireTPL;
 }));
+(function(FireTPL, undefined) {
+
+	FireTPL.Error = function(instance, msg) {
+		if (typeof instance === 'object') {
+			if (instance instanceof FireTPL.Compiler) {
+				var pos = instance.pos;
+				msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
+			}
+		}
+		else if (arguments.length) {
+			msg = instance;
+		}
+
+		return new Error(msg);
+	};
+
+	FireTPL.Error.prototype.stripSource = function(pos, tmpl) {
+		var sourceStr,
+			counter = 0;
+
+		var source = tmpl.split('\n');
+		for (var i = 0, len = source.length; i < len; i++) {
+			counter += source[i].length + 1; //Add +1 because line breaks
+			if (counter > pos) {
+				sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
+				sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
+				break;
+			} 
+		}
+
+		return sourceStr;
+	};
+
+	FireTPL.Error.prototype.strRepeat = function(num, str) {
+		var out = '';
+
+		while(--num) {
+			out += str;
+
+			if (num === -10) {
+				throw 'Loop error';
+			}
+		}
+
+		return out;
+	};
+
+})(FireTPL);
 /**
  * FireTPL compiler module
  *
@@ -51,8 +99,7 @@ var FireTPL;
 
 		this.scopeTags = !!options.scopeTags;
 
-		this.indentionPattern = /\t| {4}/g;
-		this.pattern = /^([ \t| {4}]*)?(\/\/.*)?(?:\:([a-zA-Z0-9]+))?([a-zA-Z0-9]+=(?:(?:\"[^\"]+\")|(?:\'[^\']+\')|(?:\S+)))?([a-z0-9]+)?([\"].*[\"]?)?([\'].*[\']?)?(.*)?$/gm;
+		this.indentionPattern = /\t| {1,4}/g;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
@@ -72,7 +119,6 @@ var FireTPL;
 	};
 
 	Compiler.prototype.reset = function() {
-		this.pattern.lastIndex = 0;
 		this.indention = 0;
 		this.closer = [];
 		this.curScope = ['root'];
@@ -81,7 +127,6 @@ var FireTPL;
 		this.nextScope = 0;
 		this.pos = 0;
 		this.addEmptyCloseTags = false;
-
 	};
 
 	Compiler.prototype.getPattern = function(type) {
@@ -103,6 +148,7 @@ var FireTPL;
 
 	Compiler.prototype.parse = function(tmpl, type) {
 		type = type || 'fire';
+		this.tmplType = type;
 
 		if (this.logLevel & 4) {
 			console.log('Parse a .' + type + ' Template');
@@ -123,6 +169,9 @@ var FireTPL;
 
 		if (!tmpl && this.tmpl) {
 			tmpl = this.tmpl;
+		}
+		else {
+			this.tmpl = tmpl;
 		}
 
 		var d = 10000;
@@ -163,7 +212,6 @@ var FireTPL;
 
 			switch(cmd) {
 				case 'indention':
-					console.log('Indent', data.indention, data.indention.length);
 					this.handleIndention(data.indention);
 					break;
 				case 'tag':
@@ -244,7 +292,6 @@ var FireTPL;
 	};
 
 	Compiler.prototype.parseHelper = function(helper, content) {
-		// console.log('Parse helper', helper, content);
 		var scopeId,
 			tag = null,
 			tagAttrs = '';
@@ -371,8 +418,10 @@ var FireTPL;
 		var strPattern,
 			strMatch;
 
+		// console.log('Str', matchString);
 		//Remove multiplr whitespaces
-		matchString = matchString.replace(/\s+/g, ' ');
+		matchString = matchString.trim().replace(/\s+/g, ' ');
+
 
 		if (matchString.charAt(0) === '"') {
 			if (matchString.substr(-1) === '"') {
@@ -489,19 +538,28 @@ var FireTPL;
 			}
 		};
 
-		str = str
-			.replace(/\'/g, '\\\'')
-			// .replace(/\$([a-zA-Z0-9._-]+)/g, function(match, p1) {
-			.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
-				var m = p3 || p4;
-				if (/^this\b/.test(m)) {
-					return parseVar(m.replace(/^this\.?/, ''));
-				}
-				
-				return parseVar(m);
-				
-			})
-			.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+		if (this.tmplType === 'hbs') {
+			str = str
+				.replace(/\'/g, '\\\'')
+				.replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
+				.replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
+				.replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'')
+				.replace(/\$([a-zA-Z0-9._-]+)/g, opener + 'data.$1' + closer);
+		}
+		else {
+			str = str
+				.replace(/\'/g, '\\\'')
+				.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
+					var m = p3 || p4;
+					if (/^this\b/.test(m)) {
+						return parseVar(m.replace(/^this\.?/, ''));
+					}
+					
+					return parseVar(m);
+					
+				})
+				.replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+		}
 
 		return str;
 	};
@@ -578,8 +636,21 @@ var FireTPL;
 		var i = 0;
 
 		this.indentionPattern.lastIndex = 0;
-		while(this.indentionPattern.test(str)) {
+		// console.log('Get indention of str:', str, ': length:', str.length);
+		while(true) {
+			var match = this.indentionPattern.exec(str);
+			if (!match) {
+				break;
+			}
+
+			if (match[0] !== '\t' && match[0] !== '    ') {
+				throw new FireTPL.Error(this, 'Invalid indention!');
+			}
+			
 			i++;
+		}
+
+		if (this.indentionPattern.lastIndex) {
 		}
 
 		return i;
@@ -851,14 +922,20 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"name": "indention",
 			"match": "(^[ \\t]+)"
 		}, {
+			"name": "comment",
+			"match": "(//.*)"
+		}, {
 			"name": "helper",
-			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)\\s*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:\\s*:.*)?)?)"
+			"match": "(?::([a-zA-Z][a-zA-Z0-9_-]*)[\\t ]*((?:\\$[a-zA-Z][a-zA-Z0-9._-]*)(?:[\\t ]*:.*)?)?)"
 		}, {
 			"name": "string",
 			"match": "(\\\"[^\\\"]*\\\")"
 		}, {
+			"name": "htmlstring",
+			"match": "(\\'[^\\']*\\')"
+		}, {
 			"name": "attribute",
-			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\S+)))"
+			"match": "(\\b[a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))"
 		}, {
 			"name": "tag",
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
@@ -867,21 +944,23 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
 		}, {
 			"name": "new-line",
-			"match": "(?:\n([ \\t]*))"
+			"match": "(?:\\n([ \\t]*))"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
 		"2": "indention",
-		"3": "helper",
-		"4": "expression",
-		"5": "string",
-		"6": "attribute",
-		"7": "tag",
-		"8": "tagAttributes",
-		"9": "variable",
-		"10": "newline"
+		"3": "comment",
+		"4": "helper",
+		"5": "expression",
+		"6": "string",
+		"7": "htmlstring",
+		"8": "attribute",
+		"9": "tag",
+		"10": "tagAttributes",
+		"11": "variable",
+		"12": "newline"
 	},
 	"addEmptyCloseTags": true
 };
@@ -890,13 +969,16 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 	"patterns": [
 		{
 			"name": "unused",
-			"match": "^([ \\t]+)"
+			"match": "(\\s+)"
+		}, {
+			"name": "comment",
+			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]*)>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
-			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]+)>)"
+			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
 		}, {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
@@ -904,23 +986,21 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "attribute",
-			"match": "([a-zA-Z0-9_]+=(?:(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S)))"
-		}, {
 			"name": "string",
-			"match": "((?:.(?!<))+.)"
+			"xmatch": "((?:.(?!<))+.)",
+			"match": "([^<]+)"
 		}
 	],
 	"modifer": "gm",
 	"scopes": {
 		"1": "unused",
-		"2": "tag",
-		"3": "tagAttributes",
-		"4": "endtag",
-		"5": "helper",
-		"6": "expression",
-		"7": "helperEnd",
-		"8": "attributes",
+		"2": "comment",
+		"3": "tag",
+		"4": "tagAttributes",
+		"5": "endtag",
+		"6": "helper",
+		"7": "expression",
+		"8": "helperEnd",
 		"9": "string"
 	}
 };

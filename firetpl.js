@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-30
+ * FireTPL template engine v0.1.0-36
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-30'
+		version: '0.1.0-36'
 	};
 
 	return FireTPL;
@@ -1093,9 +1093,10 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 	 * 
 	 * @returns {String} Returns executed template
 	 */
-	FireTPL.compile = function(template, type) {
+	FireTPL.compile = function(template, options) {
 		if (!/^scopes=scopes/.test(template)) {
-			var fireTpl = new FireTPL.Compiler();
+			var fireTpl = new FireTPL.Compiler(options);
+			var type = options && options.type ? options.type : null;
 			template = fireTpl.precompile(template, type);
 		}
 
