@@ -84,6 +84,7 @@
 	 * @method compile
 	 * 
 	 * @param {String} template Template string or precompiled tempalte
+	 * @param {Object} options (Optional) Compiler options
 	 * 
 	 * @returns {String} Returns executed template
 	 */

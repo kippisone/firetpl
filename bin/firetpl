@@ -50,6 +50,7 @@ var precompiled = FireTPL.precompile(source, {
 	amd: program.amd,
 	commonjs: program.commonjs,
 	scope: program.scope,
+	scopeTags: program.scopeTags,
 	verbose: program.verbose
 });
 
