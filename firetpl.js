@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.1.0-45
+ * FireTPL template engine v0.2.0
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.1.0-45'
+		version: '0.2.0'
 	};
 
 	return FireTPL;
@@ -320,6 +320,7 @@ var FireTPL;
 		}
 
 		if (tag) {
+			tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
 			this.parseTag(tag, tagAttrs);
 		}
 		else {
@@ -986,6 +987,9 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
+			"name": "variable",
+			"match": "(\\{\\{\\{?[a-zA-Z][a-zA-Z0-9._-]+\\}\\}\\}?)"
+		}, {
 			"name": "string",
 			"xmatch": "((?:.(?!<))+.)",
 			"match": "([^<]+)"
@@ -1001,7 +1005,8 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		"6": "helper",
 		"7": "expression",
 		"8": "helperEnd",
-		"9": "string"
+		"9": "variable",
+		"10": "string"
 	}
 };
 /**

@@ -73,6 +73,9 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
+			"name": "variable",
+			"match": "(\\{\\{\\{?[a-zA-Z][a-zA-Z0-9._-]+\\}\\}\\}?)"
+		}, {
 			"name": "string",
 			"xmatch": "((?:.(?!<))+.)",
 			"match": "([^<]+)"
@@ -88,6 +91,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		"6": "helper",
 		"7": "expression",
 		"8": "helperEnd",
-		"9": "string"
+		"9": "variable",
+		"10": "string"
 	}
 };

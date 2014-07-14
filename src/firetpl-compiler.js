@@ -237,6 +237,7 @@
 		}
 
 		if (tag) {
+			tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
 			this.parseTag(tag, tagAttrs);
 		}
 		else {
