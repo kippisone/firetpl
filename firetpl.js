@@ -103,6 +103,8 @@ var FireTPL;
 		this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
 
 		this.reset();
+
+		this.tmplType = 'fire';
 		
 		/**
 		 * Set the log level.
@@ -209,7 +211,6 @@ var FireTPL;
 			if (this.logLevel & 4) {
 				console.log('  cmd:', cmd, 'data:', data);
 			}
-				console.log('  cmd:', cmd, 'data:', data);
 
 			switch(cmd) {
 				case 'indention':
@@ -415,7 +416,9 @@ var FireTPL;
 			throw 'FireTPL parse error (3)';
 		}
 
-		this.closer.push('');
+		if (this.tmplType === 'fire') {
+			this.closer.push('');
+		}
 	};
 
 	Compiler.prototype.parseString = function(tmpl, matchString) {
@@ -458,17 +461,23 @@ var FireTPL;
 		}
 
 		this.append('str', this.parseVariables(matchString));
-		if (this.addEmptyCloseTags) {
+		if (this.addEmptyCloseTags && this.tmplType === 'fire') {
 			this.closer.push('');
 		}
 	};
 
 	Compiler.prototype.parseEndTag = function(tag) {
 		// console.log('Parse end tag', tag, this.closer);
+		var lastTag = this.closer.slice(-1)[0];
+		if ('</' + tag + '>' !== lastTag) {
+			throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
+		}
+
 		this.appendCloser();
 	};
 
-	Compiler.prototype.parseHelperEnd = function() {
+	Compiler.prototype.parseHelperEnd = function(tag) {
+		// console.log('Parse helper end tag', tag, this.closer);
 		this.appendCloser();
 	};
 
@@ -570,7 +579,9 @@ var FireTPL;
 
 	Compiler.prototype.parseVariable = function(matchVariable) {
 		this.append('str', this.parseVariables(matchVariable));
-		this.closer.push('');
+		if (this.tmplType === 'fire') {
+			this.closer.push('');
+		}
 	};
 
 	/**
@@ -979,7 +990,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\\\b([^>]+)?>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
@@ -995,7 +1006,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		}, {
 			"name": "string",
 			"xmatch": "((?:.(?!<))+.)",
-			"match": "([^<]+)"
+			"match": "([^(<|\\{\\{)]+)"
 		}
 	],
 	"modifer": "gm",

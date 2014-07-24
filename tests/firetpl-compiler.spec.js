@@ -137,6 +137,21 @@ describe('FireTPL', function() {
 		});
 	});
 
+	describe('getPattern syntax check', function() {
+		var fireTpl;
+
+		beforeEach(function() {
+			fireTpl = new FireTPL.Compiler();
+		});
+
+		it('Should get a html tag (.hbs)', function() {
+			var pattern = fireTpl.getPattern('hbs');
+
+			var match = pattern.pattern.exec('<div class="bla"><h1>');
+			expect(match[0]).to.eql('<div class="bla">');
+		});
+	});
+
 	describe('stripAttributes', function() {
 		it('Should strib all attributes from a string', function() {
 			var fireTpl = new FireTPL.Compiler();
@@ -205,7 +220,7 @@ describe('FireTPL', function() {
 		var fireTpl;
 
 		beforeEach(function() {
-			fireTpl = new FireTPL.Compiler();	
+			fireTpl = new FireTPL.Compiler();
 		});
 
 		it('Should parse a tag', function() {
@@ -981,7 +996,7 @@ describe('FireTPL', function() {
 		});
 
 		it('Should parse a .hbs template file', function() {
-			var template = '<div>';
+			var template = '<div></div>';
 			var html = fireTpl.parse(template, 'hbs');
 			expect(html).to.eql(tmplScope.root('<div></div>'));
 		});

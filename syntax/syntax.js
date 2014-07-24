@@ -62,7 +62,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\\\b([^>]+)?>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
@@ -78,7 +78,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		}, {
 			"name": "string",
 			"xmatch": "((?:.(?!<))+.)",
-			"match": "([^<]+)"
+			"match": "([^(<|\\{\\{)]+)"
 		}
 	],
 	"modifer": "gm",
