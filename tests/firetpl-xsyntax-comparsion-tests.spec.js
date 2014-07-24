@@ -34,14 +34,21 @@ describe('FireTPL syntax comparsion tests', function() {
                 title: 'Hello world!'
             };
 
+            console.log(FireTPL.Compiler.prototype.syntax["hbs"].patterns[2].match);
+
+            expect(FireTPL.Compiler.prototype.syntax["hbs"].patterns[2].match).to.eql("(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)");
+
+            // console.log('Match', match.exec('<div class="bla"><h1></h1></div>'));
+
+
             fire = FireTPL.compile(fire);
             fire = fire(data);
 
             hbs = FireTPL.compile(hbs, 'hbs');
             hbs = hbs(data);
 
-            // console.log(fire);
-            // console.log(hbs);
+            console.log('Fire:', fire);
+            console.log('Hbs:', hbs);
 
             expect(fire).to.eql(hbs);
         });

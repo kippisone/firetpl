@@ -126,6 +126,7 @@
 			if (this.logLevel & 4) {
 				console.log('  cmd:', cmd, 'data:', data);
 			}
+				console.log('  cmd:', cmd, 'data:', data);
 
 			switch(cmd) {
 				case 'indention':
@@ -237,7 +238,9 @@
 		}
 
 		if (tag) {
-			tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+			if (this.scopeTags) {
+				tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+			}
 			this.parseTag(tag, tagAttrs);
 		}
 		else {

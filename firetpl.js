@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0
+ * FireTPL template engine v0.2.0-0
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0'
+		version: '0.2.0-0'
 	};
 
 	return FireTPL;
@@ -209,6 +209,7 @@ var FireTPL;
 			if (this.logLevel & 4) {
 				console.log('  cmd:', cmd, 'data:', data);
 			}
+				console.log('  cmd:', cmd, 'data:', data);
 
 			switch(cmd) {
 				case 'indention':
@@ -320,7 +321,9 @@ var FireTPL;
 		}
 
 		if (tag) {
-			tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+			if (this.scopeTags) {
+				tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+			}
 			this.parseTag(tag, tagAttrs);
 		}
 		else {
@@ -976,7 +979,7 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"match": "({{!(?:--)?.+}})"
 		}, {
 			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
+			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\\\b([^>]+)?>)"
 		}, {
 			"name": "endtag",
 			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
