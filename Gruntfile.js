@@ -58,10 +58,10 @@ module.exports = function(grunt) {
 				files: [
 					{
 						src: ['firetpl.js'],
-						dest: '../component-builds/nonamemedia/firetpl/' + version + '/firetpl.js'
+						dest: '../component-builds/firetpl/firetpl.js'
 					}, {
 						src: ['component.json'],
-						dest: '../component-builds/nonamemedia/firetpl/' + version + '/',
+						dest: '../component-builds/firetpl/',
 					}
 				]
 			}
@@ -86,7 +86,7 @@ module.exports = function(grunt) {
 		},
 		version: {
 			component: {
-				src: ['../component-builds/nonamemedia-xqcore/component.json']
+				src: ['../component-builds/component.json']
 			}
 		}
 	});
