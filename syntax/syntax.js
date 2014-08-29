@@ -28,7 +28,7 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
 		}, {
 			"name": "variable",
-			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._-]*)"
+			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._()-]*)"
 		}, {
 			"name": "new-line",
 			"match": "(?:\\n([ \\t]*))"

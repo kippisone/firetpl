@@ -6,6 +6,7 @@
 	'use strict';
 
 	FireTPL.helpers = {};
+	FireTPL.fn = {};
 	FireTPL.templateCache = {};
 
 	/**
@@ -17,6 +18,10 @@
 	 */
 	FireTPL.registerHelper = function(helper, fn) {
 		this.helpers[helper] = fn;
+	};
+
+	FireTPL.registerFunction = function(func, fn) {
+		this.fn[func] = fn;
 	};
 
 	/**

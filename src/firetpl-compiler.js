@@ -419,14 +419,60 @@
 		}
 
 		var parseVar = function(m) {
+			console.log('Parse Variable:', m);
 			if (m === '') {
 				if (self.scopeTags) {
 					return '\'+data+\'';
 				}
 				return opener + 'data' + closer;
 			}
+			
+			var chunks = m.split('.'),
+				vars = [],
+				funcs = [];
+			
+			console.log(' ... chunks', chunks);
+			for (var i = 0, len = chunks.length; i < len; i++) {
+			  	if (i === 0) {
+			  		if (chunks[i] === 'parent' || chunks[i] === 'root') {
+			  			if (self.scopeTags) {
+			  				continue;
+			  			}
+			  		}
+			  		else if (!self.scopeTags) {
+			  			vars.push('data');
+			  		}
+			  	}
+			  	else if (/\)$/.test(chunks[i])) {
+			  		funcs.push(chunks[i].substr(0, chunks[i].length - 2));
+			  		continue;
+			  	}
 
-			if (/^(parent\b)/.test(m) && (self.curScope[1] === 'root' || !self.scopeTags)) {
+			  	vars.push(chunks[i]);
+			}
+			
+			console.log(' ... vars', vars);
+			console.log(' ... funcs', funcs);
+			console.log(' ... scopeTags', self.scopeTags);
+			console.log(' ... curScope', self.curScope);
+			console.log(' ... isCode', isCode);
+
+			m = vars.join('.');
+			for (i = 0, len = funcs.length; i < len; i++) {
+				m = 'this.' + funcs[i] + '(' + m + ')';
+			}
+
+			if (self.curScope[0] === 'root' && !isCode) {
+				return opener + m + closer;
+			}
+			else if (self.scopeTags) {
+				return altOpener + m + altCloser;
+			}
+			else {
+				return opener + m + closer;
+			}
+
+			/*if (/^(parent\b)/.test(m) && (self.curScope[1] === 'root' || !self.scopeTags)) {
 				if (self.scopeTags) {
 					m = m.replace(/^parent\.?/, '');
 				}
@@ -465,7 +511,7 @@
 			}
 			else {
 				return opener + 'data.' + m + closer;
-			}
+			}*/
 		};
 
 		if (this.tmplType === 'hbs') {
@@ -479,7 +525,7 @@
 		else {
 			str = str
 				.replace(/\'/g, '\\\'')
-				.replace(/\$((\{([a-zA-Z0-9._-]+)\})|([a-zA-Z0-9._-]+))/g, function(match, p1, p2, p3, p4) {
+				.replace(/\$((\{([a-zA-Z0-9._()-]+)\})|([a-zA-Z0-9._()-]+))/g, function(match, p1, p2, p3, p4) {
 					var m = p3 || p4;
 					if (/^this\b/.test(m)) {
 						return parseVar(m.replace(/^this\.?/, ''));
@@ -752,6 +798,11 @@
 				return pattern[i].match;
 			} 
 		}
+	};
+
+	Compiler.prototype.strRepeat = function(str, num) {
+		var arr = new Array(num + 1);
+		return arr.join(str);
 	};
 
 	FireTPL.Compiler = Compiler;
