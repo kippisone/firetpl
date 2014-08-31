@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-2
+ * FireTPL template engine v0.2.0-6
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-2'
+		version: '0.2.0-6'
 	};
 
 	return FireTPL;
@@ -89,6 +89,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL.helpers = {};
+	FireTPL.fn = {};
 	FireTPL.templateCache = {};
 
 	/**
@@ -100,6 +101,10 @@ var FireTPL;
 	 */
 	FireTPL.registerHelper = function(helper, fn) {
 		this.helpers[helper] = fn;
+	};
+
+	FireTPL.registerFunction = function(func, fn) {
+		this.fn[func] = fn;
 	};
 
 	/**
@@ -237,3 +242,18 @@ var FireTPL;
 	FireTPL.registerCoreHelper();
 
 })(FireTPL);
+FireTPL.registerFunction('byte', function(str, round) {
+    var units = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+        size = parseFloat(str, 10),
+        p = 0;
+
+    round = round ? Math.pow(10, round) : 10;
+
+    for (var i = 0, len = units.length; i < len; i++) {
+        if (Math.pow(1024, i + 1) >= size) {
+            break;
+        }
+    }
+
+    return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
+});

@@ -1841,7 +1841,7 @@ describe('FireTPL', function() {
 		});
 	});
 
-	describe.only('parseVariables', function() {
+	describe('parseVariables', function() {
 		it('Should parse a string for variables', function() {
 			var str = 'Hello $name!';
 			var fireTpl = new FireTPL.Compiler();
@@ -1853,14 +1853,14 @@ describe('FireTPL', function() {
 			var str = 'Hello $name.ucase()!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('Hello \'+this.ucase(data.name)+\'!');
+			expect(out).to.eql('Hello \'+f.ucase(data.name)+\'!');
 		});
 
 		it('Should parse a string for variables and inline chained functions', function() {
 			var str = 'Hello $name.ucase().bold()!';
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
-			expect(out).to.eql('Hello \'+this.bold(this.ucase(data.name))+\'!');
+			expect(out).to.eql('Hello \'+f.bold(f.ucase(data.name))+\'!');
 		});
 
 		it('Should parse a string for locale tags', function() {
