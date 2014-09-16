@@ -121,6 +121,24 @@
 		};
 	};
 
+	/**
+	 * Compile a file
+	 * @method compileFile
+	 * 
+	 * @param {String} template Template string or precompiled tempalte
+	 * @param {Object} options (Optional) Compiler options
+	 * 
+	 * @returns {String} Returns executed template
+	 */
+	FireTPL.compileFile = function(file, options) {
+		if (typeof global === 'object' && typeof window === 'undefined') {
+			var fs = require('fs');
+			return FireTPL.compile(fs.readFileSync(file, { encoding: 'utf8' }), options);
+		}
+
+		return FireTPL.compile(FireTPL.readFile(file), options);
+	};
+
 	var prettify = function(str) {
 		var indention = 0,
 			out = '';

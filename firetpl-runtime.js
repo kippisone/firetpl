@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-8
+ * FireTPL template engine v0.2.0-9
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-8'
+		version: '0.2.0-9'
 	};
 
 	return FireTPL;
@@ -202,6 +202,24 @@ var FireTPL;
 
 			return s;
 		};
+	};
+
+	/**
+	 * Compile a file
+	 * @method compileFile
+	 * 
+	 * @param {String} template Template string or precompiled tempalte
+	 * @param {Object} options (Optional) Compiler options
+	 * 
+	 * @returns {String} Returns executed template
+	 */
+	FireTPL.compileFile = function(file, options) {
+		if (typeof global === 'object' && typeof window === 'undefined') {
+			var fs = require('fs');
+			return FireTPL.compile(fs.readFileSync(file, { encoding: 'utf8' }), options);
+		}
+
+		return FireTPL.compile(FireTPL.readFile(file), options);
 	};
 
 	var prettify = function(str) {
