@@ -1,7 +1,7 @@
 describe('Functions', function() {
     'use strict';
     
-    describe.only('Function byte()', function() {
+    describe('Function byte()', function() {
         it('Should be a function', function() {
             expect(FireTPL.fn.byte).to.be.a('function');
         });
