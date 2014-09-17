@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-9
+ * FireTPL template engine v0.2.0
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-9'
+		version: '0.2.0'
 	};
 
 	return FireTPL;
@@ -502,7 +502,6 @@ var FireTPL;
         }
 
         var parseVar = function(m) {
-            console.log('Parse Variable:', m);
             if (m === '') {
                 if (self.scopeTags) {
                     return '\'+data+\'';
@@ -514,7 +513,6 @@ var FireTPL;
                 vars = [],
                 funcs = [];
             
-            console.log(' ... chunks', chunks);
             for (var i = 0, len = chunks.length; i < len; i++) {
                 if (i === 0) {
                     if (chunks[i] === 'parent' || chunks[i] === 'root') {
@@ -534,11 +532,11 @@ var FireTPL;
                 vars.push(chunks[i]);
             }
             
-            console.log(' ... vars', vars);
-            console.log(' ... funcs', funcs);
-            console.log(' ... scopeTags', self.scopeTags);
-            console.log(' ... curScope', self.curScope);
-            console.log(' ... isCode', isCode);
+            //console.log(' ... vars', vars);
+            //console.log(' ... funcs', funcs);
+            //console.log(' ... scopeTags', self.scopeTags);
+            //console.log(' ... curScope', self.curScope);
+            //console.log(' ... isCode', isCode);
 
             m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
