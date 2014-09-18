@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-0
+ * FireTPL template engine v0.2.0
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-0'
+		version: '0.2.0'
 	};
 
 	return FireTPL;
