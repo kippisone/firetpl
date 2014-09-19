@@ -151,6 +151,9 @@
                 case 'string':
                     this.parseString(tmpl, data.string);
                     break;
+                case 'htmlstring':
+                    this.parseHTMLString(tmpl, data.htmlstring);
+                    break;
                 case 'variable':
                     this.parseVariable(data.variable);
                     break;
@@ -370,6 +373,46 @@
                     }
 
                     matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        this.append('str', this.parseVariables(matchString));
+        if (this.addEmptyCloseTags && this.tmplType === 'fire') {
+            this.closer.push('');
+        }
+    };
+
+    Compiler.prototype.parseHTMLString = function(tmpl, matchString) {
+        var strPattern,
+            strMatch;
+
+        if (matchString.charAt(0) === '\'') {
+            if (matchString.substr(-1) === '\'') {
+                matchString = matchString.substr(1, matchString.length - 2);
+            }
+            else {
+                strPattern = /([^']*)'/g;
+                strPattern.lastIndex = this.pos;
+                strMatch = strPattern.exec(tmpl);
+                matchString = matchString.substr(1) + ' ' + strMatch[1];
+                this.pos = strPattern.lastIndex;
+            }
+
+            //Check for multi text blocks
+            while (true) {
+                strPattern = /^(\n[\t| {4}]*)?(\n[\t| {4}]*)*'([^']*)'/g;
+                strMatch = strPattern.exec(tmpl.substr(this.pos));
+                if (strMatch) {
+                    this.pos += strPattern.lastIndex;
+                    if (strMatch[2]) {
+                        matchString += '\n';
+                    }
+
+                    matchString += '\n' + strMatch[3];
                 }
                 else {
                     break;

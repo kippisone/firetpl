@@ -1153,6 +1153,22 @@ describe('FireTPL', function() {
 					'<span class="listing">I\\\'m DrTest!</span></section>')
 			);
 		});
+
+		it('Should parse htmlstrings in a .fire file', function() {
+			var template = 'div id=mydiv\n' +
+				'	\'<b>Hello World</b>\'\n' +
+				'	span class="listing blue"\n' +
+				'		\'<span>\'\n' + 
+				'		\'  I am DrTest!\'\n' +
+				'		\'</span>\'\n';
+
+			var html = fireTpl.parse(template, 'fire');
+
+			expect(html).to.eql(
+				tmplScope
+				.root('<div id="mydiv"><b>Hello World</b><span class="listing blue"><span>\n  I am DrTest!\n</span></span></div>')
+			);
+		});
 	});
 
 	describe('getIndention', function() {
