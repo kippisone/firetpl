@@ -409,10 +409,10 @@
                 if (strMatch) {
                     this.pos += strPattern.lastIndex;
                     if (strMatch[2]) {
-                        matchString += '\n';
+                        matchString += '\\n';
                     }
 
-                    matchString += '\n' + strMatch[3];
+                    matchString += '\\n' + strMatch[3];
                 }
                 else {
                     break;

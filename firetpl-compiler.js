@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-10
+ * FireTPL template engine v0.2.0-18
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-10'
+		version: '0.2.0-18'
 	};
 
 	return FireTPL;
@@ -129,6 +129,7 @@ var FireTPL;
         this.nextScope = 0;
         this.pos = 0;
         this.addEmptyCloseTags = false;
+        this.htmlIndention = '';
     };
 
     Compiler.prototype.getPattern = function(type) {
@@ -233,6 +234,9 @@ var FireTPL;
                     break;
                 case 'string':
                     this.parseString(tmpl, data.string);
+                    break;
+                case 'htmlstring':
+                    this.parseHTMLString(tmpl, data.htmlstring);
                     break;
                 case 'variable':
                     this.parseVariable(data.variable);
@@ -389,8 +393,15 @@ var FireTPL;
             attrs = ' ' + attrs;
         }
 
-        this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
+        var indent = this.prettify ? '\\n' + this.htmlIndention : '';
+
+        this.append('str', indent + '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
+
+        if (this.prettify) {
+            this.htmlIndention += '    ';
+        }
+
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
         }
@@ -466,6 +477,46 @@ var FireTPL;
         }
     };
 
+    Compiler.prototype.parseHTMLString = function(tmpl, matchString) {
+        var strPattern,
+            strMatch;
+
+        if (matchString.charAt(0) === '\'') {
+            if (matchString.substr(-1) === '\'') {
+                matchString = matchString.substr(1, matchString.length - 2);
+            }
+            else {
+                strPattern = /([^']*)'/g;
+                strPattern.lastIndex = this.pos;
+                strMatch = strPattern.exec(tmpl);
+                matchString = matchString.substr(1) + ' ' + strMatch[1];
+                this.pos = strPattern.lastIndex;
+            }
+
+            //Check for multi text blocks
+            while (true) {
+                strPattern = /^(\n[\t| {4}]*)?(\n[\t| {4}]*)*'([^']*)'/g;
+                strMatch = strPattern.exec(tmpl.substr(this.pos));
+                if (strMatch) {
+                    this.pos += strPattern.lastIndex;
+                    if (strMatch[2]) {
+                        matchString += '\\n';
+                    }
+
+                    matchString += '\\n' + strMatch[3];
+                }
+                else {
+                    break;
+                }
+            }
+        }
+
+        this.append('str', this.parseVariables(matchString));
+        if (this.addEmptyCloseTags && this.tmplType === 'fire') {
+            this.closer.push('');
+        }
+    };
+
     Compiler.prototype.parseEndTag = function(tag) {
         // console.log('Parse end tag', tag, this.closer);
         var lastTag = this.closer.slice(-1)[0];
@@ -473,6 +524,7 @@ var FireTPL;
             throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
         }
 
+        this.htmlIndention = this.htmlIndention.substr(0, -4);
         this.appendCloser();
     };
 
@@ -818,6 +870,7 @@ var FireTPL;
         else {
             while (newIndent < 1) {
                 el = this.appendCloser();
+                this.htmlIndention = this.htmlIndention.substr(0, -4);
                 newIndent++;
             }
         }

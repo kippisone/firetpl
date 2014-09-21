@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-11
+ * FireTPL template engine v0.2.0-18
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-11'
+		version: '0.2.0-18'
 	};
 
 	return FireTPL;
@@ -129,6 +129,7 @@ var FireTPL;
         this.nextScope = 0;
         this.pos = 0;
         this.addEmptyCloseTags = false;
+        this.htmlIndention = '';
     };
 
     Compiler.prototype.getPattern = function(type) {
@@ -392,8 +393,15 @@ var FireTPL;
             attrs = ' ' + attrs;
         }
 
-        this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
+        var indent = this.prettify ? '\\n' + this.htmlIndention : '';
+
+        this.append('str', indent + '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
+
+        if (this.prettify) {
+            this.htmlIndention += '    ';
+        }
+
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
         }
@@ -492,10 +500,10 @@ var FireTPL;
                 if (strMatch) {
                     this.pos += strPattern.lastIndex;
                     if (strMatch[2]) {
-                        matchString += '\n';
+                        matchString += '\\n';
                     }
 
-                    matchString += '\n' + strMatch[3];
+                    matchString += '\\n' + strMatch[3];
                 }
                 else {
                     break;
@@ -516,6 +524,7 @@ var FireTPL;
             throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
         }
 
+        this.htmlIndention = this.htmlIndention.substr(0, -4);
         this.appendCloser();
     };
 
@@ -861,6 +870,7 @@ var FireTPL;
         else {
             while (newIndent < 1) {
                 el = this.appendCloser();
+                this.htmlIndention = this.htmlIndention.substr(0, -4);
                 newIndent++;
             }
         }
@@ -1214,6 +1224,10 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		if (!/^scopes=scopes/.test(template)) {
 			var fireTpl = new FireTPL.Compiler(options);
 			var type = options && options.type ? options.type : null;
+			if (options && options.prettify) {
+				fireTpl.prettify = true;
+			}
+			
 			template = fireTpl.precompile(template, type);
 		}
 

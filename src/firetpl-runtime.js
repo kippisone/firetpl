@@ -97,6 +97,10 @@
 		if (!/^scopes=scopes/.test(template)) {
 			var fireTpl = new FireTPL.Compiler(options);
 			var type = options && options.type ? options.type : null;
+			if (options && options.prettify) {
+				fireTpl.prettify = true;
+			}
+			
 			template = fireTpl.precompile(template, type);
 		}
 
