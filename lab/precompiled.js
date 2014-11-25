@@ -57,9 +57,9 @@
         };
         var s = '';
         s += '<section class="test"><h1><span class="firetpl-scope" data-path="title">' + data.title + '</span></h1><div class="listing"><ul>';
-        s += scopes.scope001(data.listing, data);
+        s += '<span class="firetpl-scope" data-scope="scope001" data-path="listing"></span>';
         s += '</ul></div><div class="comments">';
-        s += scopes.scope003(data.comments, data);
+        s += '<span class="firetpl-scope" data-scope="scope003" data-path="comments"></span>';
         s += '</div></section>';
         return s;
     };
