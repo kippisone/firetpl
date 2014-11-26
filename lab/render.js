@@ -5,17 +5,20 @@ window.addEventListener('DOMContentLoaded', function() {
 		title: 'FireTPL Render test',
 		listing: [{
 			title: 'List item 1',
-			index: 1
+			index: 1,
+			tags:[{
+				tag: 'Tag:1'
+			}]
 		}, {
 			title: 'List item 2',
-			index: 2
+			index: 2,
+			tags:[{
+				tag: 'Tag:1'
+			}]
 		}]
 	};
 
-	var tmpl = FireTPL.templateCache.test;
-
 	var tmplScope = {};
-	document.getElementById('tmpl').innerHTML = tmpl(data, tmplScope);
 
 	document.getElementById('title').addEventListener('keyup', function(e) {
 		var title = e.currentTarget.value;
@@ -24,7 +27,10 @@ window.addEventListener('DOMContentLoaded', function() {
 
 
 	var FireListItem = function() {
-
+		this.firstChild = null;
+		this.lastChild = null;
+		this.index = null;
+		this.parent = null;
 	};
 
 	var FireTextItem = function() {
@@ -45,7 +51,6 @@ window.addEventListener('DOMContentLoaded', function() {
 			var path = el.getAttribute('data-path'),
 				scope = el.getAttribute('data-scope');
 
-			console.log('EL', path, scope);
 			if (!this.scopeStore[path]) {
 				this.scopeStore[path] = [];
 			}
@@ -53,28 +58,33 @@ window.addEventListener('DOMContentLoaded', function() {
 			var node;
 			if (scope) {
 				//Its a scope element
-				this.scopeStore[path].push([el, this.tmplScope[scope]]);
+				node = new FireListItem();
+				node.parent = el.parentNode;
+				node.firstChild = el;
+				node.lastChild = el;
+				node.fn = this.tmplScope[scope];
+				this.scopeStore[path].push(node);
 			}
 			else {
 				node = document.createTextNode('');
 				el.parentNode.replaceChild(node, el);
 				this.scopeStore[path].push(node);
 			}
-			
 		}
 	};
 
-	FireRender.prototype.render = function(data) {
+	FireRender.prototype.parse = function() {
+		
+	};
+
+	FireRender.prototype.render = function(tmpl, data) {
 		var path = '';
 
-		for (var key in data) {
+		this.tmpl = tmpl(data, tmplScope)
+
+		for (var key in this.scopeStore) {
 			var item = data[key];
-			if (typeof(item) === 'object') {
-				this.changeItem(key, item);
-			}
-			else {
-				this.changeItem(key, item);
-			}
+			this.changeItem(key, item);
 		}
 	};
 
@@ -82,18 +92,26 @@ window.addEventListener('DOMContentLoaded', function() {
 		if (this.scopeStore[key]) {
 			for (var i = 0, len = this.scopeStore[key].length; i < len; i++) {
 				var el = this.scopeStore[key][i];
-				if (Array.isArray(el)) {
+				if (el instanceof FireListItem) {
 					var div = document.createElement('div');
-					div.innerHTML = el[1](value);
+					div.innerHTML = el.fn(value);
 
 					var docFrag = document.createDocumentFragment();
-					var childs = [];
 					while (div.firstChild) {
-						childs.push(docFrag.appendChild(div.firstChild));
+						docFrag.appendChild(div.firstChild);
 					}
 
-					el[0].parentNode.replaceChild(docFrag, el[0]);
-					this.scopeStore[key][i][0] = childs;
+					var firstChild = docFrag.firstChild;
+					var lastChild = docFrag.lastChild;
+					if (el.parent.lastChild === el.lastChild) {
+						el.parent.appendChild(docFrag);
+					}
+					else {
+						el.parent.insertBefore(docFrag, el.lastChild.nextSibling);
+					}
+
+					el.firstChild = firstChild;
+					el.lastChild = lastChild;
 				}
 				else {
 					el.nodeValue = value;
@@ -106,26 +124,24 @@ window.addEventListener('DOMContentLoaded', function() {
 		if (this.scopeStore[key]) {
 			for (var i = 0, len = this.scopeStore[key].length; i < len; i++) {
 				var el = this.scopeStore[key][i];
-				if (Array.isArray(el)) {
+				if (el instanceof FireListItem) {
 					var div = document.createElement('div');
-					div.innerHTML = el[1](data);
+					div.innerHTML = el.fn([data]);
 
 					var docFrag = document.createDocumentFragment();
-					var childs = [];
 					while (div.firstChild) {
-						childs.push(docFrag.appendChild(div.firstChild));
+						docFrag.appendChild(div.firstChild);
 					}
 
-					
-					var next = el[0][el[0].length - 1].nextSibling;
-					if (next) {
-						console.warn('Not supported yet!');
+					var lastChild = docFrag.lastChild;
+					if (el.parent.lastChild === el.lastChild) {
+						el.parent.appendChild(docFrag);
 					}
 					else {
-						el[0][0].parentNode.appendChild(docFrag);
+						el.parent.insertBefore(docFrag, el.lastChild.nextSibling);
 					}
 
-					this.scopeStore[key][i][0].concat(childs);
+					el.lastChild = lastChild;
 				}
 				else {
 					console.warn('Not supported yet!');
@@ -136,11 +152,14 @@ window.addEventListener('DOMContentLoaded', function() {
 
 	var fireRender = new FireRender(tmplScope);
 	fireRender.init();
-	fireRender.render(data);
-	// fireRender.appendItem('listing',  {
-	// 	title: 'List item 3',
-	// 	index: 3
-	// });
+	var html = fireRender.render(FireTPL.templateCache.test, data);
+	fireRender.appendItem('listing',  {
+		title: 'List item 3',
+		index: 3
+	});
+
+
+	document.getElementById('tmpl').innerHTML = html;
 
 	console.log('FireRender', fireRender);
 });
