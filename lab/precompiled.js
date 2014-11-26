@@ -48,19 +48,22 @@
             var s = '';
             s += h.exec('each', data, parent, root, function(data) {
                 var s = '';
-                s += '<li><span class="index"><span class="firetpl-scope" data-path="listing.index"></span></span><span class="title">' + data.title + '</span><span class="tags"><ul class="tags">';
-                s += '<span class="firetpl-scope" data-scope="scope002" data-path="listing.tags"></span>';
+                s += '<li><span class="index"><span class="firetpl-scope" data-path="index"></span></span><span class="title"><span class="firetpl-scope" data-path="title"></span></span><span class="tags"><ul class="tags">';
+                s += '<span class="firetpl-scope" data-scope="scope002" data-path="tags"></span>';
                 s += '</ul></span></li>';
                 return s;
             });
             return s;
         };
-        var s = '';
-        s += '<section class="test"><h1><span class="firetpl-scope" data-path="title"></span></h1><div class="listing"><ul>';
-        s += '<span class="firetpl-scope" data-scope="scope001" data-path="listing"></span>';
-        s += '</ul></div><div class="comments">';
-        s += '<span class="firetpl-scope" data-scope="scope003" data-path="comments"></span>';
-        s += '</div></section>';
-        return s;
+        scopes.scope000 = function(data) {
+            var parent = data;
+            var s = '';
+            s += '<section class="test"><h1><span class="firetpl-scope" data-path="title"></span></h1><div class="listing"><ul>';
+            s += '<span class="firetpl-scope" data-scope="scope001" data-path="listing"></span>';
+            s += '</ul></div><div class="comments">';
+            s += '<span class="firetpl-scope" data-scope="scope003" data-path="comments"></span>';
+            s += '</div></section>';
+            return s;
+        };
     };
 })(FireTPL);

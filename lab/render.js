@@ -38,9 +38,9 @@ window.addEventListener('DOMContentLoaded', function() {
 	};
 
 
-	var FireRender = function(tmplScope) {
+	var FireRender = function() {
 		this.scopeStore = {};
-		this.tmplScope = tmplScope;
+		this.tmplScope = {};
 	};
 
 	FireRender.prototype.init = function() {
@@ -73,19 +73,115 @@ window.addEventListener('DOMContentLoaded', function() {
 		}
 	};
 
-	FireRender.prototype.parse = function() {
+	FireRender.prototype.parse = function(tmpl, data, parent) {
+		var html;
+
+		if (typeof tmpl === 'string') {
+			html = tmpl;
+		}
 		
+		html = tmpl(data, parent);
+		var div = document.createElement('div');
+		div.innerHTML = html;
+		// var docFrag = this.createDocFrag(html);
+
+		var tmplScopes = div.getElementsByClassName('firetpl-scope');
+		console.log('Found scopes in DocFrag:', tmplScopes);
+
+		for (var i = tmplScopes.length; i > 0; i--) {
+			var el = tmplScopes[i - 1];
+			var path = el.getAttribute('data-path'),
+				scope = el.getAttribute('data-scope');
+
+			console.log('Parse path', path, data, parent);
+
+			if (!this.scopeStore[path]) {
+				this.scopeStore[path] = [];
+			}
+
+			var node;
+			if (scope) {
+				//Its a scope element
+				var scopeFrag = this.parse(this.tmplScope[scope], data[path], data);
+				node = new FireListItem();
+				node.parent = el.parentNode;
+				node.firstChild = scopeFrag.firstChild;
+				node.lastChild = scopeFrag.lastChild;
+				node.fn = this.tmplScope[scope];
+				el.parentNode.replaceChild(scopeFrag, el);
+				this.scopeStore[path].push(node);
+			}
+			else {
+				node = document.createTextNode(data[path]);
+				el.parentNode.replaceChild(node, el);
+				this.scopeStore[path].push(node);
+			}
+		}
+
+		console.log('DIV', div.innerHTML);
+		return this.createDocFrag(div);
+	};
+
+	FireRender.prototype.parseTextNode = function(el, path, data) {
+		var node = document.createTextNode(data[path]);
+			el.parentNode.replaceChild(node, el);
+			this.scopeStore[path].push(node);
+	};
+
+	FireRender.prototype.parseScope = function(scope, data, parent) {
+		console.log('Parse scope:', scope, data, parent);
+		var div = document.createElement('div');
+		div.innerHTML = this.tmplScope[scope](data, parent);
+
+		//Get all subscopes
+		var subScopes = div.getElementsByClassName('firetpl-scope');
+		console.log('Found scopes in DocFrag:', subScopes);
+		for (var i = subScopes.length; i > 0; i--) {
+			var el = subScopes[i - 1];
+			var path = el.getAttribute('data-path'),
+				scopeName = el.getAttribute('data-scope');
+
+			 if (scopeName) {
+			 	this.parseScope(scopeName, data[path], data);
+			 }
+			 else {
+			 	//Handle text node
+			 	this.parseTextNode(el, path, data);
+			 }
+		}
+
+		return this.createDocFrag(div);
+	};
+
+	FireRender.prototype.createDocFrag = function(html) {
+		var docFrag = document.createDocumentFragment(),
+			div;
+
+		if (typeof html === 'string') {
+			div = document.createElement('div');
+			div.innerHTML = html;
+		}
+		else {
+			div = html;
+		}
+
+		while (div.firstChild) {
+			docFrag.appendChild(div.firstChild);
+		}
+
+		return docFrag;
 	};
 
 	FireRender.prototype.render = function(tmpl, data) {
-		var path = '';
+		tmpl(data, this.tmplScope);
+		var html = this.parseScope('scope000', data);
 
-		this.tmpl = tmpl(data, tmplScope)
+		// for (var key in this.scopeStore) {
+		// 	var item = data[key];
+		// 	this.changeItem(key, item);
+		// }
 
-		for (var key in this.scopeStore) {
-			var item = data[key];
-			this.changeItem(key, item);
-		}
+		return html;
 	};
 
 	FireRender.prototype.changeItem = function(key, value) {
@@ -152,14 +248,15 @@ window.addEventListener('DOMContentLoaded', function() {
 
 	var fireRender = new FireRender(tmplScope);
 	fireRender.init();
-	var html = fireRender.render(FireTPL.templateCache.test, data);
-	fireRender.appendItem('listing',  {
-		title: 'List item 3',
-		index: 3
-	});
+	var htmlFrag = fireRender.render(FireTPL.templateCache.test, data);
+	document.getElementById('tmpl').appendChild(htmlFrag);
+	// fireRender.appendItem('listing',  {
+	// 	title: 'List item 3',
+	// 	index: 3
+	// });
 
 
-	document.getElementById('tmpl').innerHTML = html;
+	
 
 	console.log('FireRender', fireRender);
 });
