@@ -8,11 +8,10 @@ section class="test"
 				span class="tags"
 					:each $tags : ul class="tags"
 						li class="tag" $tag
-	div class="comments"
-		:if $comments
-			:each $comments : ul
-				li class="comment"
-					span class="user" $user
-					span class="comment" $comment
-		:else
-			div class="noComments" "No comments available yet"
+	:if $comments : div class="comments"
+		:each $comments : ul
+			li class="comment"
+				span class="user" $user
+				span class="comment" $comment
+	:else : div class="noComments"
+		"No comments available yet"
