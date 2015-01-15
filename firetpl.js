@@ -1,12 +1,12 @@
 /*!
- * FireTPL template engine v0.2.0-18
+ * FireTPL template engine v0.2.0-22
  * 
  * FireTPL is a pretty Javascript template engine
  *
  * FireTPL is licenced under MIT Licence
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2014 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
  * Author Andi Heinkelein
  *
  */
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-18'
+		version: '0.2.0-22'
 	};
 
 	return FireTPL;
@@ -129,7 +129,6 @@ var FireTPL;
         this.nextScope = 0;
         this.pos = 0;
         this.addEmptyCloseTags = false;
-        this.htmlIndention = '';
     };
 
     Compiler.prototype.getPattern = function(type) {
@@ -393,15 +392,8 @@ var FireTPL;
             attrs = ' ' + attrs;
         }
 
-        var indent = this.prettify ? '\\n' + this.htmlIndention : '';
-
-        this.append('str', indent + '<' + tag + this.parseVariables(attrs) + '>');
+        this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
-
-        if (this.prettify) {
-            this.htmlIndention += '    ';
-        }
-
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
         }
@@ -524,7 +516,6 @@ var FireTPL;
             throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
         }
 
-        this.htmlIndention = this.htmlIndention.substr(0, -4);
         this.appendCloser();
     };
 
@@ -870,7 +861,6 @@ var FireTPL;
         else {
             while (newIndent < 1) {
                 el = this.appendCloser();
-                this.htmlIndention = this.htmlIndention.substr(0, -4);
                 newIndent++;
             }
         }

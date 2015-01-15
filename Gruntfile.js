@@ -30,6 +30,18 @@ module.exports = function(grunt) {
                 ],
                 dest: 'firetpl.js'
             },
+            'build-node': {
+                src: [
+                    'src/firetpl.js',
+                    'src/firetpl-error.js',
+                    'src/firetpl-compiler.js',
+                    'syntax/syntax.js',
+                    'src/firetpl-runtime.js',
+                    'src/firetpl-node.js',
+                    'src/functions/*.js'
+                ],
+                dest: 'build/firetpl.js'
+            },
             runtime: {
                 src: [
                     'src/firetpl.js',
@@ -101,7 +113,12 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-version');
 
     grunt.registerTask('default', 'jshint');
-    grunt.registerTask('build', ['jshint', 'json', 'concat', 'component-build', 'bumpup:prerelease']);
+    grunt.registerTask('build', [
+        'jshint',
+        'json',
+        'concat',
+        'component-build',
+        'bumpup:prerelease']);
 
     
 

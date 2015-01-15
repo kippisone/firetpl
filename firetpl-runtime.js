@@ -1,12 +1,12 @@
 /*!
- * FireTPL template engine v0.2.0-18
+ * FireTPL template engine v0.2.0-22
  * 
  * FireTPL is a pretty Javascript template engine
  *
  * FireTPL is licenced under MIT Licence
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2014 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
  * Author Andi Heinkelein
  *
  */
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-18'
+		version: '0.2.0-22'
 	};
 
 	return FireTPL;
