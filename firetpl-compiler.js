@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-24
+ * FireTPL template engine v0.2.0-28
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-24'
+		version: '0.2.0-28'
 	};
 
 	return FireTPL;
@@ -208,6 +208,7 @@ var FireTPL;
                 }
             }
 
+            this.logLevel = 4;
             if (this.logLevel & 4) {
                 console.log('  cmd:', cmd, 'data:', data);
             }
@@ -217,33 +218,40 @@ var FireTPL;
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
+                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
                     this.parseEndTag(data.endtag);
                     break;
                 case 'helper':
-                    this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+                    this.parseHelper(data.helper, data.expression ? (type === 'hbs' ? '$' : '') + data.expression : null);
                     break;
                 case 'helperEnd':
                     this.parseHelperEnd(data.helperEnd);
+                    break;
+                case 'elseHelper':
+                    this.parseElseHelper(data.elseHelper);
                     break;
                 case 'attribute':
                     this.parseAttribute(data.attribute);
                     break;
                 case 'string':
+                    // console.log('STRING "%s"', data.string);
                     this.parseString(tmpl, data.string);
                     break;
                 case 'htmlstring':
                     this.parseHTMLString(tmpl, data.htmlstring);
                     break;
                 case 'variable':
+                    console.log('VAR "%s"', data.variable);
                     this.parseVariable(data.variable);
                     break;
                 case 'newline':
                     this.handleIndention(data.newline);
                     break;
                 case 'unused':
+                    // console.log('UNUSED');
                     break;
                 default:
                     throw new Error('Parse error!');
@@ -428,7 +436,6 @@ var FireTPL;
         var strPattern,
             strMatch;
 
-        // console.log('Str', matchString);
         //Remove multiplr whitespaces
         matchString = matchString.trim().replace(/\s+/g, ' ');
 
@@ -492,10 +499,10 @@ var FireTPL;
                 if (strMatch) {
                     this.pos += strPattern.lastIndex;
                     if (strMatch[2]) {
-                        matchString += '\\n';
+                        matchString += '\n';
                     }
 
-                    matchString += '\\n' + strMatch[3];
+                    matchString += '\n' + strMatch[3];
                 }
                 else {
                     break;
@@ -522,6 +529,11 @@ var FireTPL;
     Compiler.prototype.parseHelperEnd = function(tag) {
         // console.log('Parse helper end tag', tag, this.closer);
         this.appendCloser();
+    };
+
+    Compiler.prototype.parseElseHelper = function(tag) {
+        this.appendCloser();
+        this.parseHelper('else');
     };
 
     Compiler.prototype.parseVariables = function(str, isCode) {
@@ -802,7 +814,9 @@ var FireTPL;
                 attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
             }
             else if (match[6]) {
-                content.push(match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
+                var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
+                s = this.parseVariables(s);
+                content.push(s);
             }
 
             match = pattern.exec(str);
@@ -1048,7 +1062,8 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
 		}, {
 			"name": "variable",
-			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._()-]*)"
+			"xmatch": "([@\\$][a-zA-Z][a-zA-Z0-9._()-]*)",
+			"match": "((?:[@\\$][a-zA-Z][a-zA-Z0-9_-]*)(?:.[a-zA-Z][a-zA-Z0-9_-]*\\((?:\"[^\"]*\"|'[^']*')*\\))*)"
 		}, {
 			"name": "new-line",
 			"match": "(?:\\n([ \\t]*))"
@@ -1090,15 +1105,14 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
 		}, {
+			"name": "elseHelper",
+			"match": "(?:\\{\\{(else)\\}\\})"
+		}, {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "variable",
-			"match": "(\\{\\{\\{?[a-zA-Z][a-zA-Z0-9._-]+\\}\\}\\}?)"
-		}, {
 			"name": "string",
-			"xmatch": "((?:.(?!<))+.)",
-			"match": "([^(<|\\{\\{)]+)"
+			"match": "((?:[^](?!(?:<|\\{\\{(?:#|\\/))))+[^])"
 		}
 	],
 	"modifer": "gm",
@@ -1110,8 +1124,8 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		"5": "endtag",
 		"6": "helper",
 		"7": "expression",
-		"8": "helperEnd",
-		"9": "variable",
+		"8": "elseHelper",
+		"9": "helperEnd",
 		"10": "string"
 	}
 };

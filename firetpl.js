@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-24
+ * FireTPL template engine v0.2.0-29
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-24'
+		version: '0.2.0-29'
 	};
 
 	return FireTPL;
@@ -217,33 +217,40 @@ var FireTPL;
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
+                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
                     this.parseEndTag(data.endtag);
                     break;
                 case 'helper':
-                    this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+                    this.parseHelper(data.helper, data.expression ? (type === 'hbs' ? '$' : '') + data.expression : null);
                     break;
                 case 'helperEnd':
                     this.parseHelperEnd(data.helperEnd);
+                    break;
+                case 'elseHelper':
+                    this.parseElseHelper(data.elseHelper);
                     break;
                 case 'attribute':
                     this.parseAttribute(data.attribute);
                     break;
                 case 'string':
+                    // console.log('STRING "%s"', data.string);
                     this.parseString(tmpl, data.string);
                     break;
                 case 'htmlstring':
                     this.parseHTMLString(tmpl, data.htmlstring);
                     break;
                 case 'variable':
+                    // console.log('VAR "%s"', data.variable);
                     this.parseVariable(data.variable);
                     break;
                 case 'newline':
                     this.handleIndention(data.newline);
                     break;
                 case 'unused':
+                    // console.log('UNUSED');
                     break;
                 default:
                     throw new Error('Parse error!');
@@ -428,7 +435,6 @@ var FireTPL;
         var strPattern,
             strMatch;
 
-        // console.log('Str', matchString);
         //Remove multiplr whitespaces
         matchString = matchString.trim().replace(/\s+/g, ' ');
 
@@ -492,10 +498,10 @@ var FireTPL;
                 if (strMatch) {
                     this.pos += strPattern.lastIndex;
                     if (strMatch[2]) {
-                        matchString += '\\n';
+                        matchString += '\n';
                     }
 
-                    matchString += '\\n' + strMatch[3];
+                    matchString += '\n' + strMatch[3];
                 }
                 else {
                     break;
@@ -522,6 +528,11 @@ var FireTPL;
     Compiler.prototype.parseHelperEnd = function(tag) {
         // console.log('Parse helper end tag', tag, this.closer);
         this.appendCloser();
+    };
+
+    Compiler.prototype.parseElseHelper = function(tag) {
+        this.appendCloser();
+        this.parseHelper('else');
     };
 
     Compiler.prototype.parseVariables = function(str, isCode) {
@@ -568,22 +579,32 @@ var FireTPL;
                     }
                 }
                 else if (/\)$/.test(chunks[i])) {
-                    funcs.push(chunks[i].substr(0, chunks[i].length - 2));
+                    var split = chunks[i].split(/\(/, 2);
+                    var func = split[0],
+                        args = (split[1] || '').slice(0, -1);
+
+                    if (args) {
+                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(function(arg) {
+                            return arg.replace(/^["']|["']$/g, '');
+                        });
+                    }
+
+                    funcs.push([func, args]);
                     continue;
                 }
 
                 vars.push(chunks[i]);
             }
             
-            //console.log(' ... vars', vars);
-            //console.log(' ... funcs', funcs);
+            // console.log(' ... vars', vars);
+            // console.log(' ... funcs', funcs);
             //console.log(' ... scopeTags', self.scopeTags);
             //console.log(' ... curScope', self.curScope);
             //console.log(' ... isCode', isCode);
 
             m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
-                m = 'f.' + funcs[i] + '(' + m + ')';
+                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ', \'' + funcs[i][1].join('\',\'') + '\'' : '') + ')';
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
@@ -649,8 +670,9 @@ var FireTPL;
         else {
             str = str
                 .replace(/\'/g, '\\\'')
-                .replace(/\$((\{([a-zA-Z0-9._()-]+)\})|([a-zA-Z0-9._()-]+))/g, function(match, p1, p2, p3, p4) {
-                    var m = p3 || p4;
+                // .replace(/\$/g, function(match, p1, p2, p3, p4) {
+                .replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
+                    var m = p1 || p2;
                     if (/^this\b/.test(m)) {
                         return parseVar(m.replace(/^this\.?/, ''));
                     }
@@ -802,7 +824,9 @@ var FireTPL;
                 attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
             }
             else if (match[6]) {
-                content.push(match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
+                var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
+                s = this.parseVariables(s);
+                content.push(s);
             }
 
             match = pattern.exec(str);
@@ -1048,7 +1072,8 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 			"match": "(?:([a-zA-Z][a-zA-Z0-9:_-]*)+(?:(.*))?)"
 		}, {
 			"name": "variable",
-			"match": "([@\\$][a-zA-Z][a-zA-Z0-9._()-]*)"
+			"xmatch": "([@\\$][a-zA-Z][a-zA-Z0-9._()-]*)",
+			"match": "((?:[@\\$][a-zA-Z][a-zA-Z0-9_-]*)(?:.[a-zA-Z][a-zA-Z0-9_-]*(?:\\((?:\"[^\"]*\"|'[^']*')*\\))?)*)"
 		}, {
 			"name": "new-line",
 			"match": "(?:\\n([ \\t]*))"
@@ -1090,15 +1115,14 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
 		}, {
+			"name": "elseHelper",
+			"match": "(?:\\{\\{(else)\\}\\})"
+		}, {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "variable",
-			"match": "(\\{\\{\\{?[a-zA-Z][a-zA-Z0-9._-]+\\}\\}\\}?)"
-		}, {
 			"name": "string",
-			"xmatch": "((?:.(?!<))+.)",
-			"match": "([^(<|\\{\\{)]+)"
+			"match": "((?:[^](?!(?:<|\\{\\{(?:#|\\/))))+[^])"
 		}
 	],
 	"modifer": "gm",
@@ -1110,8 +1134,8 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		"5": "endtag",
 		"6": "helper",
 		"7": "expression",
-		"8": "helperEnd",
-		"9": "variable",
+		"8": "elseHelper",
+		"9": "helperEnd",
 		"10": "string"
 	}
 };
@@ -1313,18 +1337,26 @@ FireTPL.registerFunction('byte', function(str, round) {
 
     return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
 });
-FireTPL.registerFunction('gt', function(str, round) {
-    var units = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-        size = parseFloat(str, 10),
-        p = 0;
+FireTPL.registerFunction('gt', function(str, cmp) {
+    return Number(str) > Number(cmp);
+});
 
-    round = round ? Math.pow(10, round) : 10;
+FireTPL.registerFunction('gte', function(str, cmp) {
+    return Number(str) >= Number(cmp);
+});
 
-    for (var i = 0, len = units.length; i < len; i++) {
-        if (Math.pow(1024, i + 1) >= size) {
-            break;
-        }
-    }
+FireTPL.registerFunction('lt', function(str, cmp) {
+    return Number(str) < Number(cmp);
+});
 
-    return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
+FireTPL.registerFunction('lte', function(str, cmp) {
+    return Number(str) <= Number(cmp);
+});
+
+FireTPL.registerFunction('eq', function(str, cmp) {
+    return Number(str) === Number(cmp);
+});
+
+FireTPL.registerFunction('not', function(str, cmp) {
+    return Number(str) !== Number(cmp);
 });

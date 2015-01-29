@@ -134,33 +134,40 @@
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
+                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
                     this.parseEndTag(data.endtag);
                     break;
                 case 'helper':
-                    this.parseHelper(data.helper, (type === 'hbs' ? '$' : '') + data.expression);
+                    this.parseHelper(data.helper, data.expression ? (type === 'hbs' ? '$' : '') + data.expression : null);
                     break;
                 case 'helperEnd':
                     this.parseHelperEnd(data.helperEnd);
+                    break;
+                case 'elseHelper':
+                    this.parseElseHelper(data.elseHelper);
                     break;
                 case 'attribute':
                     this.parseAttribute(data.attribute);
                     break;
                 case 'string':
+                    // console.log('STRING "%s"', data.string);
                     this.parseString(tmpl, data.string);
                     break;
                 case 'htmlstring':
                     this.parseHTMLString(tmpl, data.htmlstring);
                     break;
                 case 'variable':
+                    // console.log('VAR "%s"', data.variable);
                     this.parseVariable(data.variable);
                     break;
                 case 'newline':
                     this.handleIndention(data.newline);
                     break;
                 case 'unused':
+                    // console.log('UNUSED');
                     break;
                 default:
                     throw new Error('Parse error!');
@@ -345,7 +352,6 @@
         var strPattern,
             strMatch;
 
-        // console.log('Str', matchString);
         //Remove multiplr whitespaces
         matchString = matchString.trim().replace(/\s+/g, ' ');
 
@@ -409,10 +415,10 @@
                 if (strMatch) {
                     this.pos += strPattern.lastIndex;
                     if (strMatch[2]) {
-                        matchString += '\\n';
+                        matchString += '\n';
                     }
 
-                    matchString += '\\n' + strMatch[3];
+                    matchString += '\n' + strMatch[3];
                 }
                 else {
                     break;
@@ -439,6 +445,11 @@
     Compiler.prototype.parseHelperEnd = function(tag) {
         // console.log('Parse helper end tag', tag, this.closer);
         this.appendCloser();
+    };
+
+    Compiler.prototype.parseElseHelper = function(tag) {
+        this.appendCloser();
+        this.parseHelper('else');
     };
 
     Compiler.prototype.parseVariables = function(str, isCode) {
@@ -485,22 +496,32 @@
                     }
                 }
                 else if (/\)$/.test(chunks[i])) {
-                    funcs.push(chunks[i].substr(0, chunks[i].length - 2));
+                    var split = chunks[i].split(/\(/, 2);
+                    var func = split[0],
+                        args = (split[1] || '').slice(0, -1);
+
+                    if (args) {
+                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(function(arg) {
+                            return arg.replace(/^["']|["']$/g, '');
+                        });
+                    }
+
+                    funcs.push([func, args]);
                     continue;
                 }
 
                 vars.push(chunks[i]);
             }
             
-            //console.log(' ... vars', vars);
-            //console.log(' ... funcs', funcs);
+            // console.log(' ... vars', vars);
+            // console.log(' ... funcs', funcs);
             //console.log(' ... scopeTags', self.scopeTags);
             //console.log(' ... curScope', self.curScope);
             //console.log(' ... isCode', isCode);
 
             m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
-                m = 'f.' + funcs[i] + '(' + m + ')';
+                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ', \'' + funcs[i][1].join('\',\'') + '\'' : '') + ')';
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
@@ -566,8 +587,9 @@
         else {
             str = str
                 .replace(/\'/g, '\\\'')
-                .replace(/\$((\{([a-zA-Z0-9._()-]+)\})|([a-zA-Z0-9._()-]+))/g, function(match, p1, p2, p3, p4) {
-                    var m = p3 || p4;
+                // .replace(/\$/g, function(match, p1, p2, p3, p4) {
+                .replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
+                    var m = p1 || p2;
                     if (/^this\b/.test(m)) {
                         return parseVar(m.replace(/^this\.?/, ''));
                     }
@@ -719,7 +741,9 @@
                 attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
             }
             else if (match[6]) {
-                content.push(match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
+                var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
+                s = this.parseVariables(s);
+                content.push(s);
             }
 
             match = pattern.exec(str);

@@ -1166,7 +1166,8 @@ describe('FireTPL', function() {
 
 			expect(html).to.eql(
 				tmplScope
-				.root('<div id="mydiv"><b>Hello World</b><span class="listing blue"><span>\n  I am DrTest!\n</span></span></div>')
+				.root('<div id="mydiv"><b>Hello World</b><span class="listing blue">' +
+					'<span>\n  I am DrTest!\n</span></span></div>')
 			);
 		});
 	});
@@ -1760,8 +1761,8 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				undefined,
-				'if',
 				undefined,
+				'if',
 				undefined
 			]);
 		});
@@ -1815,8 +1816,8 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				undefined,
-				'{{myvar}}',
-				undefined
+				undefined,
+				'{{myvar}}'
 			]);
 		});
 
@@ -1833,8 +1834,8 @@ describe('FireTPL', function() {
 				undefined,
 				undefined,
 				undefined,
-				'{{{myvar}}}',
-				undefined
+				undefined,
+				'{{{myvar}}}'
 			]);
 		});
 
@@ -1877,6 +1878,13 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			var out = fireTpl.parseVariables(str);
 			expect(out).to.eql('Hello \'+f.bold(f.ucase(data.name))+\'!');
+		});
+
+		it('Should parse a string for variables and inline functions with args', function() {
+			var str = 'Hello $name.when("green").then("Green")!';
+			var fireTpl = new FireTPL.Compiler();
+			var out = fireTpl.parseVariables(str);
+			expect(out).to.eql('Hello \'+f.then(f.when(data.name, \'green\'), \'Green\')+\'!');
 		});
 
 		it('Should parse a string for locale tags', function() {
