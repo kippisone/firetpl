@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-29
+ * FireTPL template engine v0.3.0-0
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-29'
+		version: '0.3.0-0'
 	};
 
 	return FireTPL;
@@ -555,6 +555,10 @@ var FireTPL;
             closer = '+\'';
         }
 
+        var mapArgs = function(arg) {
+            return arg.replace(/^["']|["']$/g, '');
+        };
+
         var parseVar = function(m) {
             if (m === '') {
                 if (self.scopeTags) {
@@ -584,9 +588,7 @@ var FireTPL;
                         args = (split[1] || '').slice(0, -1);
 
                     if (args) {
-                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(function(arg) {
-                            return arg.replace(/^["']|["']$/g, '');
-                        });
+                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(mapArgs);
                     }
 
                     funcs.push([func, args]);

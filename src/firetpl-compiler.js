@@ -472,6 +472,10 @@
             closer = '+\'';
         }
 
+        var mapArgs = function(arg) {
+            return arg.replace(/^["']|["']$/g, '');
+        };
+
         var parseVar = function(m) {
             if (m === '') {
                 if (self.scopeTags) {
@@ -501,9 +505,7 @@
                         args = (split[1] || '').slice(0, -1);
 
                     if (args) {
-                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(function(arg) {
-                            return arg.replace(/^["']|["']$/g, '');
-                        });
+                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(mapArgs);
                     }
 
                     funcs.push([func, args]);
