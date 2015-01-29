@@ -6,7 +6,7 @@
  * FireTPL is licenced under MIT Licence
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2014 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
  * Author Andi Heinkelein
  *
  */
