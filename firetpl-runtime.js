@@ -1,12 +1,12 @@
 /*!
- * FireTPL template engine v0.2.0
+ * FireTPL template engine v0.3.0-1
  * 
  * FireTPL is a pretty Javascript template engine
  *
  * FireTPL is licenced under MIT Licence
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2014 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
  * Author Andi Heinkelein
  *
  */
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0'
+		version: '0.3.0-1'
 	};
 
 	return FireTPL;
@@ -180,6 +180,10 @@ var FireTPL;
 		if (!/^scopes=scopes/.test(template)) {
 			var fireTpl = new FireTPL.Compiler(options);
 			var type = options && options.type ? options.type : null;
+			if (options && options.prettify) {
+				fireTpl.prettify = true;
+			}
+			
 			template = fireTpl.precompile(template, type);
 		}
 
@@ -274,4 +278,27 @@ FireTPL.registerFunction('byte', function(str, round) {
     }
 
     return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
+});
+FireTPL.registerFunction('gt', function(str, cmp) {
+    return Number(str) > Number(cmp);
+});
+
+FireTPL.registerFunction('gte', function(str, cmp) {
+    return Number(str) >= Number(cmp);
+});
+
+FireTPL.registerFunction('lt', function(str, cmp) {
+    return Number(str) < Number(cmp);
+});
+
+FireTPL.registerFunction('lte', function(str, cmp) {
+    return Number(str) <= Number(cmp);
+});
+
+FireTPL.registerFunction('eq', function(str, cmp) {
+    return Number(str) === Number(cmp);
+});
+
+FireTPL.registerFunction('not', function(str, cmp) {
+    return Number(str) !== Number(cmp);
 });

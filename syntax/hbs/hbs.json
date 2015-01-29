@@ -17,15 +17,14 @@
 			"name": "helper",
 			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
 		}, {
+			"name": "elseHelper",
+			"match": "(?:\\{\\{(else)\\}\\})"
+		}, {
 			"name": "helperEnd",
 			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
 		}, {
-			"name": "variable",
-			"match": "(\\{\\{\\{?[a-zA-Z][a-zA-Z0-9._-]+\\}\\}\\}?)"
-		}, {
 			"name": "string",
-			"xmatch": "((?:.(?!<))+.)",
-			"match": "([^(<|\\{\\{)]+)"
+			"match": "((?:[^](?!(?:<|\\{\\{(?:#|\\/))))+[^])"
 		}
 	],
 	"modifer": "gm",
@@ -37,8 +36,8 @@
 		"5": "endtag",
 		"6": "helper",
 		"7": "expression",
-		"8": "helperEnd",
-		"9": "variable",
+		"8": "elseHelper",
+		"9": "helperEnd",
 		"10": "string"
 	}
 }
