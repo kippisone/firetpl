@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.2.0-28
+ * FireTPL template engine v0.3.0-1
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.2.0-28'
+		version: '0.3.0-1'
 	};
 
 	return FireTPL;
@@ -279,18 +279,26 @@ FireTPL.registerFunction('byte', function(str, round) {
 
     return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
 });
-FireTPL.registerFunction('gt', function(str, round) {
-    var units = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-        size = parseFloat(str, 10),
-        p = 0;
+FireTPL.registerFunction('gt', function(str, cmp) {
+    return Number(str) > Number(cmp);
+});
 
-    round = round ? Math.pow(10, round) : 10;
+FireTPL.registerFunction('gte', function(str, cmp) {
+    return Number(str) >= Number(cmp);
+});
 
-    for (var i = 0, len = units.length; i < len; i++) {
-        if (Math.pow(1024, i + 1) >= size) {
-            break;
-        }
-    }
+FireTPL.registerFunction('lt', function(str, cmp) {
+    return Number(str) < Number(cmp);
+});
 
-    return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
+FireTPL.registerFunction('lte', function(str, cmp) {
+    return Number(str) <= Number(cmp);
+});
+
+FireTPL.registerFunction('eq', function(str, cmp) {
+    return Number(str) === Number(cmp);
+});
+
+FireTPL.registerFunction('not', function(str, cmp) {
+    return Number(str) !== Number(cmp);
 });
