@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.3.0-1
+ * FireTPL template engine v0.3.1-2
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.3.0-1'
+		version: '0.3.1-2'
 	};
 
 	return FireTPL;
@@ -796,7 +796,7 @@ var FireTPL;
      * @return {Object}     Returns an object with all atttibutes and events or null
      */
     Compiler.prototype.stripAttributes = function(str) {
-        var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
+        var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$(?:(?:\{(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
         var attrs = [],
             events = [],
             content = [],

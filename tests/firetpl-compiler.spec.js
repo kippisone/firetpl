@@ -272,6 +272,20 @@ describe('FireTPL', function() {
 			expect(fireTpl.closer).to.eql(['</section>']);
 		});
 
+		it('Should parse a tag with a inline function', function() {
+			fireTpl.parseTag('section', '$title.foo()');
+
+			expect(fireTpl.out.root).to.eql('s+=\'<section>\'+f.foo(data.title)+\'');
+			expect(fireTpl.closer).to.eql(['</section>']);
+		});
+
+		it('Should parse a tag with a inline function with args', function() {
+			fireTpl.parseTag('section', '$title.foo("bla")');
+
+			expect(fireTpl.out.root).to.eql('s+=\'<section>\'+f.foo(data.title, \'bla\')+\'');
+			expect(fireTpl.closer).to.eql(['</section>']);
+		});
+
 		it('Should parse a tag with attributes and a inline variable', function() {
 			fireTpl.parseTag('section', 'class=listing $title');
 

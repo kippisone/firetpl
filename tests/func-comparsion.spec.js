@@ -1,4 +1,4 @@
-describe.only('Comparsion Functions', function() {
+describe('Comparsion Functions', function() {
     'use strict';
     
     describe('Function gt()', function() {

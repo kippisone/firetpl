@@ -713,7 +713,7 @@
      * @return {Object}     Returns an object with all atttibutes and events or null
      */
     Compiler.prototype.stripAttributes = function(str) {
-        var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$[a-zA-Z0-9._-]+))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
+        var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$(?:(?:\{(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
         var attrs = [],
             events = [],
             content = [],
