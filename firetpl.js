@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.3.1-2
+ * FireTPL template engine v0.3.1-3
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -28,7 +28,7 @@ var FireTPL;
 	'use strict';
 
 	FireTPL = {
-		version: '0.3.1-2'
+		version: '0.3.1-3'
 	};
 
 	return FireTPL;
@@ -217,7 +217,7 @@ var FireTPL;
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
-                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
+                    console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
@@ -399,6 +399,7 @@ var FireTPL;
             attrs = ' ' + attrs;
         }
 
+        console.log('CONT', tagContent);
         this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
         if (this.voidElements.indexOf(tag) === -1) {
@@ -804,6 +805,7 @@ var FireTPL;
             match;
 
         match = pattern.exec(str);
+        console.log('MATCH', match);
         while (match) {
             if (!match[0]) {
                 break;
@@ -828,6 +830,7 @@ var FireTPL;
             else if (match[6]) {
                 var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
                 s = this.parseVariables(s);
+                console.log('SSS', s);
                 content.push(s);
             }
 

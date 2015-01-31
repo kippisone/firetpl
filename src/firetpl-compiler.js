@@ -134,7 +134,7 @@
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
-                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
+                    console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
@@ -316,6 +316,7 @@
             attrs = ' ' + attrs;
         }
 
+        console.log('CONT', tagContent);
         this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
         if (this.voidElements.indexOf(tag) === -1) {
@@ -721,6 +722,7 @@
             match;
 
         match = pattern.exec(str);
+        console.log('MATCH', match);
         while (match) {
             if (!match[0]) {
                 break;
@@ -745,6 +747,7 @@
             else if (match[6]) {
                 var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
                 s = this.parseVariables(s);
+                console.log('SSS', s);
                 content.push(s);
             }
 

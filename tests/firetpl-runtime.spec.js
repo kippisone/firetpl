@@ -172,16 +172,43 @@ out:
 '<div><span>Good morning Andi!</span><span>Hello Barney!</span></div>'
 
 
+}, {
+
+title: 'tag with inline func',
+
+fire:
+'div\n\
+    span "State: $state.if(\'loggedin\', \'Logged-in\', \'Logged-out\')!"',
+
+hbs:
+null,
+
+data: {
+    state: 'loggedin'
+},
+
+out:
+'<div><span>State: Logged-in</span></div>'
+
+
 }];
 
+/* +------------------------------------------------------------------------------------+
+   | Tests
+   +------------------------------------------------------------------------------------+ */
+
 describe('FireTPL Runtime', function() {
-    describe('Template Parser', function() {
+    describe.only('Template Parser', function() {
         parserFood.forEach(function(item) {
             it('Should parse "' + item.title + '" using fire syntax', function() {
                 var fire = FireTPL.compile(item.fire);
                 var html = fire(item.data);
                 expect(html).to.eql(item.out);
             });
+
+            if (!item.hbs) {
+                return;
+            }
 
             it('Should parse "' + item.title + '" using hbs syntax', function() {
                 var hbs = FireTPL.compile(item.hbs, {
