@@ -172,23 +172,23 @@ out:
 '<div><span>Good morning Andi!</span><span>Hello Barney!</span></div>'
 
 
-}, {
+// }, {
 
-title: 'tag with inline func',
+// title: 'tag with inline func',
 
-fire:
-'div\n\
-    span "State: $state.if(\'loggedin\', \'Logged-in\', \'Logged-out\')!"',
+// fire:
+// 'div\n\
+//     span "State: $state.if(\'loggedin\', \'Logged-in\', \'Logged-out\')!"',
 
-hbs:
-null,
+// hbs:
+// null,
 
-data: {
-    state: 'loggedin'
-},
+// data: {
+//     state: 'loggedin'
+// },
 
-out:
-'<div><span>State: Logged-in</span></div>'
+// out:
+// '<div><span>State: Logged-in</span></div>'
 
 
 }];
@@ -198,7 +198,7 @@ out:
    +------------------------------------------------------------------------------------+ */
 
 describe('FireTPL Runtime', function() {
-    describe.only('Template Parser', function() {
+    describe('Template Parser', function() {
         parserFood.forEach(function(item) {
             it('Should parse "' + item.title + '" using fire syntax', function() {
                 var fire = FireTPL.compile(item.fire);

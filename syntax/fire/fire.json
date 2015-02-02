@@ -49,5 +49,77 @@
 		"11": "variable",
 		"12": "newline"
 	},
-	"addEmptyCloseTags": true
+	"addEmptyCloseTags": true,
+	"pattern": [
+		{
+			"name": "indention",
+			"func": "parseIndention",
+			"args": ["indention"],
+			"parts": [
+				{
+					"name": "indentionString",
+					"pattern": "(^[ \\t]+)"
+				}
+			]
+		}, {
+			"name": "attribute",
+			"func": "parseAttribute",
+			"args": ["attributeName", "attributeValue"],
+			"parts": [
+				{
+					"name": "attributeName",
+					"pattern": "([a-zA-Z0-9_]+)="
+				}, {
+					"name": "attributeValue",
+					"pattern": "((?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+))"
+				}
+			]
+		}, {
+			"name": "tag",
+			"func": "parseTag",
+			"args": ["tag"],
+			"parts": [
+				{
+					"name": "tagName",
+					"pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+				}
+			]
+		}, {
+			"name": "string",
+			"func": "parseString",
+			"args": ["stringValue"],
+			"parts": [
+				{
+					"name": "stringValue",
+					"pattern": "\\\"([^\\\"]*)\\\""
+				}
+			]
+		}, {
+			"name": "helper",
+			"func": "parseHelper",
+			"args": ["helperName", "helperExpression", "helperTag"],
+			"parts": [
+				{
+					"name": "helperName",
+					"pattern": ":([a-zA-Z][a-zA-Z0-9_-]*)"
+				}, {
+					"name": "helperExpression",
+					"pattern": "[\\t ]*\\$([a-zA-Z][a-zA-Z0-9._-]*)"
+				}, {
+					"name": "helperTag",
+					"pattern": "(?:[\\t ]*:(.*))?"
+				}
+			]
+		}, {
+			"name": "variable",
+			"func": "parseVariable",
+			"args": ["variableString"],
+			"parts": [
+				{
+					"name": "variableString",
+					"pattern": "([@\\$](?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)"
+				}
+			]
+		}
+	]
 }

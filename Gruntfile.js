@@ -1,4 +1,4 @@
-module.exports = function(grunt) {
+describe('FireTPL', function() {
     'use strict';
     
     var pkg = grunt.file.readJSON('package.json'),

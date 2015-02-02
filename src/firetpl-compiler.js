@@ -8,7 +8,6 @@
  * @module FireTPL.Compiler
  */
 (function(FireTPL, undefined) {
-    /*global define:false */
     'use strict';
 
     var Compiler = function(options) {
@@ -134,7 +133,7 @@
                     this.handleIndention(data.indention);
                     break;
                 case 'tag':
-                    console.log('TAG "%s"', data.tag, data.tagAttributes);
+                    // console.log('TAG "%s"', data.tag, data.tagAttributes);
                     this.parseTag(data.tag, data.tagAttributes);
                     break;
                 case 'endtag':
@@ -316,7 +315,7 @@
             attrs = ' ' + attrs;
         }
 
-        console.log('CONT', tagContent);
+        // console.log('CONT', tagContent);
         this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
         this.append('str', tagContent);
         if (this.voidElements.indexOf(tag) === -1) {
