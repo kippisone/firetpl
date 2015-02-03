@@ -375,9 +375,10 @@ describe.only('Parser', function() {
             'parseCodeBlock', 'parseAttribute', 'parseIndention'];
 
         var parser, 
-            result = [];
+            result;
 
         beforeEach(function() {
+            result = [];
             parser = new Parser();
             stubs = stubs.map(function(stub) {
                 return sinon.stub(parser, stub, function() {
@@ -426,6 +427,28 @@ describe.only('Parser', function() {
                 ['parseAttribute', 'id', '"regform"'],
                 ['parseIndention', '            '],
                 ['parseString', 'Create new account $name']
+            ]);
+        });
+
+        it('Should parse a code block', function() {
+            var tmpl =
+                'div\n' +
+                '    ```js\n' +
+                '        var bla = "blubb";\n' +
+                '        bla = bla.concat(`$inlineVar`).trim();\n' +
+                '        console.log(bla);\n' +
+                '    ```\n';
+
+            parser.parse(tmpl);
+            expect(result).to.eql([
+                ['parseTag', 'div'],
+                ['parseIndention', '    '],
+                ['parseCodeBlock', 'js',
+                    'js\n' +
+                    '        var bla = "blubb";\n' +
+                    '        bla = bla.concat(`$inlineVar`).trim();\n' +
+                    '        console.log(bla);\n    '
+                ]
             ]);
         });
     });
@@ -575,5 +598,171 @@ describe.only('Parser', function() {
         });
     });
 
+    describe('parseVariable', function() {
+        it('Should parse a variable', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name');
 
+            expect(fireTpl.flush()).to.eql('s+=\'\'+data.name+\'\';');
+        });
+
+        it('Should parse $this', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$this');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+data+\'\';');
+        });
+
+        it('Should parse $root', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$root.name');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+root.name+\'\';');
+        });
+
+        it('Should parse $parent', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$parent.name');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+parent.name+\'\';');
+        });
+
+        it('Should parse a chained variable variables', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.firstname');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+data.name.firstname+\'\';');
+        });
+
+        it('Should parse a variable with inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.if("andi", "Andi", "Other")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using single quotes', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.if(\'andi\', \'Andi\', \'Other\')');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
+        });
+
+        it('Should parse an inline function with an integer value', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$number.eq(3)');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.eq(data.number,3)+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using single quotes in args', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.if("andi", "\'Andi\'", "\'Other\'")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\')+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using double quotes in args', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.if("andi", \'\"Andi\"\', \'\"Other\"\')');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'\"Andi\"\',\'\"Other\"\')+\'\';');
+        });
+
+        it('Should parse a variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(data.name,\'andi\'),\'Andi\')+\'\';');
+        });
+
+        it('Should parse a chained variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$name.firstname.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(data.name.firstname,\'andi\'),\'Andi\')+\'\';');
+        });
+
+        it('Should parse a parent variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$parent.name.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(parent.name,\'andi\'),\'Andi\')+\'\';');
+        });
+
+        it('Should parse a chained parent variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$parent.name.firstname.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(parent.name.firstname,\'andi\'),\'Andi\')+\'\';');
+        });
+
+        it('Should parse a root variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$root.name.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(root.name,\'andi\'),\'Andi\')+\'\';');
+        });
+
+        it('Should parse a chained root variable with multiple inline functions', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('$root.name.firstname.when("andi").then("Andi")');
+
+            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(root.name.firstname,\'andi\'),\'Andi\')+\'\';');
+        });
+    });
+
+    describe('parseHelper', function() {
+        it('Should parse a helper', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseHelper('if', 'name');
+
+            expect(fireTpl.flush()).to.eql('scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';return s;});s+=r;return s;};s+=scopes.scope001(name,data);'); 
+        });
+    });
+
+    describe('parseAttribute', function() {
+        it('Should parse an attribute tag', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', 'bla');
+
+            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+        });
+
+        it('Should parse an attribute tag, value within double quotes', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', '"bla"');
+
+            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+        });
+
+        it('Should parse an attribute tag, value within single quotes', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', '\'bla\'');
+
+            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+        });
+
+        it('Should parse an tag with multiple attributes', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', '\'bla\'');
+            fireTpl.parseAttribute('id', '\'blubb\'');
+
+            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla" id="blubb"></div>\';');
+        });
+
+        it('Should parse a tag with a newline attribute', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseIndention('    ');
+            fireTpl.parseAttribute('class', '\'bla\'');
+            fireTpl.parseAttribute('id', '\'blubb\'');
+
+            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla" id="blubb"></div>\';');
+        });
+    });
 });

@@ -35,6 +35,7 @@ module.exports = function(FireTPL) {
         this.pos = 0;
         this.addEmptyCloseTags = false;
         this.indentionPattern = /\t| {1,4}/g;
+        this.isNewLine = true;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
     };
@@ -82,11 +83,15 @@ module.exports = function(FireTPL) {
             for (var i = 0, len = pat.funcs.length; i < len; i++) {
                 if (match[pat.funcs[i].index]) {
                     //Map args
-                    var args = pat.funcs[i].args.map(mapArgs);
+                    var args = pat.funcs[i].args.map(mapArgs),
+                        func = pat.funcs[i].func;
 
                     //Call parser func
                     // console.log('Call:', pat.funcs[i].func);
-                    this[pat.funcs[i].func].apply(this, args);
+                    this[func].apply(this, args);
+                    if (!func) {
+                        this.isNewLine = false;
+                    }
                     break;
                 }
             }
@@ -167,6 +172,7 @@ module.exports = function(FireTPL) {
         }
                 
         this.indention = indention;
+        this.isNewLine = true;
     };
 
     /**
@@ -206,7 +212,10 @@ module.exports = function(FireTPL) {
      * @param  {string} variable Tag name
      */
     Parser.prototype.parseVariable = function(variable) {
-        
+        this.append('str', this.matchVariables(variable));
+        if (this.tmplType === 'fire') {
+            this.closer.push('');
+        }
     };
 
     /**
@@ -215,17 +224,67 @@ module.exports = function(FireTPL) {
      * @private
      * @param  {string} helper Tag name
      */
-    Parser.prototype.parseHelper = function(helper) {
+    Parser.prototype.parseHelper = function(helper, expr, tag, tagAttrs) {
+        var scopeId;
+
+        if (helper === 'else') {
+            this.closer.push(['code', '']);
+            this.newScope(this.lastIfScope);
+            this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
+            this.closer.push(['code', 'return s;});}']);
+            this.closer.push('scope');
+            return;
+        }
+
+        // this.lastIfScope = null;
+        scopeId = this.getNextScope();
+
+        if (tag) {
+            if (this.scopeTags) {
+                tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+            }
+            this.parseTag(tag, tagAttrs);
+        }
+        else {
+            this.closer.push('');
+        }
+
+        if (expr) {
+            expr = expr.trim();
+            expr = this.matchVariables(expr, true);
+        }
+
+        if (this.scopeTags) {
+            this.append('str', '<scope id="scope' + scopeId + '" path="' + expr + '"></scope>');
+        }
+        else {
+            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data);');
+        }
         
+        this.newScope('scope' + scopeId);
+
+        if (helper === 'if') {
+            // this.lastIfScope = scopeId;
+            this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
+            this.closer.push(['code', 'return s;});s+=r;']);
+        }
+        else {
+            this.append('code', 's+=h.exec(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
+            this.closer.push(['code', 'return s;});']);
+        }
+
+        this.closer.push('scope');
+        // this.appendCloser();
     };
 
     /**
      * Parse a code block
-     * 
+     *
      * @private
-     * @param  {string} code block Tag name
+     * @param  {string} type Source codetype
+     * @param  {string} code Source code content
      */
-    Parser.prototype.parseCodeBlock = function(code) {
+    Parser.prototype.parseCodeBlock = function(type, code) {
         
     };
 
@@ -235,8 +294,18 @@ module.exports = function(FireTPL) {
      * @private
      * @param  {string} attribute Tag name
      */
-    Parser.prototype.parseAttribute = function(attribute) {
-        
+    Parser.prototype.parseAttribute = function(attrName, attrValue) {
+        var attr = attrName + '="' + attrValue.replace(/^["\']|["\']$/g, '') + '"';
+
+        if (this.out[this.curScope[0]].slice(-1) !== '>') {
+            throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
+        }
+
+        this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+
+        if (this.tmplType === 'fire' && this.isNewLine) {
+            this.closer.push('');
+        }
     };
 
     /**
@@ -265,11 +334,15 @@ module.exports = function(FireTPL) {
         }
 
         var mapArgs = function(arg) {
-            return arg.replace(/^["']|["']$/g, '');
+            arg = arg.replace(/^["']|["']$/g, '');
+            if (!/^\d+/.test(arg)) {
+                arg = '\'' + arg.replace(/\'/g, '\\\'') +'\'';
+            }
+
+            return arg;
         };
 
         var parseVar = function(m) {
-            console.log('Parse var', m);
             if (m === '') {
                 if (self.scopeTags) {
                     return '\'+data+\'';
@@ -298,7 +371,7 @@ module.exports = function(FireTPL) {
                         args = (split[1] || '').slice(0, -1);
 
                     if (args) {
-                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(mapArgs);
+                        args = args.match(/"[^"]*"|'[^']*'|\d+/g).map(mapArgs);
                     }
 
                     funcs.push([func, args]);
@@ -308,15 +381,9 @@ module.exports = function(FireTPL) {
                 vars.push(chunks[i]);
             }
             
-            // console.log(' ... vars', vars);
-            // console.log(' ... funcs', funcs);
-            //console.log(' ... scopeTags', self.scopeTags);
-            //console.log(' ... curScope', self.curScope);
-            //console.log(' ... isCode', isCode);
-
             m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
-                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',\'' + funcs[i][1].join('\',\'') + '\'' : '') + ')';
+                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
@@ -331,57 +398,57 @@ module.exports = function(FireTPL) {
         };
 
         var pat = this.patternBuilder('variable');
-        var reg = new RegExp(pat.pattern, 'g');
-        str = str.replace(/\'/g, '\\\'').replace(reg, function(match) {
-            console.log('Match', match);
-            if (match.charAt(0) === '@') {
-                return opener + 'l.' + match.substr(1) + closer;
+        var reg = new RegExp(pat.pattern.slice(1, -1), 'g');
+        var split = str.split(reg);
+        split = split.map(function(item) {
+            if (item.charAt(0) === '@') {
+                return opener + 'l.' + item.substr(1) + closer;
             }
-
-            return parseVar(match.substr(1).replace(/^this\.?/, ''));
-
-            if (self.tmplType === 'hbs') {
-                return match
-                    .replace(/\'/g, '\\\'')
-                    .replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
-                    .replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
-                    .replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'');
+            else if(item.charAt(0) === '$') {
+                return parseVar(item.substr(1).replace(/^this\.?/, ''));
             }
             else {
-
-                str = str
-                    .replace(/\'/g, '\\\'')
-                    // .replace(/\$/g, function(match, p1, p2, p3, p4) {
-                    //.replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
-                    .replace(/^\$\{?(.*)\}?$/g, function(match, p1, p2) {
-                        console.log('Match', match, p1);
-                        var m = p1 || p2;
-                        if (/^this\b/.test(m)) {
-                            return parseVar(m.replace(/^this\.?/, ''));
-                        }
-                        
-                        return parseVar(m);
-                        
-                    })
-                    .replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+                return item.replace(/\'/g, '\\\'');
             }
         });
 
-
-        return str;
-    };
-
-    /**
-     * Creates a human readable error output
-     *
-     * Generates an error message and shows the area of code where the error has been occurred.
-     * Uses the this.pos property to determine the error position
-     *
-     * @private
-     * @param {string} msg Error message
-     */
-    Parser.prototype.createError = function(msg) {
+        return split.join('');
         
+        // str = str.replace(reg, function(match) {
+        //     if (match.charAt(0) === '@') {
+        //         return opener + 'l.' + match.substr(1) + closer;
+        //     }
+
+        //     return parseVar(match.substr(1).replace(/^this\.?/, ''));
+
+        //     if (self.tmplType === 'hbs') {
+        //         return match
+        //             .replace(/\'/g, '\\\'')
+        //             .replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
+        //             .replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
+        //             .replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'');
+        //     }
+        //     else {
+
+        //         str = str
+        //             .replace(/\'/g, '\\\'')
+        //             // .replace(/\$/g, function(match, p1, p2, p3, p4) {
+        //             //.replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
+        //             .replace(/^\$\{?(.*)\}?$/g, function(match, p1, p2) {
+        //                 var m = p1 || p2;
+        //                 if (/^this\b/.test(m)) {
+        //                     return parseVar(m.replace(/^this\.?/, ''));
+        //                 }
+                        
+        //                 return parseVar(m);
+                        
+        //             })
+        //             .replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+        //     }
+        // });
+
+
+        // return str;
     };
 
     /**
@@ -563,6 +630,26 @@ module.exports = function(FireTPL) {
         }
 
         return i;
+    };
+
+    /**
+     * Get next scope id
+     *
+     * @method getNextScope
+     */
+    Parser.prototype.getNextScope = function() {
+        return this.nextScope < 1000 ? '00' + String(++this.nextScope).substr(-3) : '' + (++this.nextScope);
+    };
+
+    /**
+     * Add and change scope
+     * @method newScope
+     * @param {String} scope New scope
+     */
+    Parser.prototype.newScope = function(scope) {
+        this.append('code', '');
+        this.curScope.unshift(scope);
+        this.out[scope] = this.out[scope] || '';
     };
 
     return Parser;
