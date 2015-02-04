@@ -89,7 +89,7 @@ module.exports = function(FireTPL) {
                     //Call parser func
                     // console.log('Call:', pat.funcs[i].func);
                     this[func].apply(this, args);
-                    if (!func) {
+                    if (func !== 'parseIndention') {
                         this.isNewLine = false;
                     }
                     break;
@@ -108,8 +108,7 @@ module.exports = function(FireTPL) {
             this.appendCloser();
         }
 
-        // var outStream = 'scopes=scopes||{};var root=data,parent=data;';
-        var outStream = '';
+        var outStream = 'scopes=scopes||{};var root=data,parent=data;';
         var keys = Object.keys(this.out);
 
         keys = keys.sort(function(a, b) {
@@ -124,7 +123,7 @@ module.exports = function(FireTPL) {
             outStream += 'scopes.' + key + '=function(data,parent){var s=\'\';' + this.out[key] + 'return s;};';
         }.bind(this));
 
-        // outStream += 'var s=\'\';';
+        outStream += 'var s=\'\';';
         outStream += this.out.root;
 
         if (this.lastItemType === 'str') {
@@ -171,6 +170,7 @@ module.exports = function(FireTPL) {
             }
         }
                 
+        this.lastIndention = this.indention;
         this.indention = indention;
         this.isNewLine = true;
     };
@@ -200,7 +200,7 @@ module.exports = function(FireTPL) {
         str = str.trim().replace(/\s+/g, ' ');
         str = this.matchVariables(str);
         this.append('str', str);
-        if (this.addEmptyCloseTags && this.tmplType === 'fire') {
+        if (this.addEmptyCloseTags && this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
     };
@@ -213,7 +213,7 @@ module.exports = function(FireTPL) {
      */
     Parser.prototype.parseVariable = function(variable) {
         this.append('str', this.matchVariables(variable));
-        if (this.tmplType === 'fire') {
+        if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
     };
@@ -285,7 +285,10 @@ module.exports = function(FireTPL) {
      * @param  {string} code Source code content
      */
     Parser.prototype.parseCodeBlock = function(type, code) {
-        
+        var cssClass = 'class="' + type + '"';
+        code = this.undent(this.indention + 1, code);
+        code = this.escape(code).trim();
+        this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
 
     /**
@@ -413,42 +416,6 @@ module.exports = function(FireTPL) {
         });
 
         return split.join('');
-        
-        // str = str.replace(reg, function(match) {
-        //     if (match.charAt(0) === '@') {
-        //         return opener + 'l.' + match.substr(1) + closer;
-        //     }
-
-        //     return parseVar(match.substr(1).replace(/^this\.?/, ''));
-
-        //     if (self.tmplType === 'hbs') {
-        //         return match
-        //             .replace(/\'/g, '\\\'')
-        //             .replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
-        //             .replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
-        //             .replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'');
-        //     }
-        //     else {
-
-        //         str = str
-        //             .replace(/\'/g, '\\\'')
-        //             // .replace(/\$/g, function(match, p1, p2, p3, p4) {
-        //             //.replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
-        //             .replace(/^\$\{?(.*)\}?$/g, function(match, p1, p2) {
-        //                 var m = p1 || p2;
-        //                 if (/^this\b/.test(m)) {
-        //                     return parseVar(m.replace(/^this\.?/, ''));
-        //                 }
-                        
-        //                 return parseVar(m);
-                        
-        //             })
-        //             .replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
-        //     }
-        // });
-
-
-        // return str;
     };
 
     /**
@@ -650,6 +617,28 @@ module.exports = function(FireTPL) {
         this.append('code', '');
         this.curScope.unshift(scope);
         this.out[scope] = this.out[scope] || '';
+    };
+
+    Parser.prototype.undent = function(dept, code) {
+        var pattern = '^(\t| {4}){' + dept + '}';
+        var reg = new RegExp(pattern);
+        return code.replace(/^\n|\n$/g, '').split('\n').map(function(line) {
+            return line.replace(reg, '');
+        }).join('\n');
+    };
+
+    Parser.prototype.escape = function(str) {
+        return str.replace(/\'/g, '\\\'');
+    };
+
+    Parser.prototype.htmlEscape = function(str) {
+        var chars = {
+            '"': '&quot;'
+        };
+
+        return str.replace(/["&<>]/g, function(ch) {
+            return chars[ch];
+        });
     };
 
     return Parser;

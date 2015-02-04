@@ -1,5 +1,8 @@
 {
 	"project": "FireTPL Node",
 	"files": "../src/firetpl-parser.js",
-	"tests": "../tests/firetpl-parser.spec.js"
+	"tests": [
+        "../tests/firetpl-parser.spec.js",
+        "../tests/firetpl-runtime.spec.js"
+    ]
 }

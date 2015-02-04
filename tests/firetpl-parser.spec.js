@@ -1,7 +1,8 @@
 describe.only('Parser', function() {
     'use strict';
 
-    var Parser = require('../firetpl-node').Parser;
+    var Parser = require('../firetpl-node').Parser,
+        coffeeTools = require('./coffee-tools');
 
     var predefinedSyntaxConfig = {
         "pattern": [
@@ -370,14 +371,50 @@ describe.only('Parser', function() {
         });
     });
 
+    describe('undent', function() {
+        it('Should undent a string block', function() {
+            var fireTpl = new Parser();
+            var str = '\n' + 
+                '        div\n' +     
+                '            span\n' +     
+                '            "Undented"\n' +     
+                '        \n';
+
+            expect(fireTpl.undent(2, str)).to.eql(
+                'div\n' +     
+                '    span\n' +     
+                '    "Undented"\n' +     
+                ''
+            );     
+        });
+    });
+
+    describe('escape', function() {
+        it('Should escape a string', function() {
+            var fireTpl = new Parser();
+            var str = fireTpl.escape('Hello \'Andi\'');
+            expect(str).to.eql('Hello \\\'Andi\\\'');
+        });
+    });
+
+    describe('htmlEscape', function() {
+        it('Should escape a html string', function() {
+            var fireTpl = new Parser();
+            var str = fireTpl.htmlEscape('Hello "Andi"');
+            expect(str).to.eql('Hello &quot;Andi&quot;');
+        });
+    });
+
     describe('parse', function() {
-        var stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
-            'parseCodeBlock', 'parseAttribute', 'parseIndention'];
+        var stubs;
 
         var parser, 
             result;
 
         beforeEach(function() {
+            stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
+            'parseCodeBlock', 'parseAttribute', 'parseIndention'];
+
             result = [];
             parser = new Parser();
             stubs = stubs.map(function(stub) {
@@ -444,7 +481,7 @@ describe.only('Parser', function() {
                 ['parseTag', 'div'],
                 ['parseIndention', '    '],
                 ['parseCodeBlock', 'js',
-                    'js\n' +
+                    '\n' +
                     '        var bla = "blubb";\n' +
                     '        bla = bla.concat(`$inlineVar`).trim();\n' +
                     '        console.log(bla);\n    '
@@ -458,21 +495,21 @@ describe.only('Parser', function() {
             var parser = new Parser();
             parser.parseTag('div');
 
-            expect(parser.flush()).to.eql('s+=\'<div></div>\';');
+            expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div></div>\';');
         });
 
         it('Should parse a void tag', function() {
             var parser = new Parser();
             parser.parseTag('img');
 
-            expect(parser.flush()).to.eql('s+=\'<img>\';');
+            expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<img>\';');
         });
 
         it('Should parse a non standard tag', function() {
             var parser = new Parser();
             parser.parseTag('beer');
 
-            expect(parser.flush()).to.eql('s+=\'<beer></beer>\';');
+            expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<beer></beer>\';');
         });
     });
 
@@ -573,28 +610,28 @@ describe.only('Parser', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello World!');
 
-            expect(fireTpl.flush()).to.eql('s+=\'Hello World!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello World!\';');
         });
 
         it('Should parse a string with with variables', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name!');
 
-            expect(fireTpl.flush()).to.eql('s+=\'Hello \'+data.name+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+data.name+\'!\';');
         });
 
         it('Should parse a string with with multiple variables', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name.firstname $name.lastname!');
 
-            expect(fireTpl.flush()).to.eql('s+=\'Hello \'+data.name.firstname+\' \'+data.name.lastname+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+data.name.firstname+\' \'+data.name.lastname+\'!\';');
         });
 
         it('Should parse a string with inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name.if("andi", "Andi", "Other")!');
 
-            expect(fireTpl.flush()).to.eql('s+=\'Hello \'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'!\';');
         });
     });
 
@@ -603,112 +640,112 @@ describe.only('Parser', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+data.name+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data.name+\'\';');
         });
 
         it('Should parse $this', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$this');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+data+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data+\'\';');
         });
 
         it('Should parse $root', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+root.name+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+root.name+\'\';');
         });
 
         it('Should parse $parent', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+parent.name+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+parent.name+\'\';');
         });
 
         it('Should parse a chained variable variables', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.firstname');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+data.name.firstname+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data.name.firstname+\'\';');
         });
 
         it('Should parse a variable with inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", "Andi", "Other")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
         });
 
         it('Should parse a variable with inline functions, using single quotes', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if(\'andi\', \'Andi\', \'Other\')');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'\';');
         });
 
         it('Should parse an inline function with an integer value', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$number.eq(3)');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.eq(data.number,3)+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.eq(data.number,3)+\'\';');
         });
 
         it('Should parse a variable with inline functions, using single quotes in args', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", "\'Andi\'", "\'Other\'")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(data.name,\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\')+\'\';');
         });
 
         it('Should parse a variable with inline functions, using double quotes in args', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", \'\"Andi\"\', \'\"Other\"\')');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.if(data.name,\'andi\',\'\"Andi\"\',\'\"Other\"\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(data.name,\'andi\',\'\"Andi\"\',\'\"Other\"\')+\'\';');
         });
 
         it('Should parse a variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(data.name,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(data.name,\'andi\'),\'Andi\')+\'\';');
         });
 
         it('Should parse a chained variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(data.name.firstname,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(data.name.firstname,\'andi\'),\'Andi\')+\'\';');
         });
 
         it('Should parse a parent variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(parent.name,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(parent.name,\'andi\'),\'Andi\')+\'\';');
         });
 
         it('Should parse a chained parent variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(parent.name.firstname,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(parent.name.firstname,\'andi\'),\'Andi\')+\'\';');
         });
 
         it('Should parse a root variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(root.name,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(root.name,\'andi\'),\'Andi\')+\'\';');
         });
 
         it('Should parse a chained root variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('s+=\'\'+f.then(f.when(root.name.firstname,\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(root.name.firstname,\'andi\'),\'Andi\')+\'\';');
         });
     });
 
@@ -717,7 +754,7 @@ describe.only('Parser', function() {
             var fireTpl = new Parser();
             fireTpl.parseHelper('if', 'name');
 
-            expect(fireTpl.flush()).to.eql('scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';return s;});s+=r;return s;};s+=scopes.scope001(name,data);'); 
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';return s;});s+=r;return s;};var s=\'\';s+=scopes.scope001(name,data);'); 
         });
     });
 
@@ -727,7 +764,7 @@ describe.only('Parser', function() {
             fireTpl.parseTag('div');
             fireTpl.parseAttribute('class', 'bla');
 
-            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla"></div>\';');
         });
 
         it('Should parse an attribute tag, value within double quotes', function() {
@@ -735,7 +772,7 @@ describe.only('Parser', function() {
             fireTpl.parseTag('div');
             fireTpl.parseAttribute('class', '"bla"');
 
-            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla"></div>\';');
         });
 
         it('Should parse an attribute tag, value within single quotes', function() {
@@ -743,7 +780,7 @@ describe.only('Parser', function() {
             fireTpl.parseTag('div');
             fireTpl.parseAttribute('class', '\'bla\'');
 
-            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla"></div>\';');
         });
 
         it('Should parse an tag with multiple attributes', function() {
@@ -752,7 +789,7 @@ describe.only('Parser', function() {
             fireTpl.parseAttribute('class', '\'bla\'');
             fireTpl.parseAttribute('id', '\'blubb\'');
 
-            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla" id="blubb"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
         });
 
         it('Should parse a tag with a newline attribute', function() {
@@ -762,7 +799,413 @@ describe.only('Parser', function() {
             fireTpl.parseAttribute('class', '\'bla\'');
             fireTpl.parseAttribute('id', '\'blubb\'');
 
-            expect(fireTpl.flush()).to.eql('s+=\'<div class="bla" id="blubb"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
+        });
+    });
+
+    describe('parseCodeBlock', function() {
+        it('Should parse a code block', function() {
+           var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseIndention('    ');
+            fireTpl.parseCodeBlock('js',
+                '\n' +
+                '        var bla = \'blubb\'\n' +
+                '        console.log(bla);\n' +
+                '    '
+            );
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><code class="js">var bla = \\\'blubb\\\'\nconsole.log(bla);</code></div>\';');
+        });
+    });
+
+    describe.skip('parseFuncs', function() {
+        var fireTpl;
+
+        before(function() {
+            fireTpl = new Parser();
+            fireTpl.addEmptyCloseTags = true;
+        });
+
+        it('Should append a header tag', function() {
+            fireTpl.parseTag('header');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header>');
+            expect(fireTpl.closer).to.eql(['</header>']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header>');
+            expect(fireTpl.closer).to.eql(['</header>']);
+        });
+
+        it(' ... append a h1 tag', function() {
+            fireTpl.parseTag('h1');
+            fireTpl.parseString('"Hello World');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header><h1>Hello World');
+            expect(fireTpl.closer).to.eql(['</header>', '</h1>']);
+        });
+
+        it(' ... append an indention (-1)', function() {
+            fireTpl.parseIndention('');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header><h1>Hello World</h1></header>');
+            expect(fireTpl.closer).to.eql([]);
+        });
+
+        it(' ... append a section tag', function() {
+            fireTpl.parseTag('section', 'class=main');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header><h1>Hello World</h1></header><section class="main">');
+            expect(fireTpl.closer).to.eql(['</section>']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t');
+
+            expect(fireTpl.out.root).to.eql('s+=\'<header><h1>Hello World</h1></header><section class="main">');
+            expect(fireTpl.closer).to.eql(['</section>']);
+        });
+
+        it(' ... append a ul tag', function() {
+            fireTpl.parseTag('ul', 'class="listing"');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">'
+            );
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">'
+            );
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>']);
+        });
+
+        it(' ... append an each helper', function() {
+            fireTpl.parseHelper('each', '$listing');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t\t\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope']);
+        });
+
+        it(' ... append a li tag', function() {
+            fireTpl.parseTag('li', 'class="item"');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item">'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t\t\t\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item">'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
+        });
+
+        it(' ... append a img tag', function() {
+            fireTpl.parseTag('img', 'src="$url"');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'">'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '']);
+        });
+
+        it(' ... append an indention (0)', function() {
+            fireTpl.parseIndention('\t\t\t\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'">'
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
+        });
+
+        it(' ... append a span tag', function() {
+            fireTpl.parseTag('span', '$name');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\''
+            );
+
+            expect(fireTpl.closer).to.eql(['</section>', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
+        });
+
+        it(' ... close all tags, indention === 0', function() {
+            fireTpl.parseIndention('');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section>'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\'</span></li>\';return s;});'
+            );
+
+            expect(fireTpl.closer).to.eql([]);
+        });
+
+        it(' ... append a footer tag', function() {
+            fireTpl.parseTag('footer');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer>'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\'</span></li>\';return s;});'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer>'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\'</span></li>\';return s;});'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>']);
+        });
+
+        it(' ... append a span tag', function() {
+            fireTpl.parseTag('span');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span>'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\'</span></li>\';return s;});'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>', '</span>']);
+        });
+
+        it(' ... append an indention (0)', function() {
+            fireTpl.parseIndention('\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span></span>'
+            );
+
+            expect(fireTpl.out.scope001).to.eql(
+                's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+                's+=\'<li class="item"><img src="\'+data.url+\'"><span>\'+data.name+\'</span></li>\';return s;});'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>']);
+        });
+
+        it(' ... append a if helper (same indention)', function() {
+            fireTpl.parseHelper('if', '$isAdmin');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span></span>\';s+=scopes.scope002(data.isAdmin,data);' +
+                ''
+            );
+
+            expect(fireTpl.out.scope002).to.eql(
+                'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>', '', ['code', 'return s;});s+=r;'], 'scope']);
+        });
+
+        it(' ... append an indention (+1)', function() {
+            fireTpl.parseIndention('\t\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span></span>\';s+=scopes.scope002(data.isAdmin,data);' +
+                ''
+            );
+
+            expect(fireTpl.out.scope002).to.eql(
+                'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>', '', ['code', 'return s;});s+=r;'], 'scope']);
+        });
+
+        it(' ... append a span tag', function() {
+            fireTpl.parseTag('span', '"Hello Admin"');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span></span>\';s+=scopes.scope002(data.isAdmin,data);' +
+                ''
+            );
+
+            expect(fireTpl.out.scope002).to.eql(
+                'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
+                's+=\'<span>Hello Admin'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>', '', ['code', 'return s;});s+=r;'], 'scope', '</span>']);
+        });
+
+        it(' ... append an indention (-1)', function() {
+            fireTpl.parseIndention('\t');
+
+            expect(fireTpl.out.root).to.eql(
+                's+=\'<header><h1>Hello World</h1></header><section class="main">' +
+                '<ul class="listing">\';s+=scopes.scope001(data.listing,data);' +
+                's+=\'</ul></section><footer><span></span>\';s+=scopes.scope002(data.isAdmin,data);' +
+                ''
+            );
+
+            expect(fireTpl.out.scope002).to.eql(
+                'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
+                's+=\'<span>Hello Admin</span>\';return s;});s+=r;'
+            );
+
+            expect(fireTpl.closer).to.eql(['</footer>']);
+        });
+    });
+
+    describe.only('parse a fire tpl', function() {
+        var tmpl,
+            parser,
+            next,
+            rec,
+            res = [],
+            stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
+                'parseCodeBlock', 'parseAttribute', 'parseIndention'];
+
+        before(function() {
+            tmpl =
+                'div class="firetpl-template"\n' +
+                '    h1 "This is a basic firetpl tempalte"\n' +
+                '    span $version\n' +
+                '    :if $listing\n' +
+                '        h2 "Has listings:"\n' +
+                '            :each $listing : ul\n' +
+                '                li class="item"\n' +
+                '                    span class="name" $name\n' +
+                '                    span class="gender" $gender\n' +
+                '    :else\n' +
+                '        h2 "Hasn\'t any listings!"\n'
+            ;
+
+            parser = new Parser();
+
+            rec = coffeeTools.record(parser, stubs);
+
+            parser.parse(tmpl);
+            rec.play();
+        });
+
+        after(function() {
+            
+        });
+
+        it('Should parse a template', function() {
+            var step = rec.next();
+            expect(step.name).to.eql('parseTag');
+            expect(step.args[0]).to.eql('div');
+            expect(parser.out.root).to.eql('s+=\'<div>');
+            expect(parser.closer).to.eql(['</div>']);
+        });
+
+        it(' ... add a class', function() {
+            var step = rec.next();
+            expect(step.name).to.eql('parseAttribute');
+            expect(step.args[0]).to.eql('class', '"firetpl-template"');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template">');
+            expect(parser.closer).to.eql(['</div>']);
         });
     });
 });

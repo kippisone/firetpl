@@ -1,8 +1,7 @@
 /**
  * FireTPL runtime module
  */
-(function(FireTPL, undefined) {
-	/*global define:false */
+module.exports = function(FireTPL) {
 	'use strict';
 
 	FireTPL.helpers = {};
@@ -68,11 +67,11 @@
 		});
 	};
 
-	FireTPL.Runtime = function() {
+	var Runtime = function() {
 
 	};
 
-	FireTPL.Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+	Runtime.prototype.exec = function(helper, data, parent, root, fn) {
 		if (!FireTPL.helpers[helper]) {
 			throw new Error('Helper ' + helper + ' not registered!');
 		}
@@ -94,14 +93,16 @@
 	 * @returns {String} Returns executed template
 	 */
 	FireTPL.compile = function(template, options) {
+		options = options || {};
+
 		if (!/^scopes=scopes/.test(template)) {
-			var fireTpl = new FireTPL.Compiler(options);
-			var type = options && options.type ? options.type : null;
-			if (options && options.prettify) {
-				fireTpl.prettify = true;
-			}
-			
-			template = fireTpl.precompile(template, type);
+			// var fireTpl = new FireTPL.Compiler(options);
+			var parser = new FireTPL.Parser({
+	            type: options.type || 'fire'
+	        });
+	        
+	        parser.parse(template);
+	        template = parser.flush();
 		}
 
 		return function(data, scopes) {
@@ -116,6 +117,7 @@
 			}
 			catch (err) {
 				console.error('FireTPL parse error', err);
+				console.log('Data: ', data);
 				console.log('----- Template source -----');
 				console.log(prettify(tmpl));
 				console.log('----- Template source -----');
@@ -180,4 +182,5 @@
 
 	FireTPL.registerCoreHelper();
 
-})(FireTPL);
+	return Runtime;
+};

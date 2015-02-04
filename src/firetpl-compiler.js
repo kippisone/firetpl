@@ -7,7 +7,7 @@
  *
  * @module FireTPL.Compiler
  */
-(function(FireTPL, undefined) {
+module.exports = function(FireTPL) {
     'use strict';
 
     var Compiler = function(options) {
@@ -34,6 +34,22 @@
          * @type {Number}
          */
         this.logLevel = 1;
+    };
+
+    /**
+     * Precompiles a .tmpl file
+     * 
+     * @method precompile
+     * @param {String} tmpl Tmpl source
+     * @return {Function} Returns a parsed tmpl source as a function.
+     */
+    Compiler.prototype.precompile = function(tmpl, type) {
+        var parser = new FireTPL.Parser({
+            type: type
+        });
+        
+        parser.parse(tmpl);
+        return parser.flush();
     };
 
     Compiler.prototype.reset = function() {
@@ -180,17 +196,6 @@
         }
 
         return this.getOutStream();
-    };
-
-    /**
-     * Precompiles a .tmpl file
-     * 
-     * @method precompile
-     * @param {String} tmpl Tmpl source
-     * @return {Function} Returns a parsed tmpl source as a function.
-     */
-    Compiler.prototype.precompile = function(tmpl, type) {
-        return this.parse(tmpl, type);
     };
 
     Compiler.prototype.getOutStream = function() {
@@ -962,4 +967,4 @@
         return template(data);
     };
 
-})(FireTPL);
+};
