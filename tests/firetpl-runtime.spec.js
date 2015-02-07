@@ -256,7 +256,7 @@ describe('FireTPL Runtime', function() {
             );
         });
 
-        it('Should compile a tmpl string with inline vars', function() {
+        it.skip('Should compile a tmpl string with inline vars', function() {
             var ftl = 'html\n';
             ftl += '    head\n';
             ftl += '    body\n';
@@ -544,7 +544,7 @@ describe('FireTPL Runtime', function() {
             var template = 'html\n';
             template += '    head\n';
             template += '    body\n';
-            template += '        :each $listing : div class=listing\n';
+            template += '        :each $listing : div class="listing"\n';
             template += '            div\n';
             template += '                "Hello World"\n';
 
@@ -562,7 +562,7 @@ describe('FireTPL Runtime', function() {
             var template = 'html\n';
             template += '    head\n';
             template += '    body\n';
-            template += '        :each $listing : div class=listing\n';
+            template += '        :each $listing : div class="listing"\n';
             template += '            span class="type-$type" $name';
 
             template = FireTPL.compile(template);
@@ -778,7 +778,7 @@ describe('FireTPL Runtime', function() {
             var template = 'html\n';
             template += '    head\n';
             template += '    body\n';
-            template += '        :each $listing : ul class=listing\n';
+            template += '        :each $listing : ul class="listing"\n';
             template += '            li\n';
             template += '                :if $sayit : div\n';
             template += '                    div\n';

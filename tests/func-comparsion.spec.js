@@ -1,6 +1,8 @@
 describe('Comparsion Functions', function() {
     'use strict';
     
+    var FireTPL = require('../firetpl-node');
+    
     describe('Function gt()', function() {
         it('Should be a function', function() {
             expect(FireTPL.fn.gt).to.be.a('function');

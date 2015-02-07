@@ -133,14 +133,24 @@ module.exports = function(FireTPL) {
         return outStream;
     };
 
+    Parser.prototype.parseEmptyLine = function(line) {
+        // console.log('Empty line "%s"', line);
+    };
+
+    Parser.prototype.parseComment = function(comment) {
+        // console.log('Empty comment "%s"', comment);
+    };
+
     /**
      * Parse a tag
      * 
      * @private
      * @param  {string} tag Tag name
+     * @param {string} tag attrs Tag attribute string
      */
-    Parser.prototype.parseTag = function(tag) {
-        this.append('str', '<' + tag + '>');
+    Parser.prototype.parseTag = function(tag, attrs) {
+        attrs = attrs ? ' ' + attrs.trim() : '';
+        this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
         }
@@ -240,6 +250,8 @@ module.exports = function(FireTPL) {
         scopeId = this.getNextScope();
 
         if (tag) {
+            tag = tag.trim();
+            tagAttrs = tagAttrs || '';
             if (this.scopeTags) {
                 tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
@@ -285,9 +297,14 @@ module.exports = function(FireTPL) {
      * @param  {string} code Source code content
      */
     Parser.prototype.parseCodeBlock = function(type, code) {
+        var self = this;
         var cssClass = 'class="' + type + '"';
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
+        code = code.replace(/`(.*)`/g, function(match, p1) {
+            return self.matchVariables(p1);
+        });
+        
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
 
@@ -298,7 +315,7 @@ module.exports = function(FireTPL) {
      * @param  {string} attribute Tag name
      */
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
-        var attr = attrName + '="' + attrValue.replace(/^["\']|["\']$/g, '') + '"';
+        var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
         if (this.out[this.curScope[0]].slice(-1) !== '>') {
             throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
@@ -309,6 +326,10 @@ module.exports = function(FireTPL) {
         if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
+    };
+
+    Parser.prototype.parsePartial = function(partialName) {
+        this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
     };
 
     /**

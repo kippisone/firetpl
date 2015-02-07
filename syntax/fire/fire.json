@@ -52,9 +52,39 @@
 	"addEmptyCloseTags": true,
 	"pattern": [
 		{
+			"name": "emptyLine",
+			"func": "parseEmptyLine",
+			"args": ["emptyLineString"],
+			"parts": [
+				{
+					"name": "emptyLineString",
+					"pattern": "^(\\s+)$"
+				}
+			]
+		}, {
+			"name": "comment",
+			"func": "parseComment",
+			"args": ["commentLine"],
+			"parts": [
+				{
+					"name": "commentLine",
+					"pattern": "\\s*(\/\/.*)$"
+				}
+			]
+		}, {
+			"name": "blockComment",
+			"func": "parseComment",
+			"args": ["commentBlock"],
+			"parts": [
+				{
+					"name": "commentBlock",
+					"pattern": "\\s*(/\\*[^]*?\\*/)$"
+				}
+			]
+		}, {
 			"name": "indention",
 			"func": "parseIndention",
-			"args": ["indention"],
+			"args": ["indentionString"],
 			"parts": [
 				{
 					"name": "indentionString",
@@ -72,6 +102,16 @@
 				}, {
 					"name": "attributeValue",
 					"pattern": "((?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+))"
+				}
+			]
+		}, {
+			"name": "partial",
+			"func": "parsePartial",
+			"args": ["partialName"],
+			"parts": [
+				{
+					"name": "partialName",
+					"pattern": "(?:\\(>\\s*(\\S+)\\))"
 				}
 			]
 		}, {
@@ -97,17 +137,29 @@
 		}, {
 			"name": "helper",
 			"func": "parseHelper",
-			"args": ["helperName", "helperExpression", "helperTag"],
+			"args": ["helperName", "helperExpression", "helperTagName", "helperTagAttrs"],
 			"parts": [
 				{
 					"name": "helperName",
 					"pattern": ":([a-zA-Z][a-zA-Z0-9_-]*)"
 				}, {
 					"name": "helperExpression",
-					"pattern": "[\\t ]*\\$([a-zA-Z][a-zA-Z0-9._-]*)"
+					"pattern": "(?:[\\t ]*(\\$[a-zA-Z][a-zA-Z0-9._-]*))?"
 				}, {
 					"name": "helperTag",
-					"pattern": "(?:[\\t ]*:(.*))?"
+					"pattern": {
+						"start": "([\\t ]*:[\\t ]*",
+						"end": ")?",
+						"parts": [
+							{
+								"name": "helperTagName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
+							}, {
+								"name": "helperTagAttrs",
+								"pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
+							}
+						]
+					}
 				}
 			]
 		}, {

@@ -51,3 +51,4 @@ Helper:
 
 	:sort $listing +name -version
 		div class="sorted" "$name $version"
+

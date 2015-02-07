@@ -7,7 +7,7 @@ var mkdirp = require('mkdirp'),
 	program = require('commander'),
 	pkg = require('../package.json');
 
-var FireTPL = require('../firetpl');
+var FireTPL = require('../firetpl-node');
 
 program.version(pkg.version)
 	.usage('[options] <file ...>')
@@ -20,8 +20,9 @@ program.version(pkg.version)
 	.option('-n, --name <name>', 'Set the template name. If this option isn\'t set, the name will be extracted from the tempalte filename')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-p, --pretty', 'Prettify output')
+	.option('-P, --partial', 'Precompile as partial')
 	.option('-s, --scopeTags', 'Insert scope tags')
-	.option('-f, --file', 'Read from file')
+	.option('-i, --file <src>', 'Read from file <src>')
 	.option('-v, --verbose', 'Print more infos')
 	.parse(process.argv);
 
@@ -51,7 +52,8 @@ var precompiled = FireTPL.precompile(source, {
 	commonjs: program.commonjs,
 	scope: program.scope,
 	scopeTags: program.scopeTags,
-	verbose: program.verbose
+	verbose: program.verbose,
+	partial: program.partial
 });
 
 var beforeOut = function(str) {

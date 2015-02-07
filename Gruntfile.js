@@ -1,4 +1,4 @@
-describe('FireTPL', function() {
+module.exports = function(grunt) {
     'use strict';
     
     var pkg = grunt.file.readJSON('package.json'),
@@ -11,7 +11,26 @@ describe('FireTPL', function() {
             fire: JSON.stringify(grunt.file.readJSON('syntax/fire/fire.json')),
             hbs: JSON.stringify(grunt.file.readJSON('syntax/hbs/hbs.json'))
         },
-
+        browserify: {
+            bundle: {
+                options: {
+                    banner: '',
+                    browserifyOptions: {
+                        standalone: 'FireTPL'
+                    }
+                },
+                files: {
+                    'firetpl-browser.js': [
+                        'src/firetpl.js',
+                        'src/firetpl-error.js',
+                        'src/firetpl-compiler.js',
+                        'syntax/syntax.js',
+                        'src/firetpl-runtime.js',
+                        'src/functions/*.js'
+                    ]
+                }
+            }
+        },
         bumpup: {
             file: 'package.json'
         },
@@ -80,8 +99,6 @@ describe('FireTPL', function() {
                 ]
             }
         },
-
-        // Lists of files to be linted with JSHint.
         jshint: {
             files: [
                 'src/**/*.js',
@@ -115,6 +132,7 @@ describe('FireTPL', function() {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-bumpup');
     grunt.loadNpmTasks('grunt-json');
     grunt.loadNpmTasks('grunt-tagrelease');
@@ -124,8 +142,7 @@ describe('FireTPL', function() {
     grunt.registerTask('build', [
         'jshint',
         'json',
-        'concat',
-        'component-build',
+        'browserify',
         'bumpup:prerelease']);
 
     grunt.registerTask('release', function (type) {

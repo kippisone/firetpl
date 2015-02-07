@@ -1,5 +1,7 @@
-describe('FireTPL', function() {
+describe.skip('FireTPL', function() {
 	'use strict';
+
+	var FireTPL = require('../firetpl-node');
 
 	var tmplScope = {
 		out: 'scopes=scopes||{};var root=data,parent=data;',

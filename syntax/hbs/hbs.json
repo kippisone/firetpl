@@ -39,5 +39,102 @@
 		"8": "elseHelper",
 		"9": "helperEnd",
 		"10": "string"
-	}
+	},
+	"pattern": [
+		{
+			"name": "comment",
+			"func": "parseComment",
+			"args": ["commentLine"],
+			"parts": [
+				{
+					"name": "commentLine",
+					"pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
+				}
+			]
+		}, {
+			"name": "htmlComment",
+			"func": "parseComment",
+			"args": ["htmlCommentLine"],
+			"parts": [
+				{
+					"name": "htmlCommentLine",
+					"pattern": "(<!--[^]*?-->)"
+				}
+			]
+		}, {
+			"name": "helper",
+			"func": "parseHelper",
+			"args": ["helperName", "helperExpression"],
+			"parts": [
+				{
+					"name": "helperString",
+					"pattern": {
+						"start": "(\\{\\{#",
+						"end": "\\}\\})",
+						"parts": [
+							{
+								"name": "helperName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9_-]*)"
+							}, {
+								"name": "helperExpression",
+								"pattern": "(?:[\\t| ]+([^\\}]*))?"
+							}
+						]
+					}
+				}
+			]
+		}, {
+			"name": "closeTag",
+			"func": "parseCloseTag",
+			"args": ["closeTagString"],
+			"parts": [
+				{
+					"name": "closeTagString",
+					"pattern": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
+				}
+			]
+		}, {
+			"name": "partial",
+			"func": "parsePartial",
+			"args": ["partialName"],
+			"parts": [
+				{
+					"name": "partialName",
+					"pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
+				}
+			]
+		}, {
+			"name": "tag",
+			"func": "parseTag",
+			"args": ["tagName", "tagAttributes"],
+			"parts": [
+				{
+					"name": "tagString",
+					"pattern": {
+						"start": "(<",
+						"end": ">)",
+						"parts": [
+							{
+								"name": "tagName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+							}, {
+								"name": "tagAttributes",
+								"pattern": "(?:\\b\\s*([^>]+))?"
+							}
+						]
+					}
+				}
+			]
+		}, {
+			"name": "string",
+			"func": "parseString",
+			"args": ["stringValue"],
+			"parts": [
+				{
+					"name": "stringValue",
+					"pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+				}
+			]
+		}
+	]
 }

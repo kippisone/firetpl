@@ -41,8 +41,7 @@ module.exports = function(FireTPL) {
         options = options || {};
 
         if (!options.name) {
-            console.error('Precompilation not possible! The options.name flag must be set!');
-            return;
+            throw new FireTPL.Error('Precompilation not possible! The options.name flag must be set!');
         }
 
         options.firetplModule = options.firetplModule || 'firetpl';
@@ -74,7 +73,7 @@ module.exports = function(FireTPL) {
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn;' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -92,8 +91,8 @@ module.exports = function(FireTPL) {
     /* +---------- FireTPL methods ---------- */
 
     FireTPL.precompile = function(tmpl, options) {
-        var compiler = new FireTPL.Compiler(tmpl, options);
-        return precompile;
+        var compiler = new Compiler(tmpl, options);
+        return compiler.precompile(tmpl, options);
     };
 
     FireTPL.fire2html = function(tmpl, data) {

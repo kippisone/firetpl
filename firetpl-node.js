@@ -6,8 +6,16 @@ module.exports = (function() {
     FireTPL.Compiler = require('./src/firetpl-compiler-node')(FireTPL);
     FireTPL.Runtime = require('./src/firetpl-runtime')(FireTPL);
 
-    var fs = require('fs');
-    
+    var fs = require('fs'),
+        path = require('path');
+
+    //Require inline funcs
+    fs.readdirSync(path.join(__dirname, 'src/functions/')).forEach(function(file) {
+        if (/\.js$/.test(file)) {
+            require(path.join(__dirname, 'src/functions/', file))(FireTPL);
+        }
+    });
+
     FireTPL.__express = function(file, options, callback) {
         if (typeof options === 'function') {
             callback = options;

@@ -46,7 +46,7 @@ module.exports = (function() {
     };
 
     RecordPlay.prototype.play = function() {
-        console.log('Play stack:', this.__calls);
+        // console.log('Play stack:', this.__calls);
         this.restore();
     };
 

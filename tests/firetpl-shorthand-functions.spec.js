@@ -1,14 +1,23 @@
 describe('Shorthand Functions', function() {
 	'use strict';
 
+	var FireTPL = require('../firetpl-node');
+
 	describe('precompile', function() {
+		it('Should be a function', function() {
+			expect(FireTPL.precompile).to.be.a('function');
+		});
+
 		it('Should fail precompile a template', function() {
-			var consoleWarnStub = sinon.stub(console, 'error');
-			
-			var precompiled = FireTPL.precompile();
-			expect(consoleWarnStub).was.calledOnce();
-			expect(consoleWarnStub).was.calledWith('Precompilation not possible! The options.name flag must be set!');
-			consoleWarnStub.restore();
+			try {
+				var precompiled = FireTPL.precompile();
+			} catch(err) {
+				console.log('ERR', err);
+				expect(err.message).to.eql('Precompilation not possible! The options.name flag must be set!');
+				return;
+			}
+
+			this.fail();
 		});
 
 		it('Should precompile a template', function() {
@@ -18,7 +27,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql('FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};');
+			expect(precompiled).to.eql('FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};');
 		});
 
 		it('Should precompile a template in CommonJS style', function() {
@@ -29,7 +38,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql(';(function(require) {var FireTPL = require(\'firetpl\');FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};})(require);');
+			expect(precompiled).to.eql(';(function(require) {var FireTPL = require(\'firetpl\');FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};})(require);');
 		});
 
 		it('Should precompile a template in AMD style', function() {
@@ -40,7 +49,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql('define([\'firetpl\'],function(FireTPL) {FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};});');
+			expect(precompiled).to.eql('define([\'firetpl\'],function(FireTPL) {FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};});');
 		});
 	});
 

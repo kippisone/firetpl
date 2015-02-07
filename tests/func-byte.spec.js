@@ -1,5 +1,7 @@
 describe('Functions', function() {
     'use strict';
+
+    var FireTPL = require('../firetpl-node');
     
     describe('Function byte()', function() {
         it('Should be a function', function() {
