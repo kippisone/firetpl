@@ -1,8 +1,6 @@
 describe('Shorthand Functions', function() {
 	'use strict';
 
-	var FireTPL = require('../firetpl-node');
-
 	describe('precompile', function() {
 		it('Should be a function', function() {
 			expect(FireTPL.precompile).to.be.a('function');
@@ -12,7 +10,6 @@ describe('Shorthand Functions', function() {
 			try {
 				var precompiled = FireTPL.precompile();
 			} catch(err) {
-				console.log('ERR', err);
 				expect(err.message).to.eql('Precompilation not possible! The options.name flag must be set!');
 				return;
 			}

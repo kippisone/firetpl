@@ -1,4 +1,4 @@
-module.exports = function(FireTPL) {
+(function(FireTPL) {
 
     var FireError = function(instance, msg) {
         if (typeof instance === 'object') {
@@ -46,5 +46,5 @@ module.exports = function(FireTPL) {
         return out;
     };
 
-    return FireError;
-};
+    FireTPL.Error = FireError;
+})(FireTPL);

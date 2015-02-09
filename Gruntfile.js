@@ -11,26 +11,6 @@ module.exports = function(grunt) {
             fire: JSON.stringify(grunt.file.readJSON('syntax/fire/fire.json')),
             hbs: JSON.stringify(grunt.file.readJSON('syntax/hbs/hbs.json'))
         },
-        browserify: {
-            bundle: {
-                options: {
-                    banner: '',
-                    browserifyOptions: {
-                        standalone: 'FireTPL'
-                    }
-                },
-                files: {
-                    'firetpl-browser.js': [
-                        'src/firetpl.js',
-                        'src/firetpl-error.js',
-                        'src/firetpl-compiler.js',
-                        'syntax/syntax.js',
-                        'src/firetpl-runtime.js',
-                        'src/functions/*.js'
-                    ]
-                }
-            }
-        },
         bumpup: {
             file: 'package.json'
         },
@@ -42,10 +22,12 @@ module.exports = function(grunt) {
                 src: [
                     'src/firetpl.js',
                     'src/firetpl-error.js',
+                    'src/firetpl-parser.js',
                     'src/firetpl-compiler.js',
                     'syntax/syntax.js',
                     'src/firetpl-runtime.js',
-                    'src/functions/*.js'
+                    'src/functions/*.js',
+                    'src/firetpl-browser/*.js'
                 ],
                 dest: 'firetpl.js'
             },
@@ -53,13 +35,15 @@ module.exports = function(grunt) {
                 src: [
                     'src/firetpl.js',
                     'src/firetpl-error.js',
+                    'src/firetpl-parser.js',
                     'src/firetpl-compiler.js',
                     'syntax/syntax.js',
                     'src/firetpl-runtime.js',
                     'src/firetpl-node.js',
-                    'src/functions/*.js'
+                    'src/functions/*.js',
+                    'src/firetpl-node/*.js'
                 ],
-                dest: 'build/firetpl.js'
+                dest: 'firetpl-node.js'
             },
             runtime: {
                 src: [
@@ -109,7 +93,7 @@ module.exports = function(grunt) {
         json: {
             main: {
                 options: {
-                    namespace: 'FireTPL.Compiler.prototype.syntax'
+                    namespace: 'FireTPL.Syntax'
                 },
                 src: ['syntax/**/*.json'],
                 dest: 'syntax/syntax.js'
@@ -142,7 +126,7 @@ module.exports = function(grunt) {
     grunt.registerTask('build', [
         'jshint',
         'json',
-        'browserify',
+        'concat',
         'bumpup:prerelease']);
 
     grunt.registerTask('release', function (type) {

@@ -3,7 +3,7 @@
  *
  * @module  Parser
  */
-module.exports = function(FireTPL) {
+(function(FireTPL) {
     'use strict';
 
     /**
@@ -201,6 +201,21 @@ module.exports = function(FireTPL) {
     };
 
     /**
+     * Parse a closing helper tag
+     * 
+     * @private
+     * @param  {string} tag Helper name
+     */
+    Parser.prototype.parseCloseHelper = function(helper) {
+        var lastTag = this.closer.slice(-1)[0];
+        if ('scope' !== lastTag) {
+            throw new Error('Invalid closing helper! Expected </' + helper + '> but got a ' + lastTag);
+        }
+
+        this.appendCloser();
+    };
+
+    /**
      * Parse a string
      * 
      * @private
@@ -263,6 +278,9 @@ module.exports = function(FireTPL) {
 
         if (expr) {
             expr = expr.trim();
+            if (this.tmplType === 'hbs') {
+                expr = '{{' + expr + '}}';
+            }
             expr = this.matchVariables(expr, true);
         }
 
@@ -424,17 +442,33 @@ module.exports = function(FireTPL) {
         var pat = this.patternBuilder('variable');
         var reg = new RegExp(pat.pattern.slice(1, -1), 'g');
         var split = str.split(reg);
-        split = split.map(function(item) {
-            if (item.charAt(0) === '@') {
-                return opener + 'l.' + item.substr(1) + closer;
-            }
-            else if(item.charAt(0) === '$') {
-                return parseVar(item.substr(1).replace(/^this\.?/, ''));
-            }
-            else {
-                return item.replace(/\'/g, '\\\'');
-            }
-        });
+
+        if (this.tmplType === 'fire') {
+            split = split.map(function(item) {
+                if (item.charAt(0) === '@') {
+                    return opener + 'l.' + item.substr(1) + closer;
+                }
+                else if(item.charAt(0) === '$') {
+                    return parseVar(item.substr(1).replace(/^this\.?/, ''));
+                }
+                else {
+                    return item.replace(/\'/g, '\\\'');
+                }
+            });
+        }
+        else {
+            split = split.map(function(item) {
+                if (item.charAt(0) === '@') {
+                    return opener + 'l.' + item.substr(1) + closer;
+                }
+                else if(item.charAt(0) === '{' && item.charAt(1) === '{') {
+                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''));
+                }
+                else {
+                    return item.replace(/\'/g, '\\\'');
+                }
+            });
+        }
 
         return split.join('');
     };
@@ -530,7 +564,7 @@ module.exports = function(FireTPL) {
      * @return {object}      Returns syntax conf object
      */
     Parser.prototype.getSyntaxConf = function(type) {
-        return require('../syntax/' + type + '/' + type + '.json');
+        return FireTPL.Syntax[type];
     };
 
     /**
@@ -662,5 +696,5 @@ module.exports = function(FireTPL) {
         });
     };
 
-    return Parser;
-};
+    FireTPL.Parser = Parser;
+})(FireTPL);

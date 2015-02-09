@@ -3,11 +3,11 @@
  * 
  * <%= pkg.description %>
  *
- * FireTPL is licenced under MIT Licence
+ * FireTPL is licensed under MIT License
  * http://opensource.org/licenses/MIT
  *
  * Copyright (c) 2013 - <%= grunt.template.today("yyyy") %> Noname Media, http://noname-media.com
- * Author Andi Heinkelein
+ * Author Andi Heinkelein <andi.oxidant@noname-media.com>
  *
  */
 
@@ -18,7 +18,7 @@ var FireTPL;
 	'use strict';
 
 	if (typeof define === 'function' && define.amd) {
-		define('xqcore', [], factory);
+		define('firetpl', [], factory);
 	} else if (typeof module !== 'undefined' && module.exports) {
 		module.exports = factory();
 	} else {
@@ -27,6 +27,20 @@ var FireTPL;
 }(this, function () {
 	'use strict';
 
+	/**
+	 * FireTPL template engine
+	 *
+	 * @module  FireTPL
+	 *
+	 * @example {js}
+	 * var fireTPL = new FireTPL();
+	 * var tmpl = fireTpl.compile('div $name');
+	 * var html = tmpl({
+	 *   name: 'Andi'
+	 * });
+	 *
+	 * // html = <div>Andi</div>
+	 */
 	FireTPL = {
 		version: '<%= pkg.version %>'
 	};

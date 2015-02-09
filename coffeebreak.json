@@ -1,10 +1,23 @@
-{
+[{
 	"project": "FireTPL",
 	"browser": true,
+    "libs": "tests/coffee-tools.js",
 	"files": "firetpl.js",
 	"watch": "src/**/*.js",
 	"tests": "tests/**/*.spec.js",
 	"grunt": {
 		"task": ["json", "concat:build"]
 	}
-}
+}, {
+    "project": "FireTPL Node",
+    "require": "tests/node-setup.js",
+    "watch": [
+        "src/**/*.js",
+        "syntax/*/*.json"
+    ],
+    "files": "none",
+    "tests": "tests/**/*.spec.js",
+    "grunt": {
+        "task": ["json", "concat:build-node"]
+    }
+}]

@@ -1,6 +1,0 @@
-{
-	"project": "FireTPL Node",
-	"files": "../src/firetpl-parser.js",
-    "watch": "../s*/**/*.*",
-	"tests": "../tests/**/*.spec.js"
-}

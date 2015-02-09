@@ -1,4 +1,15 @@
-module.exports = (function() {
+(function (root, factory) {
+    /*global define:false */
+    'use strict';
+
+    if (typeof define === 'function' && define.amd) {
+        define('coffee-tools', [], factory);
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory();
+    } else {
+        root.coffeeTools = factory();
+    }
+}(this, function () {
     'use strict';
   
     var coffeeTools = {};
@@ -35,7 +46,7 @@ module.exports = (function() {
                         isNewLine: obj.isNewLine
                     }
                 });
-            }
+            };
         });
     };
 
@@ -62,5 +73,6 @@ module.exports = (function() {
         return new RecordPlay(obj, funcs);
     };
 
-    return coffeeTools;  
-})();
+    return coffeeTools;
+
+}));

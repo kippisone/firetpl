@@ -1,7 +1,7 @@
 /**
  * FireTPL runtime module
  */
-module.exports = function(FireTPL) {
+(function(FireTPL) {
     'use strict';
 
     FireTPL.helpers = {};
@@ -161,6 +161,8 @@ module.exports = function(FireTPL) {
         };
     };
 
+    FireTPL.Runtime = Runtime;
+
     /**
      * Compile a file
      * @method compileFile
@@ -216,5 +218,4 @@ module.exports = function(FireTPL) {
 
     FireTPL.registerCoreHelper();
 
-    return Runtime;
-};
+})(FireTPL);

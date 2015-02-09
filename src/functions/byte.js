@@ -1,4 +1,4 @@
-module.exports = function(FireTPL) {
+(function(FireTPL) {
     'use strict';
     
     FireTPL.registerFunction('byte', function(str, round) {
@@ -16,4 +16,4 @@ module.exports = function(FireTPL) {
 
         return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
     });
-};
+})(FireTPL);

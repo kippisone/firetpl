@@ -1,13 +1,13 @@
 /*!
- * FireTPL template engine v0.3.1-3
+ * FireTPL template engine v0.4.0-7
  * 
  * FireTPL is a pretty Javascript template engine
  *
- * FireTPL is licenced under MIT Licence
+ * FireTPL is licensed under MIT License
  * http://opensource.org/licenses/MIT
  *
  * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
- * Author Andi Heinkelein
+ * Author Andi Heinkelein <andi.oxidant@noname-media.com>
  *
  */
 
@@ -18,7 +18,7 @@ var FireTPL;
 	'use strict';
 
 	if (typeof define === 'function' && define.amd) {
-		define('xqcore', [], factory);
+		define('firetpl', [], factory);
 	} else if (typeof module !== 'undefined' && module.exports) {
 		module.exports = factory();
 	} else {
@@ -27,99 +27,104 @@ var FireTPL;
 }(this, function () {
 	'use strict';
 
+	/**
+	 * FireTPL template engine
+	 *
+	 * @module  FireTPL
+	 *
+	 * @example {js}
+	 * var fireTPL = new FireTPL();
+	 * var tmpl = fireTpl.compile('div $name');
+	 * var html = tmpl({
+	 *   name: 'Andi'
+	 * });
+	 *
+	 * // html = <div>Andi</div>
+	 */
 	FireTPL = {
-		version: '0.3.1-3'
+		version: '0.4.0-7'
 	};
 
 	return FireTPL;
 }));
-(function(FireTPL, undefined) {
+(function(FireTPL) {
 
-	FireTPL.Error = function(instance, msg) {
-		if (typeof instance === 'object') {
-			if (instance instanceof FireTPL.Compiler) {
-				var pos = instance.pos;
-				msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
-			}
-		}
-		else if (arguments.length) {
-			msg = instance;
-		}
+    var FireError = function(instance, msg) {
+        if (typeof instance === 'object') {
+            // if (instance instanceof FireTPL.Parser) {
+            //  var pos = instance.pos;
+            //  msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
+            // }
+        }
+        else if (arguments.length) {
+            msg = instance;
+        }
 
-		return new Error(msg);
-	};
-
-	FireTPL.Error.prototype.stripSource = function(pos, tmpl) {
-		var sourceStr,
-			counter = 0;
-
-		var source = tmpl.split('\n');
-		for (var i = 0, len = source.length; i < len; i++) {
-			counter += source[i].length + 1; //Add +1 because line breaks
-			if (counter > pos) {
-				sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
-				sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
-				break;
-			} 
-		}
-
-		return sourceStr;
-	};
-
-	FireTPL.Error.prototype.strRepeat = function(num, str) {
-		var out = '';
-
-		while(--num) {
-			out += str;
-
-			if (num === -10) {
-				throw 'Loop error';
-			}
-		}
-
-		return out;
-	};
-
-})(FireTPL);
-/**
- * FireTPL compiler module
- *
- * Usage:
- * var fireTPLCompiler = new FireTPL.Compiler();
- * var precompiled = fireTPLCompiler.precompile('./views/template.ftl');
- *
- * @module FireTPL.Compiler
- */
-(function(FireTPL, undefined) {
-    'use strict';
-
-    var Compiler = function(options) {
-        options = options || {};
-
-        this.scopeTags = !!options.scopeTags;
-
-        this.indentionPattern = /\t| {1,4}/g;
-        this.voidElements = ['area', 'base', 'br', 'col', 'embed', 'img', 'input', 'link', 'meta', 'param', 'source', 'wbr'];
-
-        this.reset();
-
-        this.tmplType = 'fire';
-        
-        /**
-         * Set the log level.
-         * 
-         * Levels are:
-         *
-         * 4 DEBUG
-         * 3 INFO
-         * 2 WARN
-         * 1 ERROR
-         * @type {Number}
-         */
-        this.logLevel = 1;
+        // var err = new Error(msg);
+        return new Error(msg);
     };
 
-    Compiler.prototype.reset = function() {
+    FireError.prototype.stripSource = function(pos, tmpl) {
+        var sourceStr,
+            counter = 0;
+
+        var source = tmpl.split('\n');
+        for (var i = 0, len = source.length; i < len; i++) {
+            counter += source[i].length + 1; //Add +1 because line breaks
+            if (counter > pos) {
+                sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
+                sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
+                break;
+            }
+        }
+
+        return sourceStr;
+    };
+
+    FireError.prototype.strRepeat = function(num, str) {
+        var out = '';
+
+        while(--num) {
+            out += str;
+
+            if (num === -10) {
+                throw 'Loop error';
+            }
+        }
+
+        return out;
+    };
+
+    FireTPL.Error = FireError;
+})(FireTPL);
+/**
+ * FireTPL parser
+ *
+ * @module  Parser
+ */
+(function(FireTPL) {
+    'use strict';
+
+    /**
+     * Parser constructor
+     *
+     * @constructor
+     *
+     * @example {js}
+     * var parser = new FireTPL.Parser();
+     * parser.parse('input string');
+     * var parsedStr = parser.flush();
+     * 
+     */
+    var Parser = function(options) {
+        options = options || {};
+
+        this.tmplType = options.type || 'fire';
+        this.voidElements = [
+            'area', 'base', 'br', 'col', 'embed', 'img', 'input',
+            'link', 'meta', 'param', 'source', 'wbr'
+        ];
+
         this.indention = 0;
         this.closer = [];
         this.curScope = ['root'];
@@ -128,155 +133,80 @@ var FireTPL;
         this.nextScope = 0;
         this.pos = 0;
         this.addEmptyCloseTags = false;
+        this.indentionPattern = /\t| {1,4}/g;
+        this.isNewLine = true;
+
+        this.syntax = this.getSyntaxConf(this.tmplType);
     };
 
-    Compiler.prototype.getPattern = function(type) {
-        var pattern = this.syntax[type].patterns.map(function(pat) {
-            return pat.match;
-        });
-
-        pattern = pattern.join('|');
-
-        var modifer = this.syntax[type].modifer;
-
-        var scopes = this.syntax[type].scopes;
-
-        return {
-            pattern: new RegExp(pattern, modifer),
-            scopes: scopes
-        };
-    };
-
-    Compiler.prototype.parse = function(tmpl, type) {
-        type = type || 'fire';
-        this.tmplType = type;
+    /**
+     * Parses an input string
+     * 
+     * @param  {string} input Input string
+     */
+    Parser.prototype.parse = function(input) {
+        var pat = this.patternBuilder();
 
         if (this.logLevel & 4) {
             console.log('Parse a .' + type + ' Template');
         }
 
-        this.reset();
-        this.addEmptyCloseTags = this.syntax[type].addEmptyCloseTags || false;
-        var syntaxConf = this.getPattern(type);
+        var mapArgs = function(index) {
+            return match[index];
+        };
 
-        var match,
-            attrs = '',
-            res,
-            statement,
-            curItem = null,
-            prevItem = null,
-            cmd,
-            data;
+        this.addEmptyCloseTags = this.syntax.addEmptyCloseTags || false;
 
-        if (!tmpl && this.tmpl) {
-            tmpl = this.tmpl;
-        }
-        else {
-            this.tmpl = tmpl;
-        }
+        // console.log('Funcs', pat.funcs);
 
-        var d = 10000;
+        var reg = new RegExp(pat.pattern, pat.modifer);
+        var d = 1000;
 
-        prevItem = curItem;
-        curItem = null;
+        var match;
 
-        do {
-            syntaxConf.pattern.lastIndex = this.pos;
-            match = syntaxConf.pattern.exec(tmpl);
-            this.pos = syntaxConf.pattern.lastIndex;
-
-            // console.log('Pat:', syntaxConf.pattern.lastIndex, syntaxConf.pattern.source, tmpl);
-            if (this.logLevel & 4) {
-                console.log('Match:', match);
+        while (true) {
+            if (--d === 0) {
+                throw 'Infinite loop!';
             }
-            // console.log('Pos start:', this.pos, tmpl.substr(this.pos, 20));
+
+            pat.lastIndex = this.pos;
+            match = reg.exec(input);
+            this.pos = pat.lastIndex;
 
             if (!match) {
                 break;
             }
 
-            cmd = null;
-            data = {};
-            for (var i = 1, len = match.length; i < len; i++) {
-                if (match[i] !== undefined) {
-                    if (cmd === null) {
-                        cmd = syntaxConf.scopes[i];
-                    }
+            // console.log(match);
+            // console.log(pat);
+            for (var i = 0, len = pat.funcs.length; i < len; i++) {
+                if (match[pat.funcs[i].index]) {
+                    //Map args
+                    var args = pat.funcs[i].args.map(mapArgs),
+                        func = pat.funcs[i].func;
 
-                    data[syntaxConf.scopes[i]] = match[i];
+                    //Call parser func
+                    // console.log('Call:', pat.funcs[i].func);
+                    this[func].apply(this, args);
+                    if (func !== 'parseIndention') {
+                        this.isNewLine = false;
+                    }
+                    break;
                 }
             }
+        }
+    };
 
-            if (this.logLevel & 4) {
-                console.log('  cmd:', cmd, 'data:', data);
-            }
-
-            switch(cmd) {
-                case 'indention':
-                    this.handleIndention(data.indention);
-                    break;
-                case 'tag':
-                    console.log('TAG "%s"', data.tag, data.tagAttributes);
-                    this.parseTag(data.tag, data.tagAttributes);
-                    break;
-                case 'endtag':
-                    this.parseEndTag(data.endtag);
-                    break;
-                case 'helper':
-                    this.parseHelper(data.helper, data.expression ? (type === 'hbs' ? '$' : '') + data.expression : null);
-                    break;
-                case 'helperEnd':
-                    this.parseHelperEnd(data.helperEnd);
-                    break;
-                case 'elseHelper':
-                    this.parseElseHelper(data.elseHelper);
-                    break;
-                case 'attribute':
-                    this.parseAttribute(data.attribute);
-                    break;
-                case 'string':
-                    // console.log('STRING "%s"', data.string);
-                    this.parseString(tmpl, data.string);
-                    break;
-                case 'htmlstring':
-                    this.parseHTMLString(tmpl, data.htmlstring);
-                    break;
-                case 'variable':
-                    // console.log('VAR "%s"', data.variable);
-                    this.parseVariable(data.variable);
-                    break;
-                case 'newline':
-                    this.handleIndention(data.newline);
-                    break;
-                case 'unused':
-                    // console.log('UNUSED');
-                    break;
-                default:
-                    throw new Error('Parse error!');
-            }
-
-
-        } while (true);
-
+    /**
+     * Returns parsed data
+     * 
+     * @return {string} Returns parser result
+     */
+    Parser.prototype.flush = function() {
         while (this.closer.length > 0) {
             this.appendCloser();
         }
 
-        return this.getOutStream();
-    };
-
-    /**
-     * Precompiles a .tmpl file
-     * 
-     * @method precompile
-     * @param {String} tmpl Tmpl source
-     * @return {Function} Returns a parsed tmpl source as a function.
-     */
-    Compiler.prototype.precompile = function(tmpl, type) {
-        return this.parse(tmpl, type);
-    };
-
-    Compiler.prototype.getOutStream = function() {
         var outStream = 'scopes=scopes||{};var root=data,parent=data;';
         var keys = Object.keys(this.out);
 
@@ -302,10 +232,124 @@ var FireTPL;
         return outStream;
     };
 
-    Compiler.prototype.parseHelper = function(helper, content) {
-        var scopeId,
-            tag = null,
-            tagAttrs = '';
+    Parser.prototype.parseEmptyLine = function(line) {
+        // console.log('Empty line "%s"', line);
+    };
+
+    Parser.prototype.parseComment = function(comment) {
+        // console.log('Empty comment "%s"', comment);
+    };
+
+    /**
+     * Parse a tag
+     * 
+     * @private
+     * @param  {string} tag Tag name
+     * @param {string} tag attrs Tag attribute string
+     */
+    Parser.prototype.parseTag = function(tag, attrs) {
+        attrs = attrs ? ' ' + attrs.trim() : '';
+        this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
+        if (this.voidElements.indexOf(tag) === -1) {
+                this.closer.push('</' + tag + '>');
+        }
+        else {
+            if (this.addEmptyCloseTags) {
+                this.closer.push('');
+            }
+        }
+    };
+
+    Parser.prototype.parseIndention = function(indentionStr) {
+        var indention = this.getIndention(indentionStr),
+            newIndent = indention - this.indention,
+            el;
+
+        if (this.logLevel & 4) {
+            console.log('  Parse indention:', indention, this.indention, newIndent);
+        }
+
+        if (newIndent === 0) {
+            this.appendCloser();
+        }
+        else {
+            while (newIndent < 1) {
+                el = this.appendCloser();
+                newIndent++;
+            }
+        }
+                
+        this.lastIndention = this.indention;
+        this.indention = indention;
+        this.isNewLine = true;
+    };
+
+    /**
+     * Parse a closing tag
+     * 
+     * @private
+     * @param  {string} tag Tag name
+     */
+    Parser.prototype.parseCloseTag = function(tag) {
+         var lastTag = this.closer.slice(-1)[0];
+        if ('</' + tag + '>' !== lastTag) {
+            throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
+        }
+
+        this.appendCloser();
+    };
+
+    /**
+     * Parse a closing helper tag
+     * 
+     * @private
+     * @param  {string} tag Helper name
+     */
+    Parser.prototype.parseCloseHelper = function(helper) {
+        var lastTag = this.closer.slice(-1)[0];
+        if ('scope' !== lastTag) {
+            throw new Error('Invalid closing helper! Expected </' + helper + '> but got a ' + lastTag);
+        }
+
+        this.appendCloser();
+    };
+
+    /**
+     * Parse a string
+     * 
+     * @private
+     * @param  {string} str Tag name
+     */
+    Parser.prototype.parseString = function(str) {
+        str = str.trim().replace(/\s+/g, ' ');
+        str = this.matchVariables(str);
+        this.append('str', str);
+        if (this.addEmptyCloseTags && this.tmplType === 'fire' && this.isNewLine) {
+            this.closer.push('');
+        }
+    };
+
+    /**
+     * Parse a variable
+     * 
+     * @private
+     * @param  {string} variable Tag name
+     */
+    Parser.prototype.parseVariable = function(variable) {
+        this.append('str', this.matchVariables(variable));
+        if (this.tmplType === 'fire' && this.isNewLine) {
+            this.closer.push('');
+        }
+    };
+
+    /**
+     * Parse a helper
+     * 
+     * @private
+     * @param  {string} helper Tag name
+     */
+    Parser.prototype.parseHelper = function(helper, expr, tag, tagAttrs) {
+        var scopeId;
 
         if (helper === 'else') {
             this.closer.push(['code', '']);
@@ -319,20 +363,11 @@ var FireTPL;
         // this.lastIfScope = null;
         scopeId = this.getNextScope();
 
-        if (content) {
-            var pattern = /(".*")?(?:\s*:\s*)([a-zA-Z0-9]+)(.*)/;
-            var match = content.split(pattern);
-            // console.log('Split', match);
-            if (match && match[2]) {
-                tag = match[2];
-                tagAttrs = match[3];
-                content = match[0] + (match[1] ? match[1] : '');
-            }
-        }
-
         if (tag) {
+            tag = tag.trim();
+            tagAttrs = tagAttrs || '';
             if (this.scopeTags) {
-                tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + content.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
+                tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
             this.parseTag(tag, tagAttrs);
         }
@@ -340,16 +375,19 @@ var FireTPL;
             this.closer.push('');
         }
 
-        if (content) {
-            content = content.trim();
-            content = this.parseVariables(content, true);
+        if (expr) {
+            expr = expr.trim();
+            if (this.tmplType === 'hbs') {
+                expr = '{{' + expr + '}}';
+            }
+            expr = this.matchVariables(expr, true);
         }
 
         if (this.scopeTags) {
-            this.append('str', '<scope id="scope' + scopeId + '" path="' + content + '"></scope>');
+            this.append('str', '<scope id="scope' + scopeId + '" path="' + expr + '"></scope>');
         }
         else {
-            this.append('code', 's+=scopes.scope' + scopeId + '(' + content + ',data);');
+            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data);');
         }
         
         this.newScope('scope' + scopeId);
@@ -368,174 +406,55 @@ var FireTPL;
         // this.appendCloser();
     };
 
-    Compiler.prototype.parseTag = function(tag, content) {
-        var tagContent = '',
-            res,
-            attrs = [];
-
-        if (content) {
-            res = this.stripAttributes(content);
-            if (res) {
-                if (res.attrs) {
-                    attrs = attrs.concat(res.attrs);
-                }
-
-                if (res.events.length !== 0) {
-                    //this.registerEvent(res.events);
-                    //TODO better event register method
-                    var events = res.events;
-                    attrs.push('on="' + events.join(';') + '"');
-                }
-
-                if (res.content) {
-                    tagContent = res.content.join(' ');
-                }
-            }
-        }
-
-        attrs = attrs.join(' ');
-        if (attrs) {
-            attrs = ' ' + attrs;
-        }
-
-        console.log('CONT', tagContent);
-        this.append('str', '<' + tag + this.parseVariables(attrs) + '>');
-        this.append('str', tagContent);
-        if (this.voidElements.indexOf(tag) === -1) {
-                this.closer.push('</' + tag + '>');
-        }
-        else {
-            if (this.addEmptyCloseTags) {
-                this.closer.push('');
-            }
-        }
+    /**
+     * Parse a code block
+     *
+     * @private
+     * @param  {string} type Source codetype
+     * @param  {string} code Source code content
+     */
+    Parser.prototype.parseCodeBlock = function(type, code) {
+        var self = this;
+        var cssClass = 'class="' + type + '"';
+        code = this.undent(this.indention + 1, code);
+        code = this.escape(code).trim();
+        code = code.replace(/`(.*)`/g, function(match, p1) {
+            return self.matchVariables(p1);
+        });
+        
+        this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
 
-    Compiler.prototype.parseAttribute = function(attribute) {
-        var res = this.stripAttributes(attribute);
-        if (res) {
-            var attrs = ' ' + res.attrs.join(' ');
+    /**
+     * Parse a attribute
+     * 
+     * @private
+     * @param  {string} attribute Tag name
+     */
+    Parser.prototype.parseAttribute = function(attrName, attrValue) {
+        var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
-            if (res.events.length !== 0) {
-                this.registerEvent(res.events);
-            }
-
-            this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, this.parseVariables(attrs) + '>');
-        }
-        else {
-            throw 'FireTPL parse error (3)';
+        if (this.out[this.curScope[0]].slice(-1) !== '>') {
+            throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
         }
 
-        if (this.tmplType === 'fire') {
+        this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+
+        if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
     };
 
-    Compiler.prototype.parseString = function(tmpl, matchString) {
-        var strPattern,
-            strMatch;
-
-        //Remove multiplr whitespaces
-        matchString = matchString.trim().replace(/\s+/g, ' ');
-
-
-        if (matchString.charAt(0) === '"') {
-            if (matchString.substr(-1) === '"') {
-                matchString = matchString.substr(1, matchString.length - 2);
-            }
-            else {
-                strPattern = /([^\"]*)\"/g;
-                strPattern.lastIndex = this.pos;
-                strMatch = strPattern.exec(tmpl);
-                matchString = matchString.substr(1) + ' ' + strMatch[1].trim();
-                this.pos = strPattern.lastIndex;
-            }
-
-            //Check for multi text blocks
-            while (true) {
-                strPattern = /^(\n[\t| {4}]*)?(\n[\t| {4}]*)*\"([^\"]*)\"/g;
-                strMatch = strPattern.exec(tmpl.substr(this.pos));
-                if (strMatch) {
-                    this.pos += strPattern.lastIndex;
-                    if (strMatch[2]) {
-                        matchString += '<br>';
-                    }
-
-                    matchString += '<br>' + strMatch[3].replace(/\s+/g, ' ');
-                }
-                else {
-                    break;
-                }
-            }
-        }
-
-        this.append('str', this.parseVariables(matchString));
-        if (this.addEmptyCloseTags && this.tmplType === 'fire') {
-            this.closer.push('');
-        }
+    Parser.prototype.parsePartial = function(partialName) {
+        this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
     };
 
-    Compiler.prototype.parseHTMLString = function(tmpl, matchString) {
-        var strPattern,
-            strMatch;
-
-        if (matchString.charAt(0) === '\'') {
-            if (matchString.substr(-1) === '\'') {
-                matchString = matchString.substr(1, matchString.length - 2);
-            }
-            else {
-                strPattern = /([^']*)'/g;
-                strPattern.lastIndex = this.pos;
-                strMatch = strPattern.exec(tmpl);
-                matchString = matchString.substr(1) + ' ' + strMatch[1];
-                this.pos = strPattern.lastIndex;
-            }
-
-            //Check for multi text blocks
-            while (true) {
-                strPattern = /^(\n[\t| {4}]*)?(\n[\t| {4}]*)*'([^']*)'/g;
-                strMatch = strPattern.exec(tmpl.substr(this.pos));
-                if (strMatch) {
-                    this.pos += strPattern.lastIndex;
-                    if (strMatch[2]) {
-                        matchString += '\n';
-                    }
-
-                    matchString += '\n' + strMatch[3];
-                }
-                else {
-                    break;
-                }
-            }
-        }
-
-        this.append('str', this.parseVariables(matchString));
-        if (this.addEmptyCloseTags && this.tmplType === 'fire') {
-            this.closer.push('');
-        }
-    };
-
-    Compiler.prototype.parseEndTag = function(tag) {
-        // console.log('Parse end tag', tag, this.closer);
-        var lastTag = this.closer.slice(-1)[0];
-        if ('</' + tag + '>' !== lastTag) {
-            throw new Error('Invalid closing tag! Expected </' + tag + '> but got a ' + lastTag);
-        }
-
-        this.appendCloser();
-    };
-
-    Compiler.prototype.parseHelperEnd = function(tag) {
-        // console.log('Parse helper end tag', tag, this.closer);
-        this.appendCloser();
-    };
-
-    Compiler.prototype.parseElseHelper = function(tag) {
-        this.appendCloser();
-        this.parseHelper('else');
-    };
-
-    Compiler.prototype.parseVariables = function(str, isCode) {
+    /**
+     * Match variables within a string
+     * @param  {string} str Input string
+     * @return {string}     Returns a variable replaced string
+     */
+    Parser.prototype.matchVariables = function(str, isCode) {
         var opener = '',
             closer = '',
             altOpener = '',
@@ -556,7 +475,12 @@ var FireTPL;
         }
 
         var mapArgs = function(arg) {
-            return arg.replace(/^["']|["']$/g, '');
+            arg = arg.replace(/^["']|["']$/g, '');
+            if (!/^\d+/.test(arg)) {
+                arg = '\'' + arg.replace(/\'/g, '\\\'') +'\'';
+            }
+
+            return arg;
         };
 
         var parseVar = function(m) {
@@ -588,7 +512,7 @@ var FireTPL;
                         args = (split[1] || '').slice(0, -1);
 
                     if (args) {
-                        args = args.match(/\"[^\"]*\"|\'[^\']*\'/g).map(mapArgs);
+                        args = args.match(/"[^"]*"|'[^']*'|\d+/g).map(mapArgs);
                     }
 
                     funcs.push([func, args]);
@@ -598,15 +522,9 @@ var FireTPL;
                 vars.push(chunks[i]);
             }
             
-            // console.log(' ... vars', vars);
-            // console.log(' ... funcs', funcs);
-            //console.log(' ... scopeTags', self.scopeTags);
-            //console.log(' ... curScope', self.curScope);
-            //console.log(' ... isCode', isCode);
-
             m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
-                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ', \'' + funcs[i][1].join('\',\'') + '\'' : '') + ')';
+                m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
@@ -618,81 +536,134 @@ var FireTPL;
             else {
                 return opener + m + closer;
             }
-
-            /*if (/^(parent\b)/.test(m) && (self.curScope[1] === 'root' || !self.scopeTags)) {
-                if (self.scopeTags) {
-                    m = m.replace(/^parent\.?/, '');
-                }
-
-                if (m) {
-                    return opener + m + closer;
-                }
-                else if (self.scopeTags) {
-                    return altOpener + 'parent' + altCloser;
-                }
-                else {
-                    return opener + 'parent' + closer;
-                }
-            }
-            else if (/^(root\b)/.test(m)) {
-                if (self.scopeTags) {
-                    m = m.replace(/^root\.?/, '');
-                }
-                
-                if (m) {
-                    return opener + m + closer;
-                }
-                else if (self.scopeTags) {
-                    return altOpener + 'root' + altCloser;
-                }
-                else {
-                    return opener + 'root' + closer;
-                }
-            }
-            else if (self.curScope[0] === 'root' && !isCode) {
-                return opener + prefix + m + closer;
-            }
-            else if (self.scopeTags) {
-                prefix = isCode ? '' : 'data.';
-                return altOpener + prefix + m + altCloser;
-            }
-            else {
-                return opener + 'data.' + m + closer;
-            }*/
         };
 
-        if (this.tmplType === 'hbs') {
-            str = str
-                .replace(/\'/g, '\\\'')
-                .replace(/\{\{([a-zA-Z0-9._-]+)\}\}/g, opener + 'data.$1' + closer)
-                .replace(/\{\{\{([a-zA-Z0-9._-]+)\}\}\}/g, opener + 'data.$1' + closer)
-                .replace(/\{\{@([a-zA-Z0-9._-]+)\}\}/g, '\'+l.$1+\'')
-                .replace(/\$([a-zA-Z0-9._-]+)/g, opener + 'data.$1' + closer);
+        var pat = this.patternBuilder('variable');
+        var reg = new RegExp(pat.pattern.slice(1, -1), 'g');
+        var split = str.split(reg);
+
+        if (this.tmplType === 'fire') {
+            split = split.map(function(item) {
+                if (item.charAt(0) === '@') {
+                    return opener + 'l.' + item.substr(1) + closer;
+                }
+                else if(item.charAt(0) === '$') {
+                    return parseVar(item.substr(1).replace(/^this\.?/, ''));
+                }
+                else {
+                    return item.replace(/\'/g, '\\\'');
+                }
+            });
         }
         else {
-            str = str
-                .replace(/\'/g, '\\\'')
-                // .replace(/\$/g, function(match, p1, p2, p3, p4) {
-                .replace(/\$(?:(?:\{((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|((?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))/g, function(match, p1, p2) {
-                    var m = p1 || p2;
-                    if (/^this\b/.test(m)) {
-                        return parseVar(m.replace(/^this\.?/, ''));
-                    }
-                    
-                    return parseVar(m);
-                    
-                })
-                .replace(/@([a-zA-Z0-9._-]+)/g, '\'+l.$1+\'');
+            split = split.map(function(item) {
+                if (item.charAt(0) === '@') {
+                    return opener + 'l.' + item.substr(1) + closer;
+                }
+                else if(item.charAt(0) === '{' && item.charAt(1) === '{') {
+                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''));
+                }
+                else {
+                    return item.replace(/\'/g, '\\\'');
+                }
+            });
         }
 
-        return str;
+        return split.join('');
     };
 
-    Compiler.prototype.parseVariable = function(matchVariable) {
-        this.append('str', this.parseVariables(matchVariable));
-        if (this.tmplType === 'fire') {
-            this.closer.push('');
-        }
+    /**
+     * Creates all patterns from pattern conf
+     *
+     * @private
+     */
+    Parser.prototype.patternBuilder = function(subPatternName) {
+        var pattern = [];
+        var names = [];
+        var funcs = [];
+
+        var syntaxConf = this.syntax;
+
+        var createSubPattern = function(parts) {
+            var subpat = parts.map(function(part) {
+                if (part.func) {
+                    funcs.push({
+                        func: part.func,
+                        args: part.args || [],
+                        index: index
+                    });
+                }
+
+                var subpattern = '';
+                names.push({
+                    name: part.name,
+                    index: index++
+                });
+
+                if (part.pattern.parts) {
+                    subpattern = part.pattern.start;
+                    subpattern += createSubPattern(part.pattern.parts);
+                    subpattern += part.pattern.end;
+                    return subpattern;
+                }
+
+                return part.pattern;
+            });
+
+            subpat = subpat.join('');
+            return subpat;
+        };
+
+        var index = 1;
+        syntaxConf.pattern.forEach(function(pat) {
+            //Skip unmatched pattern if a sub pattern is required
+            if (subPatternName && subPatternName !== pat.name) {
+                return;
+            }
+
+            if (pat.func) {
+                funcs.push({
+                    func: pat.func,
+                    args: pat.args || [],
+                    index: index
+                });
+            }
+
+            names.push({
+                name: pat.name,
+                index: index++
+            });
+
+            pattern.push(createSubPattern(pat.parts));
+        });
+
+        funcs.forEach(function(item) {
+            item.args = item.args.map(function(argName) {
+                for (var i = 0, len = names.length; i < len; i++) {
+                    if (names[i].name === argName) {
+                        return names[i].index;
+                    }
+                }
+            });
+        });
+
+        return {
+            pattern: '(' + pattern.join(')|(') + ')',
+            names: names,
+            funcs: funcs,
+            modifer: syntaxConf.modifer
+        };
+    };
+
+    /**
+     * Gets required syntax conf
+     *
+     * @private
+     * @param  {string} type Syntax type
+     * @return {object}      Returns syntax conf object
+     */
+    Parser.prototype.getSyntaxConf = function(type) {
+        return FireTPL.Syntax[type];
     };
 
     /**
@@ -703,7 +674,7 @@ var FireTPL;
      * @param String type Content type (str|code)
      * @param String str Output str
      */
-    Compiler.prototype.append = function(type, str) {
+    Parser.prototype.append = function(type, str) {
         if (type === this.lastItemType) {
             this.out[this.curScope[0]] += str;
         }
@@ -728,7 +699,7 @@ var FireTPL;
      * @method appendCloser
      * @private
      */
-    Compiler.prototype.appendCloser = function() {
+    Parser.prototype.appendCloser = function() {
         var el = this.closer.pop() || '';
         if (!el) {
             return;
@@ -758,7 +729,7 @@ var FireTPL;
      * @param {String} str Line string
      * @returns {Number} Returns num of indention
      */
-    Compiler.prototype.getIndention = function(str) {
+    Parser.prototype.getIndention = function(str) {
         var i = 0;
 
         this.indentionPattern.lastIndex = 0;
@@ -783,153 +754,12 @@ var FireTPL;
     };
 
     /**
-     * Strip all attributes and events from a string
-     *
-     * returns: {
-     *   attrs: ['foo=bar', 'bal=blubb']
-     *   events: [['eventName', 'eventTrigger'], n...]
-     * }
-     *
-     * @method getIndention
-     * @private
-     * @param  {String} str Strong to parse
-     * @return {Object}     Returns an object with all atttibutes and events or null
-     */
-    Compiler.prototype.stripAttributes = function(str) {
-        var pattern = /(?:@([a-zA-Z0-9._-]+))|(?:(\$(?:(?:\{(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*)\})|(?:(?:[a-zA-Z0-9_-]*)(?:\.[a-zA-Z0-9_-]+(?:\((?:\"[^\"]*\"|\'[^\']*\')*\))?)*))))|(?:(?:(on[A-Z][a-zA-Z0-9-]+)|([a-zA-Z0-9-]+))=((?:\"[^\"]*\")|(?:\'[^\']+\')|(?:\S+))|(\"[^\"]*\"))/g;
-        var attrs = [],
-            events = [],
-            content = [],
-            d = 1000,
-            match;
-
-        match = pattern.exec(str);
-        console.log('MATCH', match);
-        while (match) {
-            if (!match[0]) {
-                break;
-            }
-
-            if (--d < 0) {
-                throw 'Never ending loop!';
-            }
-
-            if (match[1]) {
-                content.push('\'+l.' + match[1] + '+\'');
-            }
-            if (match[2]) {
-                content.push(this.parseVariables(match[2]));
-            }
-            if (match[3]) {
-                events.push(match[3].substr(2).toLowerCase() + ':' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, ''));
-            }
-            else if (match[4]) {
-                attrs.push(match[4] + '="' + match[5].replace(/^\"|\'/, '').replace(/\"|\'$/, '') + '"');
-            }
-            else if (match[6]) {
-                var s = match[6].replace(/^\"|\'/, '').replace(/\"|\'$/, '');
-                s = this.parseVariables(s);
-                console.log('SSS', s);
-                content.push(s);
-            }
-
-            match = pattern.exec(str);
-        }
-
-        return attrs.length || events.length || content.length ? {
-            attrs: attrs,
-            events: events,
-            content: content
-        } : null;
-    };
-
-    /**
-     * Parse a statement string
-     *
-     * @method parseStatement
-     * @private
-     * @param String statement Statemant
-     * @param String str Input string
-     */
-    Compiler.prototype.parseStatement = function(statement, str) {
-        if (str) {
-            str = str.trim();
-            str = this.parseVariables(str);
-        }
-
-        if (statement === 'if') {
-            return ['var c=' + str + ';var r=h.if(c,function(data){var s=\'\';', 'return s;});s+=r;'];
-        }
-        else if (statement === 'else') {
-            return ['if(!r){s+=h.else(c,function(data){var s=\'\';', 'return s;});}'];
-        }
-        else {
-            return ['s+=h.' + statement + '(' + str + ',function(data){var s=\'\';', 'return s;});'];
-        }
-    };
-
-    /**
-     * Handle indention
-     *
-     * @param {String} str Indention string
-     * @method handleIndention
-     */
-    Compiler.prototype.handleIndention = function(str) {
-        var indention = this.getIndention(str),
-            newIndent = indention - this.indention,
-            el;
-
-        if (this.logLevel & 4) {
-            console.log('  Parse indention:', indention, this.indention, newIndent);
-        }
-
-        if (newIndent === 0) {
-            this.appendCloser();
-        }
-        else {
-            while (newIndent < 1) {
-                el = this.appendCloser();
-                newIndent++;
-            }
-        }
-                
-        this.indention = indention;
-    };
-
-    /**
      * Get next scope id
      *
      * @method getNextScope
      */
-    Compiler.prototype.getNextScope = function() {
+    Parser.prototype.getNextScope = function() {
         return this.nextScope < 1000 ? '00' + String(++this.nextScope).substr(-3) : '' + (++this.nextScope);
-    };
-
-    /**
-     * Inject a previous tag with a class
-     *
-     * @method injectClass
-     * @param {String} className Class names to be injected
-     */
-    Compiler.prototype.injectClass = function(className) {
-        var startPos = this.out[this.curScope[0]].lastIndexOf('<');
-        var tag = this.out[this.curScope[0]].slice(startPos);
-        // console.log('Out before inject: ', this.out[this.curScope[0]], tag);
-        
-        if (!/^<[a-z0-9]+/.test(tag)) {
-            throw 'An each statement must be within a block element!';
-        }
-
-        tag = tag.replace(/(?:class="([^"]*)")|(>)$/, function(match, p1, p2) {
-            // console.log('Inject args:', match, p1, p2);
-            if (p1) {
-                return 'class="' + p1 + ' ' + className + '"';
-            }
-
-            return ' class="' + className + '">';
-        });
-
-        this.out[this.curScope[0]] = this.out[this.curScope[0]].slice(0, startPos) + tag;
     };
 
     /**
@@ -937,73 +767,92 @@ var FireTPL;
      * @method newScope
      * @param {String} scope New scope
      */
-    Compiler.prototype.newScope = function(scope) {
+    Parser.prototype.newScope = function(scope) {
         this.append('code', '');
         this.curScope.unshift(scope);
         this.out[scope] = this.out[scope] || '';
     };
 
-    Compiler.prototype.getPatternByName = function(type, name) {
-        var pattern = this.syntax[type].patterns;
-        for (var i = 0, len = pattern.length; i < len; i++) {
-            if (pattern[i].name === name) {
-                return pattern[i].match;
-            } 
-        }
+    Parser.prototype.undent = function(dept, code) {
+        var pattern = '^(\t| {4}){' + dept + '}';
+        var reg = new RegExp(pattern);
+        return code.replace(/^\n|\n$/g, '').split('\n').map(function(line) {
+            return line.replace(reg, '');
+        }).join('\n');
     };
 
-    Compiler.prototype.strRepeat = function(str, num) {
-        var arr = new Array(num + 1);
-        return arr.join(str);
+    Parser.prototype.escape = function(str) {
+        return str.replace(/\'/g, '\\\'');
     };
 
-    FireTPL.Compiler = Compiler;
+    Parser.prototype.htmlEscape = function(str) {
+        var chars = {
+            '"': '&quot;'
+        };
 
-    /* +---------- FireTPL methods ---------- */
-
-    FireTPL.loadFile = function(src) {
-        var content = '';
-
-        if (typeof XMLHttpRequest === 'undefined') {
-            console.warn('Don\'t use FireTPL.loadFile() on node.js');
-            return;
-        }
-
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', src, false);
-        xhr.send();
-
-
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                content = xhr.responseText;
-            }
-            else if (xhr.status === 404) {
-                console.error('Loading a FireTPL template failed! Template wasn\'t found!');
-            }
-            else {
-                console.error('Loading a FireTPL template failed! Server response was: ' + xhr.status + ' ' + xhr.statusText);
-            }
-        }
-
-        return content;
+        return str.replace(/["&<>]/g, function(ch) {
+            return chars[ch];
+        });
     };
 
-    FireTPL.precompile = function(tmpl, options) {
+    FireTPL.Parser = Parser;
+})(FireTPL);
+/**
+ * FireTPL compiler node module
+ *
+ * Usage:
+ * var fireTPLCompiler = new FireTPL.Compiler();
+ * var precompiled = fireTPLCompiler.precompile('./views/template.ftl');
+ *
+ * @module FireTPL.Compiler
+ */
+(function(FireTPL) {
+    'use strict';
+
+    var Compiler = function(options) {
+        options = options || {};
+        
+        /**
+         * Set the log level.
+         * 
+         * Levels are:
+         *
+         * 4 DEBUG
+         * 3 INFO
+         * 2 WARN
+         * 1 ERROR
+         * @type {Number}
+         */
+        this.logLevel = 1;
+    };
+
+    /**
+     * Precompiles a template string
+     *
+     * @method precompile
+     * @param {String} tmpl Tmpl source
+     * @param {Object} options Precompile options
+     * 
+     *
+     * @return {Function} Returns a parsed tmpl source as a function.
+     */
+    Compiler.prototype.precompile = function(tmpl, options) {
         options = options || {};
 
         if (!options.name) {
-            console.error('Precompilation not possible! The options.name flag must be set!');
-            return;
+            throw new FireTPL.Error('Precompilation not possible! The options.name flag must be set!');
         }
 
         options.firetplModule = options.firetplModule || 'firetpl';
 
-        var compiler = new FireTPL.Compiler(options),
-            tplName = options.name;
+        var tplName = options.name;
 
-        compiler.precompile(tmpl);
-        var precompiled = compiler.getOutStream();
+        var parser = new FireTPL.Parser({
+            type: options.type || 'fire'
+        });
+        
+        parser.parse(tmpl);
+        var precompiled = parser.flush();
 
         if (options.verbose) {
             console.log('\n---------- begin of precompiled file ----------\n');
@@ -1023,7 +872,7 @@ var FireTPL;
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.templateCache[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn;' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -1038,6 +887,13 @@ var FireTPL;
         return output;
     };
 
+    /* +---------- FireTPL methods ---------- */
+
+    FireTPL.precompile = function(tmpl, options) {
+        var compiler = new Compiler(tmpl, options);
+        return compiler.precompile(tmpl, options);
+    };
+
     FireTPL.fire2html = function(tmpl, data) {
         data = data || {};
 
@@ -1045,145 +901,10 @@ var FireTPL;
         return template(data);
     };
 
+    FireTPL.Compiler = Compiler;
 })(FireTPL);
-/**
- * FireTPL parser
- *
- * @module  Parser
- */
-(function(FireTPL, undefined) {
-    'use strict';
-
-    /**
-     * Parser constructor
-     *
-     * @constructor
-     *
-     * @example (js)
-     * var parser = new FireTPL.Parser();
-     * parser.parse('input string');
-     * var parsedStr = parser.flush();
-     * 
-     */
-    var Parser = function() {
-
-    };
-
-    /**
-     * Parses an input string
-     * 
-     * @param  {string} input Input string
-     */
-    Parser.prototype.parse = function(input) {
-        
-    };
-
-    /**
-     * Returns parsed data
-     * 
-     * @return {string} Returns parser result
-     */
-    Parser.prototype.flush = function() {
-        
-    };
-
-    /**
-     * Parse a tag
-     * 
-     * @private
-     * @param  {string} tag Tag name
-     */
-    Parser.prototype.parseTag = function(tag) {
-        
-    };
-
-    /**
-     * Parse a closing tag
-     * 
-     * @private
-     * @param  {string} tag Tag name
-     */
-    Parser.prototype.parseCloseTag = function(tag) {
-        
-    };
-
-    /**
-     * Parse a string
-     * 
-     * @private
-     * @param  {string} string Tag name
-     */
-    Parser.prototype.parseString = function(string) {
-        
-    };
-
-    /**
-     * Parse a variable
-     * 
-     * @private
-     * @param  {string} variable Tag name
-     */
-    Parser.prototype.parseVariable = function(variable) {
-        
-    };
-
-    /**
-     * Parse a helper
-     * 
-     * @private
-     * @param  {string} helper Tag name
-     */
-    Parser.prototype.parseHelper = function(helper) {
-        
-    };
-
-    /**
-     * Parse a code block
-     * 
-     * @private
-     * @param  {string} code block Tag name
-     */
-    Parser.prototype.parseCodeBlock = function(code) {
-        
-    };
-
-    /**
-     * Parse a attribute
-     * 
-     * @private
-     * @param  {string} attribute Tag name
-     */
-    Parser.prototype.parseAttribute = function(attribute) {
-        
-    };
-
-    /**
-     * Creats a human readable error output
-     *
-     * Generates an error message and shows the area of code where the error has been occured.
-     * Uses the this.pos property to determine the error position
-     *
-     * @private
-     * @param {string} msg Error message
-     */
-    Parser.prototype.createError = function(msg) {
-        
-    };
-
-    /**
-     * Creates all patterns from pattern conf
-     *
-     * @private
-     */
-    Parser.prototype.matchBuilder = function() {
-        
-    };
-
-    FireTPL.Parser = Parser;
-    
-})(FireTPL);
-FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};
-FireTPL.Compiler.prototype.syntax["fire"] = {
+FireTPL.Syntax = FireTPL.Syntax || {};
+FireTPL.Syntax["fire"] = {
 	"name": "FireTPL",
 	"patterns": [
 		{
@@ -1234,9 +955,146 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		"11": "variable",
 		"12": "newline"
 	},
-	"addEmptyCloseTags": true
+	"addEmptyCloseTags": true,
+	"pattern": [
+		{
+			"name": "emptyLine",
+			"func": "parseEmptyLine",
+			"args": ["emptyLineString"],
+			"parts": [
+				{
+					"name": "emptyLineString",
+					"pattern": "^(\\s+)$"
+				}
+			]
+		}, {
+			"name": "comment",
+			"func": "parseComment",
+			"args": ["commentLine"],
+			"parts": [
+				{
+					"name": "commentLine",
+					"pattern": "\\s*(\/\/.*)$"
+				}
+			]
+		}, {
+			"name": "blockComment",
+			"func": "parseComment",
+			"args": ["commentBlock"],
+			"parts": [
+				{
+					"name": "commentBlock",
+					"pattern": "\\s*(/\\*[^]*?\\*/)$"
+				}
+			]
+		}, {
+			"name": "indention",
+			"func": "parseIndention",
+			"args": ["indentionString"],
+			"parts": [
+				{
+					"name": "indentionString",
+					"pattern": "(^[ \\t]+)"
+				}
+			]
+		}, {
+			"name": "attribute",
+			"func": "parseAttribute",
+			"args": ["attributeName", "attributeValue"],
+			"parts": [
+				{
+					"name": "attributeName",
+					"pattern": "([a-zA-Z0-9_]+)="
+				}, {
+					"name": "attributeValue",
+					"pattern": "((?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+))"
+				}
+			]
+		}, {
+			"name": "partial",
+			"func": "parsePartial",
+			"args": ["partialName"],
+			"parts": [
+				{
+					"name": "partialName",
+					"pattern": "(?:\\(>\\s*(\\S+)\\))"
+				}
+			]
+		}, {
+			"name": "tag",
+			"func": "parseTag",
+			"args": ["tag"],
+			"parts": [
+				{
+					"name": "tagName",
+					"pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+				}
+			]
+		}, {
+			"name": "string",
+			"func": "parseString",
+			"args": ["stringValue"],
+			"parts": [
+				{
+					"name": "stringValue",
+					"pattern": "\\\"([^\\\"]*)\\\""
+				}
+			]
+		}, {
+			"name": "helper",
+			"func": "parseHelper",
+			"args": ["helperName", "helperExpression", "helperTagName", "helperTagAttrs"],
+			"parts": [
+				{
+					"name": "helperName",
+					"pattern": ":([a-zA-Z][a-zA-Z0-9_-]*)"
+				}, {
+					"name": "helperExpression",
+					"pattern": "(?:[\\t ]*(\\$[a-zA-Z][a-zA-Z0-9._-]*))?"
+				}, {
+					"name": "helperTag",
+					"pattern": {
+						"start": "([\\t ]*:[\\t ]*",
+						"end": ")?",
+						"parts": [
+							{
+								"name": "helperTagName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
+							}, {
+								"name": "helperTagAttrs",
+								"pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
+							}
+						]
+					}
+				}
+			]
+		}, {
+			"name": "variable",
+			"func": "parseVariable",
+			"args": ["variableString"],
+			"parts": [
+				{
+					"name": "variableString",
+					"pattern": "([@\\$](?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)"
+				}
+			]
+		}, {
+			"name": "code",
+			"func": "parseCodeBlock",
+			"args": ["codeType", "codeValue"],
+			"parts": [
+				{
+					"name": "codeType",
+					"pattern": "```(\\w+)?"
+				}, {
+					"name": "codeValue",
+					"pattern": "([^]*)```"
+				}
+			]
+		}
+	]
 };
-FireTPL.Compiler.prototype.syntax["hbs"] = {
+FireTPL.Syntax["hbs"] = {
 	"name": "Handelbars",
 	"patterns": [
 		{
@@ -1277,305 +1135,478 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 		"8": "elseHelper",
 		"9": "helperEnd",
 		"10": "string"
-	}
+	},
+	"pattern": [
+		{
+			"name": "comment",
+			"func": "parseComment",
+			"args": ["commentLine"],
+			"parts": [
+				{
+					"name": "commentLine",
+					"pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
+				}
+			]
+		}, {
+			"name": "htmlComment",
+			"func": "parseComment",
+			"args": ["htmlCommentLine"],
+			"parts": [
+				{
+					"name": "htmlCommentLine",
+					"pattern": "(<!--[^]*?-->)"
+				}
+			]
+		}, {
+			"name": "helper",
+			"func": "parseHelper",
+			"args": ["helperName", "helperExpression"],
+			"parts": [
+				{
+					"name": "helperString",
+					"pattern": {
+						"start": "(\\{\\{#",
+						"end": "\\}\\})",
+						"parts": [
+							{
+								"name": "helperName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9_-]*)"
+							}, {
+								"name": "helperExpression",
+								"pattern": "(?:[\\t| ]+([^\\}]*))?"
+							}
+						]
+					}
+				}
+			]
+		}, {
+			"name": "closeHelper",
+			"func": "parseCloseHelper",
+			"args": ["closeHelperName"],
+			"parts": [
+				{
+					"name": "closeHelperName",
+					"pattern": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
+				}
+			]
+		}, {
+			"name": "elseHelper",
+			"func": "parseHelper",
+			"args": ["elseHelperName"],
+			"parts": [
+				{
+					"name": "elseHelperName",
+					"pattern": "(?:\\{\\{(else)\\}\\})"
+				}
+			]
+		}, {
+			"name": "closeTag",
+			"func": "parseCloseTag",
+			"args": ["closeTagString"],
+			"parts": [
+				{
+					"name": "closeTagString",
+					"pattern": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
+				}
+			]
+		}, {
+			"name": "partial",
+			"func": "parsePartial",
+			"args": ["partialName"],
+			"parts": [
+				{
+					"name": "partialName",
+					"pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
+				}
+			]
+		}, {
+			"name": "tag",
+			"func": "parseTag",
+			"args": ["tagName", "tagAttributes"],
+			"parts": [
+				{
+					"name": "tagString",
+					"pattern": {
+						"start": "(<",
+						"end": ">)",
+						"parts": [
+							{
+								"name": "tagName",
+								"pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+							}, {
+								"name": "tagAttributes",
+								"pattern": "(?:\\b\\s*([^>]+))?"
+							}
+						]
+					}
+				}
+			]
+		}, {
+			"name": "string",
+			"func": "parseString",
+			"args": ["stringValue"],
+			"parts": [
+				{
+					"name": "stringValue",
+					"pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+				}
+			]
+		}, {
+			"name": "variable",
+			"func": "parseVariable",
+			"args": ["variableString"],
+			"parts": [
+				{
+					"name": "variableString",
+					"pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
+				}
+			]
+		}
+	]
 };
 /**
  * FireTPL runtime module
  */
-(function(FireTPL, undefined) {
-	/*global define:false */
-	'use strict';
+(function(FireTPL) {
+    'use strict';
 
-	FireTPL.helpers = {};
-	FireTPL.fn = {};
-	FireTPL.templateCache = {};
+    FireTPL.helpers = {};
+    FireTPL.fn = {};
+    FireTPL.templateCache = {};
+    FireTPL.partialCache = {};
 
-	/**
-	 * Register a block helper
-	 *
-	 * @method registerHelper
-	 * @param {String} helper Helper name
-	 * @param {Function} fn Helper function
-	 */
-	FireTPL.registerHelper = function(helper, fn) {
-		this.helpers[helper] = fn;
-	};
+    /**
+     * Register a block helper
+     *
+     * @method registerHelper
+     * @param {String} helper Helper name
+     * @param {Function} fn Helper function
+     */
+    FireTPL.registerHelper = function(helper, fn) {
+        this.helpers[helper] = fn;
+    };
 
-	FireTPL.registerFunction = function(func, fn) {
-		this.fn[func] = fn;
-	};
+    FireTPL.registerFunction = function(func, fn) {
+        this.fn[func] = fn;
+    };
 
-	/**
-	 * Register core helper
-	 *
-	 * @private
-	 * @method registerCoreHelper
-	 */
-	FireTPL.registerCoreHelper = function() {
-		this.registerHelper('if', function(context, fn) {
-			var s = '';
+    /**
+     * Register core helper
+     *
+     * @private
+     * @method registerCoreHelper
+     */
+    FireTPL.registerCoreHelper = function() {
+        this.registerHelper('if', function(context, fn) {
+            var s = '';
 
-			if (context.data) {
-				s += fn(context.parent, context.root);
-			}
+            if (context.data) {
+                s += fn(context.parent, context.root);
+            }
 
-			return s;
-		});
-		
-		this.registerHelper('else', function(context, fn) {
-			return fn(context.parent);
-		});
+            return s;
+        });
+        
+        this.registerHelper('else', function(context, fn) {
+            return fn(context.parent);
+        });
 
-		this.registerHelper('unless', function(context, fn) {
-			var s = '';
+        this.registerHelper('unless', function(context, fn) {
+            var s = '';
 
-			if (!(context.data)) {
-				s += fn(context.parent);
-			}
+            if (!(context.data)) {
+                s += fn(context.parent);
+            }
 
-			return s;
-		});
+            return s;
+        });
 
-		this.registerHelper('each', function(context, fn) {
-			var s = '';
+        this.registerHelper('each', function(context, fn) {
+            var s = '';
 
-			if (context.data) {
-				context.data.forEach(function(item) {
-					s += fn(item);
-				});
-			}
+            if (context.data) {
+                context.data.forEach(function(item) {
+                    s += fn(item);
+                });
+            }
 
-			return s;
-		});
-	};
+            return s;
+        });
+    };
 
-	FireTPL.Runtime = function() {
+    var Runtime = function() {
 
-	};
+    };
 
-	FireTPL.Runtime.prototype.exec = function(helper, data, parent, root, fn) {
-		if (!FireTPL.helpers[helper]) {
-			throw new Error('Helper ' + helper + ' not registered!');
-		}
+    Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+        if (!FireTPL.helpers[helper]) {
+            throw new Error('Helper ' + helper + ' not registered!');
+        }
 
-		return FireTPL.helpers[helper]({
-			data: data,
-			parent: parent,
-			root: root
-		}, fn);
-	};
+        return FireTPL.helpers[helper]({
+            data: data,
+            parent: parent,
+            root: root
+        }, fn);
+    };
 
-	/**
-	 * Executes a precompiled
-	 * @method compile
-	 * 
-	 * @param {String} template Template string or precompiled tempalte
-	 * @param {Object} options (Optional) Compiler options
-	 * 
-	 * @returns {String} Returns executed template
-	 */
-	FireTPL.compile = function(template, options) {
-		if (!/^scopes=scopes/.test(template)) {
-			var fireTpl = new FireTPL.Compiler(options);
-			var type = options && options.type ? options.type : null;
-			if (options && options.prettify) {
-				fireTpl.prettify = true;
-			}
-			
-			template = fireTpl.precompile(template, type);
-		}
+    Runtime.prototype.execPartial = function(partialName, data) {
+        var partial = FireTPL.partialCache[partialName];
+        if (!partial) {
+            throw new FireTPL.Error('Partial \'' + partialName + '\' was not registered!');
+        }
 
-		return function(data, scopes) {
-			var h = new FireTPL.Runtime();
-			var l = FireTPL.locale;
-			var s;
+        return partial(data);
+    };
 
-			//jshint evil:true
-			try {
-				var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
-				return eval(tmpl);
-			}
-			catch (err) {
-				console.error('FireTPL parse error', err);
-				console.log('----- Template source -----');
-				console.log(prettify(tmpl));
-				console.log('----- Template source -----');
-			}
+    /**
+     * Compiles and executes a template string
+     *
+     * Uses fire syntax as default. If you pass a hbs template please set the type option to *hbs*
+     * 
+     * @param {String} template Template string or precompiled tempalte
+     * @param {Object} options (Optional) Compiler options
+     *
+     * @example {fire}
+     * var tmpl = 'div "Hello $name"';
+     * var template = FireTPL.compile(tmpl);
+     * var html = template({
+     *   name: 'Andi'
+     * });
+     *
+     * // html == <div>Hello Andi</div>
+     * 
+     * @example {hbs}
+     * var tmpl = '<div>Hello {{name}}</div>';
+     * var template = FireTPL.compile(tmpl, 'hbs');
+     * var html = template({
+     *   name: 'Andi'
+     * });
+     *
+     * // html == <div>Hello Andi</div>
+     * @returns {String} Returns executed template
+     */
+    FireTPL.compile = function(template, options) {
+        options = options || {};
 
-			return s;
-		};
-	};
+        if (typeof options === 'string') {
+            options = {
+                type: options
+            };
+        }
 
-	/**
-	 * Compile a file
-	 * @method compileFile
-	 * 
-	 * @param {String} template Template string or precompiled tempalte
-	 * @param {Object} options (Optional) Compiler options
-	 * 
-	 * @returns {String} Returns executed template
-	 */
-	FireTPL.compileFile = function(file, options) {
-		if (typeof global === 'object' && typeof window === 'undefined') {
-			var fs = require('fs');
-			return FireTPL.compile(fs.readFileSync(file, { encoding: 'utf8' }), options);
-		}
+        if (!/^scopes=scopes/.test(template)) {
+            // var fireTpl = new FireTPL.Compiler(options);
+            var parser = new FireTPL.Parser({
+                type: options.type || 'fire'
+            });
+            
+            parser.parse(template);
+            template = parser.flush();
+        }
 
-		return FireTPL.compile(FireTPL.readFile(file), options);
-	};
+        return function(data, scopes) {
+            var h = new FireTPL.Runtime();
+            var l = FireTPL.locale;
+            var s;
 
-	var prettify = function(str) {
-		var indention = 0,
-			out = '';
+            //jshint evil:true
+            try {
+                var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+                return eval(tmpl);
+            }
+            catch (err) {
+                console.error('FireTPL parse error', err);
+                console.log('Data: ', data);
+                console.log('----- Template source -----');
+                console.log(prettify(tmpl));
+                console.log('----- Template source -----');
+            }
 
-		var repeat = function(str, i) {
-			var out = '';
-			while (i > 0) {
-				out += str;
-				i--;
-			}
-			return out;
-		};
+            return s;
+        };
+    };
 
-		for (var i = 0; i < str.length; i++) {
-			var c = str.charAt(i);
-			
-			if(c === '}' && str.charAt(i - 1) !== '{') {
-				indention--;
-				out += '\n' + repeat('\t', indention);
-			}
+    FireTPL.Runtime = Runtime;
 
-			out += c;
+    /**
+     * Compile a file
+     * @method compileFile
+     * 
+     * @param {String} template Template string or precompiled tempalte
+     * @param {Object} options (Optional) Compiler options
+     * 
+     * @returns {String} Returns executed template
+     */
+    FireTPL.compileFile = function(file, options) {
+        if (typeof global === 'object' && typeof window === 'undefined') {
+            var fs = require('fs');
+            return FireTPL.compile(fs.readFileSync(file, { encoding: 'utf8' }), options);
+        }
 
-			if (c === '{' && str.charAt(i + 1) !== '}') {
-				indention++;
-				out += '\n' + repeat('\t', indention);
-			}
-			else if(c === ';') {
-				out += '\n' + repeat('\t', indention);
-			}
-		}
+        return FireTPL.compile(FireTPL.readFile(file), options);
+    };
 
-		return out;
-	};
+    var prettify = function(str) {
+        var indention = 0,
+            out = '';
 
-	FireTPL.registerCoreHelper();
+        var repeat = function(str, i) {
+            var out = '';
+            while (i > 0) {
+                out += str;
+                i--;
+            }
+            return out;
+        };
+
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charAt(i);
+            
+            if(c === '}' && str.charAt(i - 1) !== '{') {
+                indention--;
+                out += '\n' + repeat('\t', indention);
+            }
+
+            out += c;
+
+            if (c === '{' && str.charAt(i + 1) !== '}') {
+                indention++;
+                out += '\n' + repeat('\t', indention);
+            }
+            else if(c === ';') {
+                out += '\n' + repeat('\t', indention);
+            }
+        }
+
+        return out;
+    };
+
+    FireTPL.registerCoreHelper();
 
 })(FireTPL);
-FireTPL.registerFunction('byte', function(str, round) {
-    var units = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
-        size = parseFloat(str, 10),
-        p = 0;
+(function(FireTPL) {
+    'use strict';
+    
+    FireTPL.registerFunction('byte', function(str, round) {
+        var units = ['Byte', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB'],
+            size = parseFloat(str, 10),
+            p = 0;
 
-    round = round ? Math.pow(10, round) : 10;
+        round = round ? Math.pow(10, round) : 10;
 
-    for (var i = 0, len = units.length; i < len; i++) {
-        if (Math.pow(1024, i + 1) >= size) {
-            break;
+        for (var i = 0, len = units.length; i < len; i++) {
+            if (Math.pow(1024, i + 1) >= size) {
+                break;
+            }
         }
-    }
 
-    return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
-});
-/**
- * Greater than comparison
- *
- * The property becomes true if property is greater than value.
- *
- * @group InlineFunctions
- * @method gt
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input is greater then value
- */
-FireTPL.registerFunction('gt', function(str, cmp) {
-    return Number(str) > Number(cmp);
-});
+        return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
+    });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+    
+        /**
+     * Greater than comparison
+     *
+     * The property becomes true if property is greater than value.
+     *
+     * @group InlineFunctions
+     * @method gt
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input is greater then value
+     */
+    FireTPL.registerFunction('gt', function(str, cmp) {
+        return Number(str) > Number(cmp);
+    });
 
-/**
- * Greater than comparison or equal
- *
- * The property becomes true if property is greater or equal than value.
- *
- * @group InlineFunctions
- * @method gte
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input is greater or equal then value
- */
-FireTPL.registerFunction('gte', function(str, cmp) {
-    return Number(str) >= Number(cmp);
-});
+    /**
+     * Greater than comparison or equal
+     *
+     * The property becomes true if property is greater or equal than value.
+     *
+     * @group InlineFunctions
+     * @method gte
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input is greater or equal then value
+     */
+    FireTPL.registerFunction('gte', function(str, cmp) {
+        return Number(str) >= Number(cmp);
+    });
 
-/**
- * Lesser than comparison
- *
- * The property becomes true if property is lesser than value.
- *
- * @group InlineFunctions
- * @method lt
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input is lesser then value
- */
-FireTPL.registerFunction('lt', function(str, cmp) {
-    return Number(str) < Number(cmp);
-});
+    /**
+     * Lesser than comparison
+     *
+     * The property becomes true if property is lesser than value.
+     *
+     * @group InlineFunctions
+     * @method lt
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input is lesser then value
+     */
+    FireTPL.registerFunction('lt', function(str, cmp) {
+        return Number(str) < Number(cmp);
+    });
 
-/**
- * Lesser than comparison or equal
- *
- * The property becomes true if property is lesser or equal than value.
- *
- * @group InlineFunctions
- * @method gte
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input is lesser or equal then value
- */
-FireTPL.registerFunction('lte', function(str, cmp) {
-    return Number(str) <= Number(cmp);
-});
+    /**
+     * Lesser than comparison or equal
+     *
+     * The property becomes true if property is lesser or equal than value.
+     *
+     * @group InlineFunctions
+     * @method gte
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input is lesser or equal then value
+     */
+    FireTPL.registerFunction('lte', function(str, cmp) {
+        return Number(str) <= Number(cmp);
+    });
 
-/**
- * Equal comparison
- *
- * The property becomes true if input and value are both identical
- *
- * @group InlineFunctions
- * @method eq
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input and value are identical
- */
-FireTPL.registerFunction('eq', function(str, cmp) {
-    return Number(str) === Number(cmp);
-});
+    /**
+     * Equal comparison
+     *
+     * The property becomes true if input and value are both identical
+     *
+     * @group InlineFunctions
+     * @method eq
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value are identical
+     */
+    FireTPL.registerFunction('eq', function(str, cmp) {
+        return Number(str) === Number(cmp);
+    });
 
-/**
- * Not equal comparison
- *
- * The property becomes true if input and value aren't identical
- *
- * @group InlineFunctions
- * @method not
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input and value aren't identical
- */
-FireTPL.registerFunction('not', function(str, cmp) {
-    return Number(str) !== Number(cmp);
-});
+    /**
+     * Not equal comparison
+     *
+     * The property becomes true if input and value aren't identical
+     *
+     * @group InlineFunctions
+     * @method not
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     */
+    FireTPL.registerFunction('not', function(str, cmp) {
+        return Number(str) !== Number(cmp);
+    });
 
-/**
- * Expression matching
- *
- * Returns value if expression is matching, otherwise altValue will be returned
- *
- * @group InlineFunctions
- * @method if
- * @param {string} expression Expression
- * @param  {number} value Comparison value
- * @return {boolean}    Returns true if input and value aren't identical
- */
-FireTPL.registerFunction('if', function(str, expression, value, altValue) {
-    if (String(str) === String(expression)) {
-        return value;
-    }
+    /**
+     * Expression matching
+     *
+     * Returns value if expression is matching, otherwise altValue will be returned
+     *
+     * @group InlineFunctions
+     * @method if
+     * @param {string} expression Expression
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     */
+    FireTPL.registerFunction('if', function(str, expression, value, altValue) {
+        if (String(str) === String(expression)) {
+            return value;
+        }
 
-    return altValue;
-});
+        return altValue;
+    });
+})(FireTPL);

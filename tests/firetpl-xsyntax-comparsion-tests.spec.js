@@ -1,8 +1,6 @@
 describe('FireTPL syntax comparsion tests', function() {
     'use strict';
 
-    var FireTPL = require('../firetpl-node');
-
     describe.skip('Compare results of .fire and .hbs templates', function() {
         beforeEach(function() {
 

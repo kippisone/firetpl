@@ -197,8 +197,6 @@ out:
    | Tests
    +------------------------------------------------------------------------------------+ */
 
-var FireTPL = require('../firetpl-node');
-
 describe('FireTPL Runtime', function() {
     describe('Template Parser', function() {
         parserFood.forEach(function(item) {

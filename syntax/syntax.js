@@ -1,5 +1,5 @@
-FireTPL.Compiler.prototype.syntax = FireTPL.Compiler.prototype.syntax || {};
-FireTPL.Compiler.prototype.syntax["fire"] = {
+FireTPL.Syntax = FireTPL.Syntax || {};
+FireTPL.Syntax["fire"] = {
 	"name": "FireTPL",
 	"patterns": [
 		{
@@ -189,7 +189,7 @@ FireTPL.Compiler.prototype.syntax["fire"] = {
 		}
 	]
 };
-FireTPL.Compiler.prototype.syntax["hbs"] = {
+FireTPL.Syntax["hbs"] = {
 	"name": "Handelbars",
 	"patterns": [
 		{
@@ -275,6 +275,26 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 				}
 			]
 		}, {
+			"name": "closeHelper",
+			"func": "parseCloseHelper",
+			"args": ["closeHelperName"],
+			"parts": [
+				{
+					"name": "closeHelperName",
+					"pattern": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
+				}
+			]
+		}, {
+			"name": "elseHelper",
+			"func": "parseHelper",
+			"args": ["elseHelperName"],
+			"parts": [
+				{
+					"name": "elseHelperName",
+					"pattern": "(?:\\{\\{(else)\\}\\})"
+				}
+			]
+		}, {
 			"name": "closeTag",
 			"func": "parseCloseTag",
 			"args": ["closeTagString"],
@@ -324,6 +344,16 @@ FireTPL.Compiler.prototype.syntax["hbs"] = {
 				{
 					"name": "stringValue",
 					"pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+				}
+			]
+		}, {
+			"name": "variable",
+			"func": "parseVariable",
+			"args": ["variableString"],
+			"parts": [
+				{
+					"name": "variableString",
+					"pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
 				}
 			]
 		}

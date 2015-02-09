@@ -1,4 +1,4 @@
-module.exports = function(FireTPL) {
+(function(FireTPL) {
     'use strict';
     
         /**
@@ -103,4 +103,4 @@ module.exports = function(FireTPL) {
 
         return altValue;
     });
-};
+})(FireTPL);
