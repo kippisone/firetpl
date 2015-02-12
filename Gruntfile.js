@@ -127,7 +127,8 @@ module.exports = function(grunt) {
         'jshint',
         'json',
         'concat',
-        'bumpup:prerelease']);
+        'bumpup:prerelease',
+        'component-build']);
 
     grunt.registerTask('release', function (type) {
         type = type ? type : 'patch';     // Default release type 

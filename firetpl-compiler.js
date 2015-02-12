@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.0-6
+ * FireTPL template engine v0.4.0-10
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.0-6'
+		version: '0.4.0-10'
 	};
 
 	return FireTPL;
@@ -480,6 +480,26 @@ FireTPL.Syntax["hbs"] = {
 				}
 			]
 		}, {
+			"name": "closeHelper",
+			"func": "parseCloseHelper",
+			"args": ["closeHelperName"],
+			"parts": [
+				{
+					"name": "closeHelperName",
+					"pattern": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
+				}
+			]
+		}, {
+			"name": "elseHelper",
+			"func": "parseElseHelper",
+			"args": ["elseHelperName"],
+			"parts": [
+				{
+					"name": "elseHelperName",
+					"pattern": "(?:\\{\\{(else)\\}\\})"
+				}
+			]
+		}, {
 			"name": "closeTag",
 			"func": "parseCloseTag",
 			"args": ["closeTagString"],
@@ -529,6 +549,16 @@ FireTPL.Syntax["hbs"] = {
 				{
 					"name": "stringValue",
 					"pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+				}
+			]
+		}, {
+			"name": "variable",
+			"func": "parseVariable",
+			"args": ["variableString"],
+			"parts": [
+				{
+					"name": "variableString",
+					"pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
 				}
 			]
 		}

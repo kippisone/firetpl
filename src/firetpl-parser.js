@@ -47,6 +47,7 @@
      */
     Parser.prototype.parse = function(input) {
         var pat = this.patternBuilder();
+        this.inputStream = input;
 
         if (this.logLevel & 4) {
             console.log('Parse a .' + type + ' Template');
@@ -71,15 +72,14 @@
             }
 
             pat.lastIndex = this.pos;
-            match = reg.exec(input);
+            match = reg.exec(this.inputStream);
             this.pos = pat.lastIndex;
 
             if (!match) {
                 break;
             }
 
-            // console.log(match);
-            // console.log(pat);
+            // console.log(match);// console.log(pat);
             for (var i = 0, len = pat.funcs.length; i < len; i++) {
                 if (match[pat.funcs[i].index]) {
                     //Map args
@@ -92,6 +92,7 @@
                     if (func !== 'parseIndention') {
                         this.isNewLine = false;
                     }
+                    this.lastParserAction = func;
                     break;
                 }
             }
@@ -129,6 +130,10 @@
         if (this.lastItemType === 'str') {
             outStream += '\';';
         }
+
+        //Clear data streams
+        delete this.inputStream;
+        delete this.out;
 
         return outStream;
     };
@@ -215,6 +220,11 @@
         this.appendCloser();
     };
 
+    Parser.prototype.parseElseHelper = function() {
+        this.parseCloseHelper('if');
+        this.parseHelper('else');
+    };
+
     /**
      * Parse a string
      * 
@@ -224,6 +234,11 @@
     Parser.prototype.parseString = function(str) {
         str = str.trim().replace(/\s+/g, ' ');
         str = this.matchVariables(str);
+        
+        if (this.tmplType === 'fire' && this.grepNextChar() === '"') {
+            str += ' ';
+        }
+
         this.append('str', str);
         if (this.addEmptyCloseTags && this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
@@ -694,6 +709,17 @@
         return str.replace(/["&<>]/g, function(ch) {
             return chars[ch];
         });
+    };
+
+    Parser.prototype.grepNextChar = function() {
+        var reg = /\S/g;
+        reg.lastIndex = this.pos;
+        var match = reg.exec(this.inputStream);
+        if (match) {
+            return match[0];
+        }
+
+        return null;
     };
 
     FireTPL.Parser = Parser;

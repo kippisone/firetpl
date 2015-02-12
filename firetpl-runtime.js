@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.0-6
+ * FireTPL template engine v0.4.0-10
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.0-6'
+		version: '0.4.0-10'
 	};
 
 	return FireTPL;
@@ -239,8 +239,10 @@ var FireTPL;
         }
 
         return function(data, scopes) {
-            var h = new FireTPL.Runtime();
-            var l = FireTPL.locale;
+            var h = new FireTPL.Runtime(),
+                l = FireTPL.locale,
+                f = FireTPL.fn,
+                p = FireTPL.execPartial;
             var s;
 
             //jshint evil:true

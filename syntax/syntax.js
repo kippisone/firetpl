@@ -286,7 +286,7 @@ FireTPL.Syntax["hbs"] = {
 			]
 		}, {
 			"name": "elseHelper",
-			"func": "parseHelper",
+			"func": "parseElseHelper",
 			"args": ["elseHelperName"],
 			"parts": [
 				{
