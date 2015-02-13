@@ -1,6 +1,8 @@
 (function(FireTPL) {
     'use strict';
 
+    var fs = require('fs');
+
     FireTPL.__express = function(file, options, callback) {
         if (typeof options === 'function') {
             callback = options;
