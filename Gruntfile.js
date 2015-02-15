@@ -134,7 +134,6 @@ module.exports = function(grunt) {
         grunt.task.run('build');         // Lint stuff
         grunt.log.ok('Starting release ' + pkg.version); 
         grunt.task.run('bumpup:' + type); // Bump up the version 
-        // grunt.task.run('uglify');         // Minify stuff 
         grunt.task.run('tagrelease');     // Commit & tag the release 
     });
 
