@@ -116,7 +116,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    grunt.loadNpmTasks('grunt-browserify');
     grunt.loadNpmTasks('grunt-bumpup');
     grunt.loadNpmTasks('grunt-json');
     grunt.loadNpmTasks('grunt-tagrelease');
@@ -134,9 +133,9 @@ module.exports = function(grunt) {
         type = type ? type : 'patch';     // Default release type 
         grunt.task.run('build');         // Lint stuff
         grunt.log.ok('Starting release ' + pkg.version); 
-        // grunt.task.run('bumpup:' + type); // Bump up the version 
+        grunt.task.run('bumpup:' + type); // Bump up the version 
         // grunt.task.run('uglify');         // Minify stuff 
-        // grunt.task.run('tagrelease');     // Commit & tag the release 
+        grunt.task.run('tagrelease');     // Commit & tag the release 
     });
 
     
