@@ -120,16 +120,6 @@ module.exports = function(grunt) {
         'bumpup:prerelease',
         'component-build']);
 
-    grunt.registerTask('release', function (type) {
-        type = type ? type : 'patch';     // Default release type 
-        grunt.task.run('build');         // Lint stuff
-        grunt.log.ok('Starting release ' + pkg.version); 
-        grunt.task.run('bumpup:' + type); // Bump up the version 
-        grunt.task.run('tagrelease');     // Commit & tag the release 
-    });
-
-    
-
     grunt.registerTask('component-build', [
         'copy:component',
         'version:component'
