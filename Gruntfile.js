@@ -98,6 +98,22 @@ module.exports = function(grunt) {
                 dest: 'syntax/syntax.js'
             }
         },
+        release: {
+            options: {
+                npm: true, //default: true
+                npmtag: true, //default: no tag
+                indentation: '    ', //default: '  ' (two spaces)
+                tagName: 'v<%= version %>', //default: '<%= version %>'
+                commitMessage: 'Release v<%= version %>', //default: 'release <%= version %>'
+                tagMessage: 'Tagging release v<%= version %>', //default: 'Version <%= version %>',
+                beforeRelease: ['build']
+                // github: {
+                //     repo: 'AndiOxidant/doxydoc.git', //put your user/repo here
+                //     usernameVar: 'GITHUB_USERNAME', //ENVIRONMENT VARIABLE that contains Github username
+                //     passwordVar: 'GITHUB_PASSWORD' //ENVIRONMENT VARIABLE that contains Github password
+                // }
+            }
+        },
         version: {
             component: {
                 src: ['../component-builds/component.json']
@@ -110,6 +126,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-bumpup');
     grunt.loadNpmTasks('grunt-json');
+    grunt.loadNpmTasks('grunt-release');
     grunt.loadNpmTasks('grunt-version');
 
     grunt.registerTask('default', 'jshint');
