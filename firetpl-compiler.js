@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.1-4
+ * FireTPL template engine v0.4.1-5
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.1-4'
+		version: '0.4.1-5'
 	};
 
 	return FireTPL;
@@ -211,7 +211,7 @@ FireTPL.Syntax["fire"] = {
 			"match": "(\\n?^\\s+$)"
 		}, {
 			"name": "indention",
-			"match": "(^[ \\t]+)"
+			"match": "(\\n?^[ \\t]*)"
 		}, {
 			"name": "comment",
 			"match": "(//.*)"
@@ -293,7 +293,7 @@ FireTPL.Syntax["fire"] = {
 			"parts": [
 				{
 					"name": "indentionString",
-					"pattern": "(^[ \\t]+)"
+					"pattern": "(^[ \\t]+|\\n^(?=\\S))"
 				}
 			]
 		}, {
