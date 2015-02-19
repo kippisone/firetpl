@@ -98,13 +98,6 @@ module.exports = function(grunt) {
                 dest: 'syntax/syntax.js'
             }
         },
-        tagrelease: {
-            file: 'package.json',
-            commit:  true,
-            message: 'Release %version%',
-            prefix:  'v',
-            annotate: false,
-        },
         version: {
             component: {
                 src: ['../component-builds/component.json']
@@ -117,7 +110,6 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-bumpup');
     grunt.loadNpmTasks('grunt-json');
-    grunt.loadNpmTasks('grunt-tagrelease');
     grunt.loadNpmTasks('grunt-version');
 
     grunt.registerTask('default', 'jshint');

@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.1-5
+ * FireTPL template engine v0.4.1
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.1-5'
+		version: '0.4.1'
 	};
 
 	return FireTPL;
