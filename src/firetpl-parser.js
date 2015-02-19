@@ -38,6 +38,13 @@
         this.isNewLine = true;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
+        this.partialsPath = options.partialsPath;
+
+        /**
+         * Stores names of required partials
+         * @property {Array}
+         */
+        this.partials = [];
     };
 
     /**
@@ -270,7 +277,7 @@
         if (helper === 'else') {
             this.closer.push(['code', '']);
             this.newScope(this.lastIfScope);
-            this.append('code', 'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';');
+            this.append('code', 'if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});}']);
             this.closer.push('scope');
             return;
@@ -310,11 +317,11 @@
 
         if (helper === 'if') {
             // this.lastIfScope = scopeId;
-            this.append('code', 'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';');
+            this.append('code', 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});s+=r;']);
         }
         else {
-            this.append('code', 's+=h.exec(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
+            this.append('code', 's+=h(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});']);
         }
 
@@ -363,6 +370,9 @@
 
     Parser.prototype.parsePartial = function(partialName) {
         this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
+        if (this.partials.indexOf(partialName) === -1) {
+            this.partials.push(partialName);
+        }
     };
 
     /**
@@ -720,6 +730,45 @@
         }
 
         return null;
+    };
+
+    /**
+     * Parse all partials. Returns an array of all partials
+     * @return {Array} Returns an array with all parsed partials or null if no partials are present
+     * [
+     *   {
+     *     partial: 'Partialname',
+     *     source: Partial source
+     *   }
+     * ]
+     */
+    Parser.prototype.partialParser = function() {
+        var self = this,
+            partialStore = [];
+
+        if (!this.partials.length) {
+            return null;
+        }
+
+        if (!self.partialsPath) {
+            throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
+        }
+
+        this.partials.forEach(function(partial) {
+            var source = FireTPL.readFile(self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType);
+            var subParser = new FireTPL.Parser();
+            subParser.parse(source, {
+                type: self.tmplType,
+                partialsPath: self.partialsPath
+            });
+
+            partialStore.push({
+                partial: partial,
+                source: subParser.flush()
+            });
+        });
+
+        return partialStore.length > 0 ? partialStore : null;
     };
 
     FireTPL.Parser = Parser;

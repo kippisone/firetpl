@@ -6,7 +6,7 @@
 			"match": "(\\n?^\\s+$)"
 		}, {
 			"name": "indention",
-			"match": "(^[ \\t]+)"
+			"match": "(\\n?^[ \\t]*)"
 		}, {
 			"name": "comment",
 			"match": "(//.*)"
@@ -88,7 +88,7 @@
 			"parts": [
 				{
 					"name": "indentionString",
-					"pattern": "(^[ \\t]+)"
+					"pattern": "(^[ \\t]+|\\n^(?=\\S))"
 				}
 			]
 		}, {

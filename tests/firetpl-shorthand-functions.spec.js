@@ -24,7 +24,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql('FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};');
+			expect(precompiled).to.eql('FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};');
 		});
 
 		it('Should precompile a template in CommonJS style', function() {
@@ -35,7 +35,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql(';(function(require) {var FireTPL = require(\'firetpl\');FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};})(require);');
+			expect(precompiled).to.eql(';(function(require) {var FireTPL = require(\'firetpl\');FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};})(require);');
 		});
 
 		it('Should precompile a template in AMD style', function() {
@@ -46,7 +46,7 @@ describe('Shorthand Functions', function() {
 			});
 
 			expect(precompiled).to.be.a('string');
-			expect(precompiled).to.eql('define([\'firetpl\'],function(FireTPL) {FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};});');
+			expect(precompiled).to.eql('define([\'firetpl\'],function(FireTPL) {FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\"test\"><span>Hello World</span></div>\';return s;};});');
 		});
 	});
 

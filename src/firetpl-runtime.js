@@ -69,10 +69,23 @@
     };
 
     var Runtime = function() {
-
+        this.partialCache = FireTPL.partialCache;
     };
 
     Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+        console.warn('FireTPL.Runtime.prototype.exec is deprecated! Please use execHelper instead!');
+        if (!FireTPL.helpers[helper]) {
+            throw new Error('Helper ' + helper + ' not registered!');
+        }
+
+        return FireTPL.helpers[helper]({
+            data: data,
+            parent: parent,
+            root: root
+        }, fn);
+    };
+
+    Runtime.prototype.execHelper = function(helper, data, parent, root, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
         }
@@ -85,12 +98,16 @@
     };
 
     Runtime.prototype.execPartial = function(partialName, data) {
-        var partial = FireTPL.partialCache[partialName];
+        var partial = this.partialCache[partialName];
         if (!partial) {
             throw new FireTPL.Error('Partial \'' + partialName + '\' was not registered!');
         }
 
         return partial(data);
+    };
+
+    Runtime.prototype.registerPartial = function(partial, fn) {
+        this.partialCache[partial] = fn;
     };
 
     /**
@@ -123,6 +140,9 @@
     FireTPL.compile = function(template, options) {
         options = options || {};
 
+        var runTime = new FireTPL.Runtime();
+                
+
         if (typeof options === 'string') {
             options = {
                 type: options
@@ -131,19 +151,32 @@
 
         if (!/^scopes=scopes/.test(template)) {
             // var fireTpl = new FireTPL.Compiler(options);
-            var parser = new FireTPL.Parser({
-                type: options.type || 'fire'
-            });
+            var parser = new FireTPL.Parser(options);
             
             parser.parse(template);
             template = parser.flush();
+
+            var partials = parser.partialParser();
+            if (partials) {
+                partials.forEach(function(item) {
+                    try {
+                        runTime.registerPartial(item.partial, 
+                            //jshint evil:true
+                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + item.source + 'return s;})')
+                        );
+                    }
+                    catch(err) {
+                        console.error('Pregister partial error!', err, err.lineNumber);
+                    }
+                });
+            }
         }
 
         return function(data, scopes) {
-            var h = new FireTPL.Runtime(),
+            var h = runTime.execHelper,
                 l = FireTPL.locale,
                 f = FireTPL.fn,
-                p = FireTPL.execPartial;
+                p = runTime.execPartial.bind(runTime);
             var s;
 
             //jshint evil:true
@@ -164,24 +197,6 @@
     };
 
     FireTPL.Runtime = Runtime;
-
-    /**
-     * Compile a file
-     * @method compileFile
-     * 
-     * @param {String} template Template string or precompiled tempalte
-     * @param {Object} options (Optional) Compiler options
-     * 
-     * @returns {String} Returns executed template
-     */
-    FireTPL.compileFile = function(file, options) {
-        if (typeof global === 'object' && typeof window === 'undefined') {
-            var fs = require('fs');
-            return FireTPL.compile(fs.readFileSync(file, { encoding: 'utf8' }), options);
-        }
-
-        return FireTPL.compile(FireTPL.readFile(file), options);
-    };
 
     var prettify = function(str) {
         var indention = 0,
