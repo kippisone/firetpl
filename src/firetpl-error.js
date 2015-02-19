@@ -11,7 +11,6 @@
             msg = instance;
         }
 
-        // var err = new Error(msg);
         return new Error(msg);
     };
 

@@ -4,7 +4,7 @@ describe('FireTPL', function() {
 	var tmplScope = {
 		out: 'scopes=scopes||{};var root=data,parent=data;',
 		if: function(str) {
-			this.out += 'scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'';
+			this.out += 'scopes.scope001=function(data,parent){var s=\'\';var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'';
 			this.out += str;
 			this.out += '\';return s;});s+=r;return s;};';
 			return this;
@@ -52,7 +52,7 @@ describe('FireTPL', function() {
 				name: 'test'
 			});
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
@@ -71,7 +71,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
@@ -90,7 +90,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass"></div>' +
@@ -110,7 +110,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
@@ -133,7 +133,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body><div id="myDiv"></div>' +
 				'<div id="mySecondDiv" class="myClass">Hello World</div>' +
@@ -153,10 +153,10 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';s+=\'' + 
+				'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'' + 
 				'<div>Hello World</div>\';' +
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
@@ -181,13 +181,13 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
+				'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
-				'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';' +
+				'if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
@@ -212,13 +212,13 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				'var c=data;var r=h.exec(\'if\',c,parent,root,function(data){var s=\'\';' +
+				'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});s+=r;' +
-				'if(!r){s+=h.exec(\'else\',c,parent,root,function(data){var s=\'\';' +
+				'if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Good bye</div>\';' +
 				'return s;});}return s;' +
 				'};var s=\'\';' +
@@ -240,10 +240,10 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.exec(\'unless\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'unless\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -265,10 +265,10 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.exec(\'unless\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'unless\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -290,10 +290,10 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -315,10 +315,10 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -340,7 +340,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a multiline String</div>' +
@@ -360,7 +360,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a multiline String</div>' +
@@ -384,7 +384,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a multiline String<br>' +
@@ -409,7 +409,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="content">I\\\'m a \'+data.super+\' multiline String<br>' +
@@ -440,7 +440,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head><meta><title></title><link></head><body>' +
 				'<input><img>' +
@@ -461,7 +461,7 @@ describe('FireTPL', function() {
 			var fireTpl = new FireTPL.Compiler();
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
 				'<div class="description">\'+l.txt.description+\'</div>' +
@@ -484,10 +484,10 @@ describe('FireTPL', function() {
 			});
 			template = fireTpl.precompile(template, { name: 'test' });
 			expect(template).to.eql(
-				'FireTPL.templateCache[\'test\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' +
+				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h.exec(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
 				's+=\'<div>Hello \'+data.name+\'</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +

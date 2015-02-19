@@ -7,7 +7,7 @@ FireTPL.Syntax["fire"] = {
 			"match": "(\\n?^\\s+$)"
 		}, {
 			"name": "indention",
-			"match": "(^[ \\t]+)"
+			"match": "(\\n?^[ \\t]*)"
 		}, {
 			"name": "comment",
 			"match": "(//.*)"
@@ -89,7 +89,7 @@ FireTPL.Syntax["fire"] = {
 			"parts": [
 				{
 					"name": "indentionString",
-					"pattern": "(^[ \\t]+)"
+					"pattern": "(^[ \\t]+|\\n^(?=\\S))"
 				}
 			]
 		}, {

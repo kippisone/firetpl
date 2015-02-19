@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.0-12
+ * FireTPL template engine v0.4.1-4
  * 
  * FireTPL is a pretty Javascript template engine
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.0-12'
+		version: '0.4.1-4'
 	};
 
 	return FireTPL;
@@ -60,7 +60,6 @@ var FireTPL;
             msg = instance;
         }
 
-        // var err = new Error(msg);
         return new Error(msg);
     };
 
@@ -172,7 +171,7 @@ var FireTPL;
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -190,14 +189,14 @@ var FireTPL;
     /* +---------- FireTPL methods ---------- */
 
     FireTPL.precompile = function(tmpl, options) {
-        var compiler = new Compiler(tmpl, options);
+        var compiler = new Compiler(options);
         return compiler.precompile(tmpl, options);
     };
 
-    FireTPL.fire2html = function(tmpl, data) {
+    FireTPL.fire2html = function(tmpl, data, options) {
         data = data || {};
 
-        var template = FireTPL.compile(tmpl);
+        var template = FireTPL.compile(tmpl, options);
         return template(data);
     };
 

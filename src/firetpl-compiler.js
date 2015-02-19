@@ -73,7 +73,7 @@
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var h=new FireTPL.Runtime(),l=FireTPL.locale,f=FireTPL.fn,p=FireTPL.execPartial;' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -91,14 +91,14 @@
     /* +---------- FireTPL methods ---------- */
 
     FireTPL.precompile = function(tmpl, options) {
-        var compiler = new Compiler(tmpl, options);
+        var compiler = new Compiler(options);
         return compiler.precompile(tmpl, options);
     };
 
-    FireTPL.fire2html = function(tmpl, data) {
+    FireTPL.fire2html = function(tmpl, data, options) {
         data = data || {};
 
-        var template = FireTPL.compile(tmpl);
+        var template = FireTPL.compile(tmpl, options);
         return template(data);
     };
 

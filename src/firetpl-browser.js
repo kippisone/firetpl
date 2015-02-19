@@ -1,7 +1,7 @@
 (function(FireTPL) {
     'use strict';
 
-    FireTPL.loadFile = function(src) {
+    FireTPL.readFile = function(src) {
         var content = '';
 
         if (typeof XMLHttpRequest === 'undefined') {
@@ -27,5 +27,15 @@
         }
 
         return content;
+    };
+
+    /**
+     * Synchronous read file function to read a file from file system.
+     * @param  {string} file File path
+     * @return {String}      Returns file content
+     */
+    FireTPL.loadFile = function(file) {
+        console.warn('FireTPL.loadFile is deprecated! Please use FireTPL.readFile instead!');
+        return FireTPL.readFile(file);
     };
 })(FireTPL);
