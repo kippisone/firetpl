@@ -344,6 +344,8 @@
         code = code.replace(/`(.*)`/g, function(match, p1) {
             return self.matchVariables(p1);
         });
+
+        code = code.replace(/\n/g, '\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
