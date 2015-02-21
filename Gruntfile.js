@@ -134,11 +134,6 @@ module.exports = function(grunt) {
         'jshint',
         'json',
         'concat',
-        'bumpup:prerelease',
-        'component-build']);
-
-    grunt.registerTask('component-build', [
-        'copy:component',
-        'version:component'
+        'bumpup:prerelease'
     ]);
 };

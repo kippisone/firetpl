@@ -866,14 +866,14 @@ describe('FireTPL Runtime', function() {
         it('Should compile a tmpl string with an if statement', function() {
             var template = function(data, scopes) {
                 var s='';
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data, parent){
                         var s='';
                         var c=data;
-                        var r=h.exec('if', c, parent, root,function(data){
+                        var r=t.execHelper('if', c, parent, root,function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -900,14 +900,14 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a truthy if..else statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data, parent){
                         var s='';
                         var c=data;
-                        var r=h.exec('if', c, parent, root,function(data){
+                        var r=t.execHelper('if', c, parent, root,function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -915,7 +915,7 @@ describe('FireTPL Runtime', function() {
                         });
                         s+=r;
                         if(!r){
-                                s+=h.exec('else', c, parent, root, function(data){
+                                s+=t.execHelper('else', c, parent, root, function(data){
                                         var s='';
                                         s+='<div>Good bye</div>';
                                         return s;
@@ -943,14 +943,14 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a falsy if..else statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data){
                         var s='';
                         var c=data;
-                        var r=h.exec('if', c, parent, root,function(data){
+                        var r=t.execHelper('if', c, parent, root,function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -958,7 +958,7 @@ describe('FireTPL Runtime', function() {
                         });
                         s+=r;
                         if(!r){
-                                s+=h.exec('else', c, parent, root, function(data){
+                                s+=t.execHelper('else', c, parent, root, function(data){
                                         var s='';
                                         s+='<div>Good bye</div>';
                                         return s;
@@ -987,13 +987,13 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a truthy unless statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data){
                         var s='';
-                        s+=h.exec('unless', data, parent, root, function(data){
+                        s+=t.execHelper('unless', data, parent, root, function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -1020,13 +1020,13 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a falsy unless statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data){
                         var s='';
-                        s+=h.exec('unless', data, parent, root, function(data){
+                        s+=t.execHelper('unless', data, parent, root, function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -1052,13 +1052,13 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a falsy each statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data,parent){
                         var s='';
-                        s+=h.exec('each',data,parent,root,function(data){
+                        s+=t.execHelper('each',data,parent,root,function(data){
                                 var s='';
                                 s+='<div>Hello World</div>';
                                 return s;
@@ -1085,13 +1085,13 @@ describe('FireTPL Runtime', function() {
 
         it('Should compile a tmpl string with a truthy each statement', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data){
                         var s='';
-                        s+=h.exec('each', data, parent, root, function(data){
+                        s+=t.execHelper('each', data, parent, root, function(data){
                                 var s='';
                                 s+='<span>' + data.name + '</span>';
                                 return s;
@@ -1124,13 +1124,13 @@ describe('FireTPL Runtime', function() {
     describe('Scopes', function() {
         it('Should call a scope function of a FireTemplate', function() {
             var template = function(data, scopes) {
-                var h = new FireTPL.Runtime();
+                var t = new FireTPL.Runtime();
                 scopes=scopes||{};
                 var parent = data;
                 var root = data;
                 scopes.scope001=function(data){
                         var s='';
-                        s+=h.exec('each', data, parent, root, function(data){
+                        s+=t.execHelper('each', data, parent, root, function(data){
                                 var s='';
                                 s+='<span>' + data.name + '</span>';
                                 return s;
