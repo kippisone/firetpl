@@ -996,7 +996,7 @@ describe('Parser', function() {
                 '    '
             );
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><code class="js">var bla = \\\'blubb\\\'\nconsole.log(bla);</code></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><code class="js">var bla = \\\'blubb\\\'\\\nconsole.log(bla);</code></div>\';');
         });
     });
 
@@ -1791,13 +1791,13 @@ describe('Parser', function() {
             expect(step.name).to.eql('parseCodeBlock');
             expect(step.args[0]).to.eql('js');
             expect(step.args[1]).to.eql('\n        $bla = \'blubb\';\n        var log = function() {\n            console.log($bla, `$inlineVar`);\n            return true;\n        }\n    ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"js\">$bla = \\\'blubb\\\';\nvar log = function() {\n    console.log($bla, \'+data.inlineVar+\');\n    return true;\n}</code>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"js\">$bla = \\\'blubb\\\';\\\nvar log = function() {\\\n    console.log($bla, \'+data.inlineVar+\');\\\n    return true;\\\n}</code>');
             expect(parser.closer).to.eql(['</div>']);
         });
 
         it(' ... indent zero', function() {
             parser.parseIndention('');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"js\">$bla = \\\'blubb\\\';\nvar log = function() {\n    console.log($bla, \'+data.inlineVar+\');\n    return true;\n}</code></div>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"js\">$bla = \\\'blubb\\\';\\\nvar log = function() {\\\n    console.log($bla, \'+data.inlineVar+\');\\\n    return true;\\\n}</code></div>');
             expect(parser.closer).to.eql([]);
         });
     });
