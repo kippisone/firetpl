@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.3
+ * FireTPL template engine v0.4.4
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.3'
+		version: '0.4.4'
 	};
 
 	return FireTPL;
@@ -1597,6 +1597,10 @@ FireTPL.Syntax["hbs"] = {
         return Math.round((size / Math.pow(1024, i) * round)) / round + ' ' + units[i];
     });
 })(FireTPL);
+/**
+ * Comparison functions
+ * @module Inline Functions (Comparison)
+ */
 (function(FireTPL) {
     'use strict';
     
@@ -1697,6 +1701,46 @@ FireTPL.Syntax["hbs"] = {
      */
     FireTPL.registerFunction('if', function(str, expression, value, altValue) {
         if (String(str) === String(expression)) {
+            return value;
+        }
+
+        return altValue;
+    });
+
+    /**
+     * Checks whether str is truthy or not
+     *
+     * Returns value if str is truthy, otherwise altValue will be returned
+     *
+     * @group InlineFunctions
+     * @method ifTrue
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     * @example {fire}
+     * $str.ifTrue('Yes', 'No')
+     */
+    FireTPL.registerFunction('ifTrue', function(str, value, altValue) {
+        if (str) {
+            return value;
+        }
+
+        return altValue;
+    });
+
+    /**
+     * Checks whether str is truthy or not
+     *
+     * Returns value if str is truthy, otherwise altValue will be returned
+     *
+     * @group InlineFunctions
+     * @method ifFalse
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     * @example {fire}
+     * $str.ifFalse('Yes', 'No')
+     */
+    FireTPL.registerFunction('ifFalse', function(str, value, altValue) {
+        if (!str) {
             return value;
         }
 

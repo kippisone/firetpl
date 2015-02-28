@@ -1,3 +1,7 @@
+/**
+ * Comparison functions
+ * @module Inline Functions (Comparison)
+ */
 (function(FireTPL) {
     'use strict';
     
@@ -98,6 +102,46 @@
      */
     FireTPL.registerFunction('if', function(str, expression, value, altValue) {
         if (String(str) === String(expression)) {
+            return value;
+        }
+
+        return altValue;
+    });
+
+    /**
+     * Checks whether str is truthy or not
+     *
+     * Returns value if str is truthy, otherwise altValue will be returned
+     *
+     * @group InlineFunctions
+     * @method ifTrue
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     * @example {fire}
+     * $str.ifTrue('Yes', 'No')
+     */
+    FireTPL.registerFunction('ifTrue', function(str, value, altValue) {
+        if (str) {
+            return value;
+        }
+
+        return altValue;
+    });
+
+    /**
+     * Checks whether str is truthy or not
+     *
+     * Returns value if str is truthy, otherwise altValue will be returned
+     *
+     * @group InlineFunctions
+     * @method ifFalse
+     * @param  {number} value Comparison value
+     * @return {boolean}    Returns true if input and value aren't identical
+     * @example {fire}
+     * $str.ifFalse('Yes', 'No')
+     */
+    FireTPL.registerFunction('ifFalse', function(str, value, altValue) {
+        if (!str) {
             return value;
         }
 
