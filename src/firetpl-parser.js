@@ -338,7 +338,7 @@
      */
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
-        var cssClass = 'class="' + type + '"';
+        var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
         code = code.replace(/`(.*)`/g, function(match, p1) {

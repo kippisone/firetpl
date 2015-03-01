@@ -169,6 +169,40 @@ describe('Comparsion Functions', function() {
         });
     });
 
+    describe('Function ifTrue(), one arg', function() {
+        it('Should return a true value if instr is a string', function() {
+            expect(FireTPL.fn.ifTrue('Yes', 'No')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is undefined', function() {
+            expect(FireTPL.fn.ifTrue(undefined, 'No')).to.be('No');
+        });
+
+        it('Should return a false value if instr is null', function() {
+            expect(FireTPL.fn.ifTrue(null, 'No')).to.be('No');
+        });
+
+        it('Should return a false value if instr is an empty str', function() {
+            expect(FireTPL.fn.ifTrue('', 'No')).to.be('No');
+        });
+
+        it('Should return a false value if instr is number 0', function() {
+            expect(FireTPL.fn.ifTrue(0, 'No')).to.be('No');
+        });
+
+        it('Should return a false value if instr is false', function() {
+            expect(FireTPL.fn.ifTrue(false, 'No')).to.be('No');
+        });
+
+        it('Should return a true value if instr is true', function() {
+            expect(FireTPL.fn.ifTrue(true, 'No')).to.be(true);
+        });
+
+        it('Should return a true value if instr is true', function() {
+            expect(FireTPL.fn.ifTrue(1, 'No')).to.be(1);
+        });
+    });
+
     describe('Function ifFalse()', function() {
         it('Should be a function', function() {
             expect(FireTPL.fn.ifFalse).to.be.a('function');
@@ -204,6 +238,40 @@ describe('Comparsion Functions', function() {
 
         it('Should return a true value if instr is true', function() {
             expect(FireTPL.fn.ifFalse(1, 'Yes', 'No')).to.be('No');
+        });
+    });
+
+    describe('Function ifFalse() one arg', function() {
+        it('Should return a true value if instr is a string', function() {
+            expect(FireTPL.fn.ifFalse('Yes', 'No')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is undefined', function() {
+            expect(FireTPL.fn.ifFalse(undefined, 'Yes')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is null', function() {
+            expect(FireTPL.fn.ifFalse(null, 'Yes')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is an empty str', function() {
+            expect(FireTPL.fn.ifFalse('', 'Yes')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is number 0', function() {
+            expect(FireTPL.fn.ifFalse(0, 'Yes')).to.be('Yes');
+        });
+
+        it('Should return a false value if instr is false', function() {
+            expect(FireTPL.fn.ifFalse(false, 'Yes')).to.be('Yes');
+        });
+
+        it('Should return a true value if instr is true', function() {
+            expect(FireTPL.fn.ifFalse(true, 'No')).to.be(true);
+        });
+
+        it('Should return a true value if instr is true', function() {
+            expect(FireTPL.fn.ifFalse(1, 'No')).to.be(1);
         });
     });
 });

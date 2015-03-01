@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.4.4
+ * FireTPL template engine v0.5.0
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.4.4'
+		version: '0.5.0'
 	};
 
 	return FireTPL;
@@ -436,7 +436,7 @@ var FireTPL;
      */
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
-        var cssClass = 'class="' + type + '"';
+        var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
         code = code.replace(/`(.*)`/g, function(match, p1) {
@@ -1710,7 +1710,8 @@ FireTPL.Syntax["hbs"] = {
     /**
      * Checks whether str is truthy or not
      *
-     * Returns value if str is truthy, otherwise altValue will be returned
+     * Returns value if str is truthy, otherwise altValue will be returned.
+     * If only one arg is passed and str becomes truthy the instr will be returned instead.
      *
      * @group InlineFunctions
      * @method ifTrue
@@ -1718,19 +1719,25 @@ FireTPL.Syntax["hbs"] = {
      * @return {boolean}    Returns true if input and value aren't identical
      * @example {fire}
      * $str.ifTrue('Yes', 'No')
+     *
+     * @example {fire}
+     * //$str == 'Yes'
+     * $str.ifTrue('No')
+     * //returns 'Yes'
      */
     FireTPL.registerFunction('ifTrue', function(str, value, altValue) {
         if (str) {
-            return value;
+            return arguments.length === 2 ? str : value;
         }
 
-        return altValue;
+        return arguments.length === 2 ? value : altValue;
     });
 
     /**
-     * Checks whether str is truthy or not
+     * Checks whether str is falsy or not
      *
-     * Returns value if str is truthy, otherwise altValue will be returned
+     * Returns value if str is falsy, otherwise altValue will be returned,
+     * if altValue is not given, instr will be returned.
      *
      * @group InlineFunctions
      * @method ifFalse
@@ -1738,13 +1745,18 @@ FireTPL.Syntax["hbs"] = {
      * @return {boolean}    Returns true if input and value aren't identical
      * @example {fire}
      * $str.ifFalse('Yes', 'No')
+     * 
+     * @example {fire}
+     * //$str = 'No'
+     * $str.ifFalse('Yes')
+     * //returns 'No'
      */
     FireTPL.registerFunction('ifFalse', function(str, value, altValue) {
         if (!str) {
             return value;
         }
 
-        return altValue;
+        return arguments.length === 2 ? str : altValue;
     });
 })(FireTPL);
 (function(FireTPL) {

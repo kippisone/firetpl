@@ -107,11 +107,6 @@ module.exports = function(grunt) {
                 commitMessage: 'Release v<%= version %>', //default: 'release <%= version %>'
                 tagMessage: 'Tagging release v<%= version %>', //default: 'Version <%= version %>',
                 beforeRelease: ['build']
-                // github: {
-                //     repo: 'AndiOxidant/doxydoc.git', //put your user/repo here
-                //     usernameVar: 'GITHUB_USERNAME', //ENVIRONMENT VARIABLE that contains Github username
-                //     passwordVar: 'GITHUB_PASSWORD' //ENVIRONMENT VARIABLE that contains Github password
-                // }
             }
         },
         version: {
