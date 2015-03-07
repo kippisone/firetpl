@@ -345,7 +345,7 @@
             return self.matchVariables(p1);
         });
 
-        code = code.replace(/\n/g, '\\\n');
+        code = code.replace(/\n/g, '\\n\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
