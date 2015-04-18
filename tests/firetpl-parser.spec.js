@@ -982,6 +982,16 @@ describe('Parser', function() {
 
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
         });
+
+        it('Should parse a tag with an event attribute', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', '\'bla\'');
+            fireTpl.parseAttribute('onClick', '\'click-handler\'');
+            fireTpl.parseAttribute('onMove', '\'move-handler\'');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" on="click:click-handler;move:move-handler"></div>\';');
+        });
     });
 
     describe('parseCodeBlock', function() {

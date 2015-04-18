@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.2-1
+ * FireTPL template engine v0.5.2
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.5.2-1'
+		version: '0.5.2'
 	};
 
 	return FireTPL;
@@ -457,7 +457,10 @@ var FireTPL;
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
         var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
-        if (this.out[this.curScope[0]].slice(-1) !== '>') {
+        if (/^on(ce)[A-Z]/.test(attrName)) {
+            this.injectAtribute(attrName, attrValue, ';');
+        }
+        else if (this.out[this.curScope[0]].slice(-1) !== '>') {
             throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
         }
 
@@ -466,6 +469,20 @@ var FireTPL;
         if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
+    };
+
+    /**
+     * Inject an attribute into the current tag
+     * @method injectAtribute
+     * @param  {String}       attrName Attribute name
+     * @param  {String}       value    Attribute value
+     * @param  {Boolean|String}       merge    If this argument is given and the attribut is still existing the values will be mrged together. Separated by merge it it is from type string
+     */
+    Parser.prototype.injectAtribute = function(attrName, value, merge) {
+        var re = new RegExp('<[a-zA-Z0-9_-].*?(' + attrName + '="[^"]")*.*?>');
+        this.out[this.curScope[0]].replace(re, function(match, m1) {
+            console.log('MATCH', match, m1);
+        });
     };
 
     Parser.prototype.parsePartial = function(partialName) {
