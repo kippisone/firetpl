@@ -113,6 +113,12 @@ var FireTPL;
      * var parser = new FireTPL.Parser();
      * parser.parse('input string');
      * var parsedStr = parser.flush();
+     *
+     * Options:
+     *
+     * @arg eventTags {boolean}
+     * Strip html event tags and add all into an `on` tag. The tag contains all event tags as a list seperated by a semicolon.
+     * For example: `on="click:click-handler;mousedown:mouse-handler"`
      * 
      */
     var Parser = function(options) {
@@ -135,6 +141,7 @@ var FireTPL;
         this.addEmptyCloseTags = false;
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
+        this.parseEventTags = options.eventTags || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -459,7 +466,7 @@ var FireTPL;
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
         var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
-        if (/^on?[A-Z]/.test(attrName)) {
+        if (this.parseEventTags && /^on?[A-Z]/.test(attrName)) {
             var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
             this.injectAtribute('on', val, ';');
         }
@@ -480,7 +487,7 @@ var FireTPL;
      * @method injectAtribute
      * @param  {String}       attrName Attribute name
      * @param  {String}       value    Attribute value
-     * @param  {Boolean|String}       merge    If this argument is given and the attribut is still existing the values will be mrged together. Separated by merge it it is from type string
+     * @param  {Boolean|String}       merge    If this argument is given and the attribut is already existing the values will be merged together. Separated by 'merge' property
      */
     Parser.prototype.injectAtribute = function(attrName, value, merge) {
         var re = new RegExp(' ' + attrName + '="(.+?)"', 'g');

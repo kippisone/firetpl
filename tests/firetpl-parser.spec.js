@@ -468,7 +468,7 @@ describe('Parser', function() {
         });
     });
 
-    describe.only('injectAtribute', function() {
+    describe('injectAtribute', function() {
         it('Should inject an attribute', function() {
             var fireTpl = new Parser();
             fireTpl.out.root = '<div><div class="test">';
@@ -1018,7 +1018,10 @@ describe('Parser', function() {
         });
 
         it('Should parse a tag with an event attribute', function() {
-            var fireTpl = new Parser();
+            var fireTpl = new Parser({
+                eventTags: true
+            });
+            
             fireTpl.parseTag('div');
             fireTpl.parseTag('div');
             fireTpl.parseAttribute('class', '\'bla\'');
