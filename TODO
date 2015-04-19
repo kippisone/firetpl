@@ -20,16 +20,24 @@ FireTPL v1.0.0
 	- Each helper add $first, $last, $odd
 	- Handlebars syntax support (convert hbs2fire and parse it then)
 	- RUPAR (Render Append Prepend Update Remove) support in FireTPL (Maybe with DOM watcher)
-
+	
+	- Handle event handler
+	- Code view should ignore ``` if indention is not the same as start tags indention
+	- Escape html tags in varables per default. Add a alternative way to add unescaped vars. May be $$htmlVar or $htmlVar.html()
+	- Use @tags in the same manner like in Handlebars.
+	- Better language integration. For example $t('string')
+	- Print stack trace in error messages
 
 Bugs:
 
-	- Set view path to load views fromsubdirs ( views/test/test.fire  => test/test )
+	- Set view path to load views from subdirs ( views/test/test.fire  => test/test )
 	- Detailed error message
 	- Log errors as errors, add error links to errors
 	- Ignore missing objects. data = undefined; data.description triggers an exception.
 	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
-	 - Parse h1 "Hello $name"
+	- Parse h1 "Hello $name"
+	
+
 
 Documentation:
 

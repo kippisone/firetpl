@@ -128,6 +128,7 @@ var FireTPL;
         this.closer = [];
         this.curScope = ['root'];
         this.out = { root: '' };
+        this.lastTagPos = { 'root' : 0 };
         this.lastItemType = 'code';
         this.nextScope = 0;
         this.pos = 0;
@@ -260,6 +261,7 @@ var FireTPL;
      */
     Parser.prototype.parseTag = function(tag, attrs) {
         attrs = attrs ? ' ' + attrs.trim() : '';
+        this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
         this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
@@ -457,14 +459,16 @@ var FireTPL;
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
         var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
-        if (/^on(ce)[A-Z]/.test(attrName)) {
-            this.injectAtribute(attrName, attrValue, ';');
+        if (/^on?[A-Z]/.test(attrName)) {
+            var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
+            this.injectAtribute('on', val, ';');
         }
         else if (this.out[this.curScope[0]].slice(-1) !== '>') {
             throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
         }
-
-        this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+        else {
+            this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+        }
 
         if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
@@ -479,10 +483,32 @@ var FireTPL;
      * @param  {Boolean|String}       merge    If this argument is given and the attribut is still existing the values will be mrged together. Separated by merge it it is from type string
      */
     Parser.prototype.injectAtribute = function(attrName, value, merge) {
-        var re = new RegExp('<[a-zA-Z0-9_-].*?(' + attrName + '="[^"]")*.*?>');
-        this.out[this.curScope[0]].replace(re, function(match, m1) {
-            console.log('MATCH', match, m1);
+        var re = new RegExp(' ' + attrName + '="(.+?)"', 'g');
+        var curAttr = this.out[this.curScope[0]].slice(this.lastTagPos[this.curScope[0]]);
+        var hasMatch = false;
+
+        if (curAttr.charAt(0) !== '<') {
+            this.out[this.curScope[0]] += curAttr;
+            throw new FireTPL.Error('Inject attribut failed! Last item is not a valid tag!', this.out[this.curScope[0]]);
+        }
+
+        curAttr = curAttr.replace(re, function(match) {
+            if (merge === undefined) {
+                throw new FireTPL.Error('Attribute ' + attrName + ' already exists!');
+            }
+
+            var str = match.slice(0, -1) + merge + value + '"';
+
+            hasMatch = true;
+            return str;
         });
+
+        if (!hasMatch) {
+            curAttr = curAttr.replace(/>$/, ' ' + attrName + '="' + value + '"' + '>');
+        }
+
+        this.out[this.curScope[0]] = this.out[this.curScope[0]].substring(0, this.lastTagPos[this.curScope[0]]);
+        this.out[this.curScope[0]] += curAttr;
     };
 
     Parser.prototype.parsePartial = function(partialName) {
