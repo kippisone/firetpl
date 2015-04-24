@@ -1,6 +1,7 @@
 FireTPL v1.0.0
 
-	- Better condition support. :if $bla == "blubb" && $isSuperBlubb
+	- Change inline funcs to new format
+	- Better condition support. :if $eq($bla, blubb) && $isSuperBlubb
 	- Ignore empty lines after string blocks and tags
 
 	- add escape func to $bla and {{bla}}
@@ -60,3 +61,63 @@ Helper:
 	:sort $listing +name -version
 		div class="sorted" "$name $version"
 
+
+
+Special vars:
+
+$$root $$parent
+
+Loop vars:
+
+$$index $$first
+
+Unescaped vars:
+
+$foo.html()
+
+Lang vars:
+
+@lang
+$l('key')
+
+TODO
+====
+
+Localization
+------------
+
+$l('key.bla', 2, 'Blubb', 'en-UK,de-DE')
+
+$l($key.bla, {});
+
+div
+	"Hello $name
+	 $t('welcome.message')
+	 $t.welcome.message            < Better
+
+div
+	"Hello $name
+	 $t('welcome.message', $count)     < Better
+	 $t.welcome.message.count($count)
+
+
+New inline function syntax
+--------------------------
+
+$d('date.var', 'YYYY-mm-dd')
+
+$f('format.key', '%d5')
+
+$if('bla.blubb', $bla1, $bla2)
+
+$if('bla.blubb', $bla1, $if($bla2, $bla2, 'Blabla'))
+
+
+
+Newline options
+---------------
+
+div
+    a href="#a1" "Apple".
+    a href="#a1" "Banana".
+    a href="#a1" "Coconut".
