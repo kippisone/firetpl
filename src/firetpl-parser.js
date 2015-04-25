@@ -537,6 +537,9 @@
                     return opener + 'l.' + item.substr(1) + closer;
                 }
                 else if(item.charAt(0) === '$') {
+                    if (item.charAt(1) === '{') {
+                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''));
+                    }
                     return parseVar(item.substr(1).replace(/^this\.?/, ''));
                 }
                 else {

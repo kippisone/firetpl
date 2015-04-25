@@ -917,6 +917,13 @@ describe('Parser', function() {
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data.name+\'\';');
         });
 
+        it('Should parse a brace wrapped variable', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseVariable('${name}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data.name+\'\';');
+        });
+
         it('Should parse $this', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$this');
