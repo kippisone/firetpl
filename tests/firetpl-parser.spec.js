@@ -511,7 +511,7 @@ describe('Parser', function() {
         beforeEach(function() {
             stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
             'parseCodeBlock', 'parseAttribute', 'parseIndention', 'parseEmptyLine', 'parseComment',
-            'parsePartial'];
+            'parsePartial', 'parseLineOption'];
 
             result = [];
             parser = new Parser();
@@ -537,10 +537,10 @@ describe('Parser', function() {
                 ' */\n' +
                 'div\n' +
                 '    //A simple example\n' +
-                '    span "Hello World" //Say hello ;)\n' +
+                '    span "Hello World". //Say hello ;)\n' +
                 '    \n' +
                 '    :if $name\n' +
-                '        span $name\n' +
+                '        span $name.\n' +
                 '        span $state.if("loggedin", "Logged-in", "Logged-out")\n' +
                 '\n' +
                 '    /* Register block */\n' +
@@ -557,6 +557,7 @@ describe('Parser', function() {
                 ['parseIndention', '    '],
                 ['parseTag', 'span'],
                 ['parseString', 'Hello World'],
+                ['parseLineOption', '.'],
                 ['parseComment', '//Say hello ;)'],
                 ['parseEmptyLine', '    '],
                 ['parseIndention', '    '],
@@ -564,6 +565,7 @@ describe('Parser', function() {
                 ['parseIndention', '        '],
                 ['parseTag', 'span'],
                 ['parseVariable', '$name'],
+                ['parseLineOption', '.'],
                 ['parseIndention', '        '],
                 ['parseTag', 'span'],
                 ['parseVariable', '$state.if("loggedin", "Logged-in", "Logged-out")'],
@@ -611,6 +613,41 @@ describe('Parser', function() {
                 ['parseTag', 'div'],
                 ['parseIndention', '    '],
                 ['parsePartial', 'myPartial']
+            ]);
+        });
+
+        it('Should parse brace wrapped vars', function() {
+            var tmpl =
+                'div\n' +
+                '    :if ${name}\n' +
+                '        span ${name}.\n' +
+                '        span $state.if("loggedin", "Logged-in", "Logged-out")\n' +
+                '';
+            parser.parse(tmpl);
+            expect(result).to.eql([
+                ['parseTag', 'div'],
+                ['parseIndention', '    '],
+                ['parseHelper', 'if', '${name}', undefined, undefined],
+                ['parseIndention', '        '],
+                ['parseTag', 'span'],
+                ['parseVariable', '${name}'],
+                ['parseLineOption', '.'],
+                ['parseIndention', '        '],
+                ['parseTag', 'span'],
+                ['parseVariable', '$state.if("loggedin", "Logged-in", "Logged-out")'],
+            ]);
+        });
+
+        it('Should parse a doctype tag', function() {
+            var tmpl =
+                'dtd\n' +
+                'html\n' +
+                '';
+            parser.parse(tmpl);
+            expect(result).to.eql([
+                ['parseTag', 'dtd'],
+                ['parseIndention', '\n'],
+                ['parseTag', 'html'],
             ]);
         });
     });
@@ -725,6 +762,20 @@ describe('Parser', function() {
             parser.parseTag('beer');
 
             expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<beer></beer>\';');
+        });
+
+        it('Should parse a doctype tag', function() {
+            var parser = new Parser();
+            parser.parseTag('dtd');
+
+            expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<!DOCTYPE html>\';');
+        });
+
+        it('Should parse a complex doctype tag', function() {
+            var parser = new Parser();
+            parser.parsePlain('<!DOCTYPE html PUBLIC\n "-//W3C//DTD XHTML Basic 1.1//EN"\n "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">');
+
+            expect(parser.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<!DOCTYPE html PUBLIC\n "-//W3C//DTD XHTML Basic 1.1//EN"\n "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">\';');
         });
     });
 
@@ -847,6 +898,14 @@ describe('Parser', function() {
             fireTpl.parseString('Hello $name.if("andi", "Andi", "Other")!');
 
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.if(data.name,\'andi\',\'Andi\',\'Other\')+\'!\';');
+        });
+
+        it('Should parse a string with line options (space)', function() {
+            var fireTpl = new Parser();
+            fireTpl.parseString('Hello space');
+            fireTpl.parseLineOption('.');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello space \';');
         });
     });
 
@@ -1057,6 +1116,15 @@ describe('Parser', function() {
 
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;' +
                 'var s=\'\';s+=\'<div>\'+p(\'myPartial\',data)+\'</div>\';');
+        });
+    });
+
+    describe('parsePlain', function() {
+        it('Should parse a plain block', function() {
+            var fireTpl = new Parser();
+            fireTpl.parsePlain('<!DOCTYPE html>');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<!DOCTYPE html>\';');
         });
     });
 

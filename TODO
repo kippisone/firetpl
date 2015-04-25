@@ -1,11 +1,9 @@
 FireTPL v1.0.0
 
-	- Change inline funcs to new format
 	- Better condition support. :if $eq($bla, blubb) && $isSuperBlubb
 	- Ignore empty lines after string blocks and tags
 
 	- add escape func to $bla and {{bla}}
-	- inline functions
 	- inline html
 	- <!DOCTYPE>
 	- Pretty error messages
@@ -15,14 +13,11 @@ FireTPL v1.0.0
 	  div class=bla blub
 	  				^ Unknown tag or attribute
 
-	- Better parser (For .fire and .hbs support)
-	
 	- Rename special vars. Maybe to $$parent, $$root
 	- Each helper add $first, $last, $odd
 	- Handlebars syntax support (convert hbs2fire and parse it then)
 	- RUPAR (Render Append Prepend Update Remove) support in FireTPL (Maybe with DOM watcher)
 	
-	- Handle event handler
 	- Code view should ignore ``` if indention is not the same as start tags indention
 	- Escape html tags in varables per default. Add a alternative way to add unescaped vars. May be $$htmlVar or $htmlVar.html()
 	- Use @tags in the same manner like in Handlebars.
@@ -37,8 +32,6 @@ Bugs:
 	- Ignore missing objects. data = undefined; data.description triggers an exception.
 	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
 	- Parse h1 "Hello $name"
-	
-
 
 Documentation:
 
@@ -60,8 +53,6 @@ Helper:
 
 	:sort $listing +name -version
 		div class="sorted" "$name $version"
-
-
 
 Special vars:
 

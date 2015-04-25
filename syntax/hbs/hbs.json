@@ -1,170 +1,131 @@
 {
-	"name": "Handelbars",
-	"patterns": [
-		{
-			"name": "unused",
-			"match": "(\\s+)"
-		}, {
-			"name": "comment",
-			"match": "({{!(?:--)?.+}})"
-		}, {
-			"name": "tag",
-			"match": "(?:<([a-zA-Z][a-zA-Z0-9:_-]*)\\b([^>]+)?>)"
-		}, {
-			"name": "endtag",
-			"match": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
-		}, {
-			"name": "helper",
-			"match": "(?:\\{\\{#([a-zA-Z][a-zA-Z0-9_-]*)(?:\\s+([^\\}]*)\\}\\})?)"
-		}, {
-			"name": "elseHelper",
-			"match": "(?:\\{\\{(else)\\}\\})"
-		}, {
-			"name": "helperEnd",
-			"match": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
-		}, {
-			"name": "string",
-			"match": "((?:[^](?!(?:<|\\{\\{(?:#|\\/))))+[^])"
-		}
-	],
-	"modifer": "gm",
-	"scopes": {
-		"1": "unused",
-		"2": "comment",
-		"3": "tag",
-		"4": "tagAttributes",
-		"5": "endtag",
-		"6": "helper",
-		"7": "expression",
-		"8": "elseHelper",
-		"9": "helperEnd",
-		"10": "string"
-	},
-	"pattern": [
-		{
-			"name": "comment",
-			"func": "parseComment",
-			"args": ["commentLine"],
-			"parts": [
-				{
-					"name": "commentLine",
-					"pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
-				}
-			]
-		}, {
-			"name": "htmlComment",
-			"func": "parseComment",
-			"args": ["htmlCommentLine"],
-			"parts": [
-				{
-					"name": "htmlCommentLine",
-					"pattern": "(<!--[^]*?-->)"
-				}
-			]
-		}, {
-			"name": "helper",
-			"func": "parseHelper",
-			"args": ["helperName", "helperExpression"],
-			"parts": [
-				{
-					"name": "helperString",
-					"pattern": {
-						"start": "(\\{\\{#",
-						"end": "\\}\\})",
-						"parts": [
-							{
-								"name": "helperName",
-								"pattern": "([a-zA-Z][a-zA-Z0-9_-]*)"
-							}, {
-								"name": "helperExpression",
-								"pattern": "(?:[\\t| ]+([^\\}]*))?"
-							}
-						]
-					}
-				}
-			]
-		}, {
-			"name": "closeHelper",
-			"func": "parseCloseHelper",
-			"args": ["closeHelperName"],
-			"parts": [
-				{
-					"name": "closeHelperName",
-					"pattern": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
-				}
-			]
-		}, {
-			"name": "elseHelper",
-			"func": "parseElseHelper",
-			"args": ["elseHelperName"],
-			"parts": [
-				{
-					"name": "elseHelperName",
-					"pattern": "(?:\\{\\{(else)\\}\\})"
-				}
-			]
-		}, {
-			"name": "closeTag",
-			"func": "parseCloseTag",
-			"args": ["closeTagString"],
-			"parts": [
-				{
-					"name": "closeTagString",
-					"pattern": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
-				}
-			]
-		}, {
-			"name": "partial",
-			"func": "parsePartial",
-			"args": ["partialName"],
-			"parts": [
-				{
-					"name": "partialName",
-					"pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
-				}
-			]
-		}, {
-			"name": "tag",
-			"func": "parseTag",
-			"args": ["tagName", "tagAttributes"],
-			"parts": [
-				{
-					"name": "tagString",
-					"pattern": {
-						"start": "(<",
-						"end": ">)",
-						"parts": [
-							{
-								"name": "tagName",
-								"pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
-							}, {
-								"name": "tagAttributes",
-								"pattern": "(?:\\b\\s*([^>]+))?"
-							}
-						]
-					}
-				}
-			]
-		}, {
-			"name": "string",
-			"func": "parseString",
-			"args": ["stringValue"],
-			"parts": [
-				{
-					"name": "stringValue",
-					"pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
-				}
-			]
-		}, {
-			"name": "variable",
-			"func": "parseVariable",
-			"args": ["variableString"],
-			"parts": [
-				{
-					"name": "variableString",
-					"pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
-				}
-			]
-		}
-	]
+    "name": "Handelbars",
+    "modifer": "gm",
+    "pattern": [
+        {
+            "name": "comment",
+            "func": "parseComment",
+            "args": ["commentLine"],
+            "parts": [
+                {
+                    "name": "commentLine",
+                    "pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
+                }
+            ]
+        }, {
+            "name": "htmlComment",
+            "func": "parseComment",
+            "args": ["htmlCommentLine"],
+            "parts": [
+                {
+                    "name": "htmlCommentLine",
+                    "pattern": "(<!--[^]*?-->)"
+                }
+            ]
+        }, {
+            "name": "helper",
+            "func": "parseHelper",
+            "args": ["helperName", "helperExpression"],
+            "parts": [
+                {
+                    "name": "helperString",
+                    "pattern": {
+                        "start": "(\\{\\{#",
+                        "end": "\\}\\})",
+                        "parts": [
+                            {
+                                "name": "helperName",
+                                "pattern": "([a-zA-Z][a-zA-Z0-9_-]*)"
+                            }, {
+                                "name": "helperExpression",
+                                "pattern": "(?:[\\t| ]+([^\\}]*))?"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }, {
+            "name": "closeHelper",
+            "func": "parseCloseHelper",
+            "args": ["closeHelperName"],
+            "parts": [
+                {
+                    "name": "closeHelperName",
+                    "pattern": "(?:\\{\\{\\/([a-zA-Z][a-zA-Z0-9_-]*)\\}\\})"
+                }
+            ]
+        }, {
+            "name": "elseHelper",
+            "func": "parseElseHelper",
+            "args": ["elseHelperName"],
+            "parts": [
+                {
+                    "name": "elseHelperName",
+                    "pattern": "(?:\\{\\{(else)\\}\\})"
+                }
+            ]
+        }, {
+            "name": "closeTag",
+            "func": "parseCloseTag",
+            "args": ["closeTagString"],
+            "parts": [
+                {
+                    "name": "closeTagString",
+                    "pattern": "(?:<\\/([a-zA-Z][a-zA-Z0-9:_-]*)>)"
+                }
+            ]
+        }, {
+            "name": "partial",
+            "func": "parsePartial",
+            "args": ["partialName"],
+            "parts": [
+                {
+                    "name": "partialName",
+                    "pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
+                }
+            ]
+        }, {
+            "name": "tag",
+            "func": "parseTag",
+            "args": ["tagName", "tagAttributes"],
+            "parts": [
+                {
+                    "name": "tagString",
+                    "pattern": {
+                        "start": "(<",
+                        "end": ">)",
+                        "parts": [
+                            {
+                                "name": "tagName",
+                                "pattern": "([a-zA-Z][a-zA-Z0-9:_-]*)"
+                            }, {
+                                "name": "tagAttributes",
+                                "pattern": "(?:\\b\\s*([^>]+))?"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }, {
+            "name": "string",
+            "func": "parseString",
+            "args": ["stringValue"],
+            "parts": [
+                {
+                    "name": "stringValue",
+                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+                }
+            ]
+        }, {
+            "name": "variable",
+            "func": "parseVariable",
+            "args": ["variableString"],
+            "parts": [
+                {
+                    "name": "variableString",
+                    "pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
+                }
+            ]
+        }
+    ]
 }
