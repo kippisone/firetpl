@@ -468,6 +468,40 @@ describe('Parser', function() {
         });
     });
 
+    describe('injectAtribute', function() {
+        it('Should inject an attribute', function() {
+            var fireTpl = new Parser();
+            fireTpl.out.root = '<div><div class="test">';
+            fireTpl.lastTagPos.root = 5;
+
+            fireTpl.injectAtribute('id', 'test123');
+
+            expect(fireTpl.out.root).to.eql('<div><div class="test" id="test123">');
+        });
+
+        it('Should inject an existing attribute', function() {
+            var fireTpl = new Parser();
+            fireTpl.out.root = '<div><div class="test">';
+            fireTpl.lastTagPos.root = 5;
+
+            fireTpl.injectAtribute('class', 'test123', ' ');
+
+            expect(fireTpl.out.root).to.eql('<div><div class="test test123">');
+        });
+
+        it('Should inject an existing attribute and should trigger an error', function() {
+            var fireTpl = new Parser();
+            fireTpl.out.root = '<div><div class="test">';
+            fireTpl.lastTagPos.root = 5;
+
+            expect(fireTpl.injectAtribute.bind(fireTpl, 'class', 'test123')).to.throwException(function(err) {
+                expect(err.message).to.eql('Attribute class already exists!');
+            });
+
+            expect(fireTpl.out.root).to.eql('<div><div class="test">');
+        });
+    });
+
     describe('parse', function() {
         var stubs;
 
@@ -981,6 +1015,20 @@ describe('Parser', function() {
             fireTpl.parseAttribute('id', '\'blubb\'');
 
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
+        });
+
+        it('Should parse a tag with an event attribute', function() {
+            var fireTpl = new Parser({
+                eventTags: true
+            });
+            
+            fireTpl.parseTag('div');
+            fireTpl.parseTag('div');
+            fireTpl.parseAttribute('class', '\'bla\'');
+            fireTpl.parseAttribute('onClick', '\'click-handler\'');
+            fireTpl.parseAttribute('onMove', '\'move-handler\'');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><div class="bla" on="click:click-handler;move:move-handler"></div></div>\';');
         });
     });
 

@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.2-1
+ * FireTPL template engine v0.5.3-0
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.5.2-1'
+		version: '0.5.3-0'
 	};
 
 	return FireTPL;
@@ -113,6 +113,12 @@ var FireTPL;
      * var parser = new FireTPL.Parser();
      * parser.parse('input string');
      * var parsedStr = parser.flush();
+     *
+     * Options:
+     *
+     * @arg eventTags {boolean}
+     * Strip html event tags and add all into an `on` tag. The tag contains all event tags as a list seperated by a semicolon.
+     * For example: `on="click:click-handler;mousedown:mouse-handler"`
      * 
      */
     var Parser = function(options) {
@@ -128,12 +134,14 @@ var FireTPL;
         this.closer = [];
         this.curScope = ['root'];
         this.out = { root: '' };
+        this.lastTagPos = { 'root' : 0 };
         this.lastItemType = 'code';
         this.nextScope = 0;
         this.pos = 0;
         this.addEmptyCloseTags = false;
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
+        this.parseEventTags = options.eventTags || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -260,6 +268,7 @@ var FireTPL;
      */
     Parser.prototype.parseTag = function(tag, attrs) {
         attrs = attrs ? ' ' + attrs.trim() : '';
+        this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
         this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
         if (this.voidElements.indexOf(tag) === -1) {
                 this.closer.push('</' + tag + '>');
@@ -457,15 +466,56 @@ var FireTPL;
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
         var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
 
-        if (this.out[this.curScope[0]].slice(-1) !== '>') {
+        if (this.parseEventTags && /^on?[A-Z]/.test(attrName)) {
+            var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
+            this.injectAtribute('on', val, ';');
+        }
+        else if (this.out[this.curScope[0]].slice(-1) !== '>') {
             throw new FireTPL.Error(this, 'Attribute not allowed here. Tag expected!');
         }
-
-        this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+        else {
+            this.out[this.curScope[0]] = this.out[this.curScope[0]].replace(/\>$/, ' ' + attr + '>');
+        }
 
         if (this.tmplType === 'fire' && this.isNewLine) {
             this.closer.push('');
         }
+    };
+
+    /**
+     * Inject an attribute into the current tag
+     * @method injectAtribute
+     * @param  {String}       attrName Attribute name
+     * @param  {String}       value    Attribute value
+     * @param  {Boolean|String}       merge    If this argument is given and the attribut is already existing the values will be merged together. Separated by 'merge' property
+     */
+    Parser.prototype.injectAtribute = function(attrName, value, merge) {
+        var re = new RegExp(' ' + attrName + '="(.+?)"', 'g');
+        var curAttr = this.out[this.curScope[0]].slice(this.lastTagPos[this.curScope[0]]);
+        var hasMatch = false;
+
+        if (curAttr.charAt(0) !== '<') {
+            this.out[this.curScope[0]] += curAttr;
+            throw new FireTPL.Error('Inject attribut failed! Last item is not a valid tag!', this.out[this.curScope[0]]);
+        }
+
+        curAttr = curAttr.replace(re, function(match) {
+            if (merge === undefined) {
+                throw new FireTPL.Error('Attribute ' + attrName + ' already exists!');
+            }
+
+            var str = match.slice(0, -1) + merge + value + '"';
+
+            hasMatch = true;
+            return str;
+        });
+
+        if (!hasMatch) {
+            curAttr = curAttr.replace(/>$/, ' ' + attrName + '="' + value + '"' + '>');
+        }
+
+        this.out[this.curScope[0]] = this.out[this.curScope[0]].substring(0, this.lastTagPos[this.curScope[0]]);
+        this.out[this.curScope[0]] += curAttr;
     };
 
     Parser.prototype.parsePartial = function(partialName) {
