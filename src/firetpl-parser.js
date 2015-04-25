@@ -171,15 +171,23 @@
     Parser.prototype.parseTag = function(tag, attrs) {
         attrs = attrs ? ' ' + attrs.trim() : '';
         this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
-        this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
-        if (this.voidElements.indexOf(tag) === -1) {
-                this.closer.push('</' + tag + '>');
+
+        if (tag === 'dtd') {
+            this.append('str', '<!DOCTYPE html>');
+            this.closer.push('');
         }
         else {
-            if (this.addEmptyCloseTags) {
-                this.closer.push('');
+            this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
+            if (this.voidElements.indexOf(tag) === -1) {
+                    this.closer.push('</' + tag + '>');
+            }
+            else {
+                if (this.addEmptyCloseTags) {
+                    this.closer.push('');
+                }
             }
         }
+
     };
 
     Parser.prototype.parseIndention = function(indentionStr) {
@@ -360,6 +368,16 @@
     };
 
     /**
+     * Parse a line option
+     * @param  {String} str Line option
+     */
+    Parser.prototype.parseLineOption = function(str) {
+        if (str === '.') {
+            this.append('str', ' ');
+        }
+    };
+
+    /**
      * Parse a attribute
      * 
      * @private
@@ -418,13 +436,6 @@
 
         this.out[this.curScope[0]] = this.out[this.curScope[0]].substring(0, this.lastTagPos[this.curScope[0]]);
         this.out[this.curScope[0]] += curAttr;
-    };
-
-    Parser.prototype.parsePartial = function(partialName) {
-        this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
-        if (this.partials.indexOf(partialName) === -1) {
-            this.partials.push(partialName);
-        }
     };
 
     /**
@@ -526,6 +537,9 @@
                     return opener + 'l.' + item.substr(1) + closer;
                 }
                 else if(item.charAt(0) === '$') {
+                    if (item.charAt(1) === '{') {
+                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''));
+                    }
                     return parseVar(item.substr(1).replace(/^this\.?/, ''));
                 }
                 else {
@@ -548,6 +562,18 @@
         }
 
         return split.join('');
+    };
+
+    Parser.prototype.parsePartial = function(partialName) {
+        this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
+        if (this.partials.indexOf(partialName) === -1) {
+            this.partials.push(partialName);
+        }
+    };
+
+    Parser.prototype.parsePlain = function(code) {
+        this.append('str', code);
+        this.closer.push('');
     };
 
     /**

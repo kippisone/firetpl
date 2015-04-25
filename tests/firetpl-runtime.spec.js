@@ -809,6 +809,28 @@ describe('FireTPL Runtime', function() {
                 '</body></html>'
             );
         });
+
+        it('Should compile a tmpl string with brace wrapped vars', function() {
+            var template = 'html\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div\n';
+            template += '            "${name}User"\n';
+            template += '        div\n';
+            template += '            ${name}$key\n';
+
+            template = FireTPL.compile(template);
+            var html = template({
+                name: 'Andi',
+                key: 'User'
+            });
+            expect(html).to.eql(
+                '<html><head></head><body>' +
+                '<div>AndiUser</div>' +
+                '<div>AndiUser</div>' +
+                '</body></html>'
+            );
+        });
     });
 
     describe('compile (using template cache)', function() {
