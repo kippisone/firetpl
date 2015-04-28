@@ -1,6 +1,6 @@
 {
   "name": "firetpl",
-  "version": "0.5.4",
+  "version": "0.5.4-7",
   "description": "FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.",
   "main": "firetpl-node.js",
   "scripts": {

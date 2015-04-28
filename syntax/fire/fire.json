@@ -134,7 +134,7 @@
                     "pattern": "```(\\w+)?"
                 }, {
                     "name": "codeValue",
-                    "pattern": "([^]*)```"
+                    "pattern": "([^]*?)```"
                 }
             ]
         }, {

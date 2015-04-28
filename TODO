@@ -57,6 +57,8 @@ Helper:
 Special vars:
 
 $$root $$parent
+$$root $$parent
+@@root @@parent
 
 Loop vars:
 

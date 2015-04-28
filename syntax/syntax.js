@@ -135,7 +135,7 @@ FireTPL.Syntax["fire"] = {
                     "pattern": "```(\\w+)?"
                 }, {
                     "name": "codeValue",
-                    "pattern": "([^]*)```"
+                    "pattern": "([^]*?)```"
                 }
             ]
         }, {
