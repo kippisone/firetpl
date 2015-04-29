@@ -20,4 +20,16 @@
     "grunt": {
         "task": ["json", "concat:build-node"]
     }
+}, {
+    "project": "render-test",
+    "require": "tests/node-setup.js",
+    "watch": [
+        "src/**/*.js",
+        "syntax/*/*.json"
+    ],
+    "files": "none",
+    "tests": "tests/firetpl-render-test.js",
+    "grunt": {
+        "task": ["json", "concat:build-node"]
+    }
 }]
