@@ -650,6 +650,69 @@ describe('Parser', function() {
                 ['parseTag', 'html'],
             ]);
         });
+
+        it('Should parse a set of code tags', function() {
+            var tmpl =
+                'div\n' +
+                '    h3 id="tags" "Tags"\n' +
+                '        div class="description"\n' +
+                '            div class="fire"\n' +
+                '                ```fire\n' +
+                '                    div\n' +
+                '                        span "Hello World"\n' +
+                '                ```\n' +
+                '            div class="hbs"\n' +
+                '                ```hbs\n' +
+                '                    <div>\n' +
+                '                        <span>Hello World</span>\n' +
+                '                    </div>\n' +
+                '                ```\n' +
+                '            div class="html"\n' +
+                '                ```html\n' +
+                '                    <div>\n' +
+                '                        <span>Hello World</span>\n' +
+                '                    </div>\n' +
+                '                ```\n' +
+                '';
+            parser.parse(tmpl);
+            expect(result).to.eql([
+                ['parseTag', 'div'],
+                ['parseIndention', '    '],
+                ['parseTag', 'h3'],
+                ['parseAttribute', 'id', '"tags"'],
+                ['parseString', 'Tags'],
+                ['parseIndention', '        '],
+                ['parseTag', 'div'],
+                ['parseAttribute', 'class', '"description"'],
+                ['parseIndention', '            '],
+                ['parseTag', 'div'],
+                ['parseAttribute', 'class', '"fire"'],
+                ['parseIndention', '                '],
+                ['parseCodeBlock', 'fire',
+                '\n                    div\n' +
+                '                        span "Hello World"\n' +
+                '                '],
+                ['parseIndention', '            '],
+                ['parseTag', 'div'],
+                ['parseAttribute', 'class', '"hbs"'],
+                ['parseIndention', '                '],
+                ['parseCodeBlock', 'hbs',
+                '\n                    <div>\n' +
+                '                        <span>Hello World</span>\n' +
+                '                    </div>\n' +
+                '                '],
+                ['parseIndention', '            '],
+                ['parseTag', 'div'],
+                ['parseAttribute', 'class', '"html"'],
+                ['parseIndention', '                '],
+                ['parseCodeBlock', 'html',
+                '\n                    <div>\n' +
+                '                        <span>Hello World</span>\n' +
+                '                    </div>\n' +
+                '                ']
+                
+            ]);
+        });
     });
 
     describe('parse hbs', function() {
