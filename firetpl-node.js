@@ -142,6 +142,7 @@ var FireTPL;
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
         this.parseEventTags = options.eventTags || false;
+        this.pretty = options.pretty || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -460,7 +461,7 @@ var FireTPL;
             return self.matchVariables(p1);
         });
 
-        code = code.replace(/\n/g, '\\n\\\n');
+        code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
@@ -1050,7 +1051,79 @@ var FireTPL;
         data = data || {};
 
         var template = FireTPL.compile(tmpl, options);
+
+        if (options.pretty) {
+            return FireTPL.prettify(template(data));
+        }
+
         return template(data);
+    };
+
+    /**
+     * Prettify html output
+     * @method prettify
+     * @param  {String} html Input html str
+     * @return {String}      Prettified html str
+     */
+    FireTPL.prettify = function(html) {
+        var inlineTags = ['a', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'small'];
+        var voidTags = ['br', 'img', 'input'];
+        var inlineTagPattern = new RegExp('^<' + inlineTags.join('|'));
+        var voidTagPattern = new RegExp('^<' + voidTags.join('|'));
+        var indentStr = '\t';
+        var indention = 0;
+        var skipNewLine = 0;
+
+        var getIndention = function() {
+            var str = '';
+            for (var i = 0; i < indention; i++) {
+                str += indentStr;
+            }
+
+            return str;
+        };
+
+        var pat = /(<\/?[a-z][a-z0-9_]+.*?>)/g;
+        var split = html.split(pat);
+
+        split = split.map(function(item) {
+            if (item === '') {
+                return '';
+            }
+
+            if (item.charAt(1) === '/') {
+                if (skipNewLine > 0) {
+                    skipNewLine--;
+                    return item + (skipNewLine === 0 ? '\n' : '');
+                }
+
+                indention--;
+                return  getIndention() + item + '\n';
+            }
+
+            if (item.charAt(0) === '<') {
+                if (inlineTagPattern.test(item)) {
+                    item = (skipNewLine > 0 ? '' : getIndention()) + item;
+                    
+                    if (voidTagPattern.test(item)) {
+                        return item;
+                    }
+
+                    skipNewLine++;
+                    return item;
+                }
+
+                item = getIndention() + item;
+                indention++;
+                return item + '\n';
+            }
+
+            return item;
+        });
+
+        // console.log(split);
+
+        return split.join('').trim();
     };
 
     FireTPL.Compiler = Compiler;

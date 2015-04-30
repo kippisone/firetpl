@@ -26,7 +26,9 @@ describe('Render test', function() {
             if (file.fire) {
                 it('Should parse ' + (/^[aeiou]/.test(title) ? 'an' : 'a') + ' ' + title + ' fire template', function() {
                     var tmpl = readFile(file.fire);
-                    var res = FireTPL.fire2html(tmpl, data);
+                    var res = FireTPL.fire2html(tmpl, data, {
+                        pretty: true
+                    });
                     expect(res).to.eql(html);
                 });
             }
@@ -35,7 +37,8 @@ describe('Render test', function() {
                 it('Should parse ' + (/^[aeiou]/.test(title) ? 'an' : 'a') + ' ' + title + ' hbs template', function() {
                     var tmpl = readFile(file.hbs);
                     var res = FireTPL.fire2html(tmpl, data, {
-                        type: 'hbs'
+                        type: 'hbs',
+                        pretty: true
                     });
                     expect(res).to.eql(html);
                 });

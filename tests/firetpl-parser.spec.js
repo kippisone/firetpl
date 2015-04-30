@@ -468,6 +468,38 @@ describe('Parser', function() {
         });
     });
 
+    describe('prettify', function() {
+        var fireTpl;
+        beforeEach(function() {
+            fireTpl = new Parser();    
+        });
+
+        it('Should generate a pretty html string', function() {
+            var uggly = '<div><span>Hello</span></div>';
+
+            var pretty = fireTpl.prettify(uggly);
+
+            expect(pretty).to.be.eql('<div>\n\t<span>Hello</span>\n</div>');
+        });
+
+        it('Should generate a pretty html string from a complexer html string', function() {
+            var uggly = '<div><span>Hello</span><ul>' +
+                '<li><a href="page.html">Link I<br><small>page.html</small></a></li>' + 
+                '<li><a href="page.html">Link II<br><small>page2.html</small></a></li>' + 
+                '<li><a href="page.html">Link III<br><small>page3.html</small></a></li>' + 
+                '</ul></div>';
+
+            var pretty = fireTpl.prettify(uggly);
+
+            expect(pretty).to.be.eql('<div>\n\t<span>Hello</span>\n\t'+
+                '<ul>'+
+                '\n\t\t<li>\n\t\t\t<a href="page.html">Link I<br><small>page.html</small></a>\n\t\t</li>' + 
+                '\n\t\t<li>\n\t\t\t<a href="page.html">Link II<br><small>page2.html</small></a>\n\t\t</li>' + 
+                '\n\t\t<li>\n\t\t\t<a href="page.html">Link III<br><small>page3.html</small></a>\n\t\t</li>' + 
+                '\n\t</ul>\n</div>');
+        });
+    });
+
     describe('injectAtribute', function() {
         it('Should inject an attribute', function() {
             var fireTpl = new Parser();

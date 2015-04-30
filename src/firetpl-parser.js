@@ -44,6 +44,7 @@
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
         this.parseEventTags = options.eventTags || false;
+        this.pretty = options.pretty || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -362,7 +363,7 @@
             return self.matchVariables(p1);
         });
 
-        code = code.replace(/\n/g, '\\n\\\n');
+        code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
     };
