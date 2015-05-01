@@ -114,11 +114,13 @@
      * @return {String}      Prettified html str
      */
     FireTPL.prettify = function(html) {
-        var inlineTags = ['a', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'small'];
-        var voidTags = ['br', 'img', 'input'];
-        var inlineTagPattern = new RegExp('^<' + inlineTags.join('|'));
-        var voidTagPattern = new RegExp('^<' + voidTags.join('|'));
-        var indentStr = '\t';
+        var inlineTags = ['a', 'b', 'big', 'dd', 'dt', 'em', 'i', 's', 'small', 'span', 'sub', 'sup',
+            'td', 'th', 'track', 'tt', 'u', 'var', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
+        var voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+            'link', 'meta', 'param', 'track', 'source', 'wbr'];
+        var inlineTagPattern = new RegExp('^<(' + inlineTags.join('|') + ')\\b');
+        var voidTagPattern = new RegExp('^<(' + voidTags.join('|') + ')\\b');
+        var indentStr = '    ';
         var indention = 0;
         var skipNewLine = 0;
 
@@ -166,10 +168,9 @@
                 return item + '\n';
             }
 
-            return item;
+            return (skipNewLine === 0 ? getIndention() + item + '\n' : item);
         });
 
-        // console.log(split);
 
         return split.join('').trim();
     };

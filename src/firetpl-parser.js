@@ -28,8 +28,8 @@
 
         this.tmplType = options.type || 'fire';
         this.voidElements = [
-            'area', 'base', 'br', 'col', 'embed', 'img', 'input',
-            'link', 'meta', 'param', 'source', 'wbr'
+            'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+            'link', 'meta', 'param', 'track', 'source', 'wbr'
         ];
 
         this.indention = 0;
@@ -366,6 +366,7 @@
         code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
+        this.closer.push('');
     };
 
     /**
@@ -792,7 +793,10 @@
 
     Parser.prototype.htmlEscape = function(str) {
         var chars = {
-            '"': '&quot;'
+            '"': '&quot;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;'
         };
 
         return str.replace(/["&<>]/g, function(ch) {
