@@ -161,7 +161,7 @@ describe('FireTPL', function() {
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' + 
-				's+=scopes.scope001(data.sayit,data);' +
+				's+=scopes.scope001(d(\'data.sayit\'),data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
@@ -192,7 +192,7 @@ describe('FireTPL', function() {
 				'return s;});}return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(data.sayit,data);' +
+				's+=scopes.scope001(d(\'data.sayit\'),data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -223,7 +223,7 @@ describe('FireTPL', function() {
 				'return s;});}return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(data.sayit,data);' +
+				's+=scopes.scope001(d(\'data.sayit\'),data);' +
 				's+=\'</div>\';s+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -248,7 +248,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(data.sayit,data);' +
+				's+=scopes.scope001(d(\'data.sayit\'),data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -273,7 +273,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(data.sayit,data);' +
+				's+=scopes.scope001(d(\'data.sayit\'),data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
@@ -298,7 +298,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(data.listing,data);' +
+				's+=scopes.scope001(d(\'data.listing\'),data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -323,7 +323,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(data.listing,data);' +
+				's+=scopes.scope001(d(\'data.listing\'),data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
@@ -567,4 +567,31 @@ describe('FireTPL', function() {
 			errorStub.restore();
 		});
 	});
+
+    describe('prettify', function() {
+        it('Should generate a pretty html string', function() {
+            var uggly = '<div><span>Hello</span></div>';
+
+            var pretty = FireTPL.prettify(uggly);
+
+            expect(pretty).to.be.eql('<div>\n    <span>Hello</span>\n</div>');
+        });
+
+        it('Should generate a pretty html string from a complexer html string', function() {
+            var uggly = '<div><span>Hello</span><ul>' +
+                '<li><a href="page.html">Link I<br><small>page.html</small></a></li>' + 
+                '<li><a href="page.html">Link II<br><small>page2.html</small></a></li>' + 
+                '<li><a href="page.html">Link III<br><small>page3.html</small></a></li>' + 
+                '</ul></div>';
+
+            var pretty = FireTPL.prettify(uggly);
+
+            expect(pretty).to.be.eql('<div>\n    <span>Hello</span>\n    '+
+                '<ul>'+
+                '\n        <li>\n            <a href="page.html">Link I<br><small>page.html</small></a>\n        </li>' + 
+                '\n        <li>\n            <a href="page.html">Link II<br><small>page2.html</small></a>\n        </li>' + 
+                '\n        <li>\n            <a href="page.html">Link III<br><small>page3.html</small></a>\n        </li>' + 
+                '\n    </ul>\n</div>');
+        });
+    });
 });

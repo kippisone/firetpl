@@ -197,7 +197,7 @@ out:
    | Tests
    +------------------------------------------------------------------------------------+ */
 
-describe('FireTPL Runtime', function() {
+describe.only('FireTPL Runtime', function() {
     describe('Template Parser', function() {
         parserFood.forEach(function(item) {
             it('Should parse "' + item.title + '" using fire syntax', function() {

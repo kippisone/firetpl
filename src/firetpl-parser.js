@@ -479,7 +479,7 @@
                 if (self.scopeTags) {
                     return '\'+data+\'';
                 }
-                return opener + 'data' + closer;
+                return opener + 'd(\'data\')' + closer;
             }
             
             var chunks = m.split('.'),
@@ -513,7 +513,7 @@
                 vars.push(chunks[i]);
             }
             
-            m = vars.join('.');
+            m = 'd(\'' + vars.join('.') + '\')';
             for (i = 0, len = funcs.length; i < len; i++) {
                 m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
@@ -541,6 +541,16 @@
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {
                         return parseVar(item.slice(2, -1).replace(/^this\.?/, ''));
+                    }
+                    else if (item.charAt(1) === 'l' && item.charAt(2) === '(') {
+                        return item.replace(/^\$l\(('.+?'|".+?"|[a-zA-Z0-9_.-]+)(?:,(.+?))*\)/, function(m, p1, p2) {
+                            p1 = p1.replace(/^['"]|['"]$/g, '');
+                            if (p2) {
+                                return opener + 'l(\'' + p1 + '\', ' + p2 + ')' + closer;
+                            }
+
+                            return opener + 'l(\'' + p1 + '\')' + closer;
+                        });
                     }
                     return parseVar(item.substr(1).replace(/^this\.?/, ''));
                 }

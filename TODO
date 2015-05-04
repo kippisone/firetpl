@@ -5,7 +5,6 @@ FireTPL v1.0.0
 
 	- add escape func to $bla and {{bla}}
 	- inline html
-	- <!DOCTYPE>
 	- Pretty error messages
 
 	  Syntax error in file main.fire in line 23
@@ -15,7 +14,6 @@ FireTPL v1.0.0
 
 	- Rename special vars. Maybe to $$parent, $$root
 	- Each helper add $first, $last, $odd
-	- Handlebars syntax support (convert hbs2fire and parse it then)
 	- RUPAR (Render Append Prepend Update Remove) support in FireTPL (Maybe with DOM watcher)
 	
 	- Code view should ignore ``` if indention is not the same as start tags indention
@@ -31,10 +29,8 @@ Bugs:
 	- Log errors as errors, add error links to errors
 	- Ignore missing objects. data = undefined; data.description triggers an exception.
 	  This isn't optimal. FireTPL shouldn't trigger an exception. It should log a detailed error report.
-	- Parse h1 "Hello $name"
 
 Documentation:
-
 	- Tags
 	- Helper
 	- Strings
@@ -72,6 +68,14 @@ Lang vars:
 
 @lang
 $l('key')
+
+
+Syntax type | Vars       | HTML Vars          | Special Vars    | Lang Vars              | Variable vars
+---------------------------------------------------------------------------------------------------------
+fire        | $myvar     | $$myvar            | @index          | $l('myvar', $title)    | ${$varname}
+hbs         | {{myvar}}  | {{{myvar}}}        | @index          | $l('myvar', {{title}}) | -
+internal    | f.escape(data.myvar) | data.myvar | f.escape(data.__ftlIndex) | l('myvar', data.title) | f.escape(data[data.varname])
+
 
 TODO
 ====

@@ -110,6 +110,27 @@
         this.partialCache[partial] = fn;
     };
 
+    Runtime.prototype.registerData = function(data) {
+        data = data || {};
+
+        var fn = function(path) {
+            var obj = data;
+            
+            path = path.split('.');
+            path.forEach(function(key) {
+                obj = obj[key];
+                if (!obj) {
+                    console.warn('FireTPL runtime warning! Data %s not defined!', data);
+                    return '';
+                }
+            });
+
+            return obj;
+        };
+
+        return fn;
+    };
+
     /**
      * Compiles and executes a template string
      *
@@ -162,7 +183,7 @@
                     try {
                         runTime.registerPartial(item.partial, 
                             //jshint evil:true
-                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + item.source + 'return s;})')
+                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial,d=t.registerData(data);' + item.source + 'return s;})')
                         );
                     }
                     catch(err) {
@@ -176,7 +197,9 @@
             var h = runTime.execHelper,
                 l = FireTPL.locale,
                 f = FireTPL.fn,
-                p = runTime.execPartial.bind(runTime);
+                p = runTime.execPartial.bind(runTime),
+                d = runTime.registerData(data);
+
             var s;
 
             //jshint evil:true

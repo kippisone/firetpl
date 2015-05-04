@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-7
+ * FireTPL template engine v0.5.4-8
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.5.4-7'
+		version: '0.5.4-8'
 	};
 
 	return FireTPL;
@@ -126,8 +126,8 @@ var FireTPL;
 
         this.tmplType = options.type || 'fire';
         this.voidElements = [
-            'area', 'base', 'br', 'col', 'embed', 'img', 'input',
-            'link', 'meta', 'param', 'source', 'wbr'
+            'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+            'link', 'meta', 'param', 'track', 'source', 'wbr'
         ];
 
         this.indention = 0;
@@ -464,6 +464,7 @@ var FireTPL;
         code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
         
         this.append('str', '<code ' + cssClass + '>' + code + '</code>');
+        this.closer.push('');
     };
 
     /**
@@ -576,7 +577,7 @@ var FireTPL;
                 if (self.scopeTags) {
                     return '\'+data+\'';
                 }
-                return opener + 'data' + closer;
+                return opener + 'f.escape(data)' + closer;
             }
             
             var chunks = m.split('.'),
@@ -616,13 +617,13 @@ var FireTPL;
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
-                return opener + m + closer;
+                return opener + 'f.escape(' + m + ')' + closer;
             }
             else if (self.scopeTags) {
                 return altOpener + m + altCloser;
             }
             else {
-                return opener + m + closer;
+                return opener + 'f.escape(' + m + ')' + closer;
             }
         };
 
@@ -890,7 +891,10 @@ var FireTPL;
 
     Parser.prototype.htmlEscape = function(str) {
         var chars = {
-            '"': '&quot;'
+            '"': '&quot;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;'
         };
 
         return str.replace(/["&<>]/g, function(ch) {
@@ -1066,8 +1070,10 @@ var FireTPL;
      * @return {String}      Prettified html str
      */
     FireTPL.prettify = function(html) {
-        var inlineTags = ['a', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'small', 'code'];
-        var voidTags = ['br', 'img', 'input'];
+        var inlineTags = ['a', 'b', 'big', 'dd', 'dt', 'em', 'i', 's', 'small', 'span', 'sub', 'sup',
+            'td', 'th', 'track', 'tt', 'u', 'var', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
+        var voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+            'link', 'meta', 'param', 'track', 'source', 'wbr'];
         var inlineTagPattern = new RegExp('^<(' + inlineTags.join('|') + ')\\b');
         var voidTagPattern = new RegExp('^<(' + voidTags.join('|') + ')\\b');
         var indentStr = '    ';
@@ -1121,7 +1127,6 @@ var FireTPL;
             return (skipNewLine === 0 ? getIndention() + item + '\n' : item);
         });
 
-        // console.log(split);
 
         return split.join('').trim();
     };
