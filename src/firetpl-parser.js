@@ -474,12 +474,16 @@
             return arg;
         };
 
-        var parseVar = function(m) {
+        var parseVar = function(m, escape) {
+            if (isCode) {
+                escape = false;
+            }
+            
             if (m === '') {
                 if (self.scopeTags) {
                     return '\'+data+\'';
                 }
-                return opener + 'd(\'data\')' + closer;
+                return escape ? opener + 'f.escape(data)' + closer : opener + 'data' + closer;
             }
             
             var chunks = m.split('.'),
@@ -513,19 +517,19 @@
                 vars.push(chunks[i]);
             }
             
-            m = 'd(\'' + vars.join('.') + '\')';
+            m = vars.join('.');
             for (i = 0, len = funcs.length; i < len; i++) {
                 m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
-                return opener + m + closer;
+                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
             }
             else if (self.scopeTags) {
                 return altOpener + m + altCloser;
             }
             else {
-                return opener + m + closer;
+                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
             }
         };
 
@@ -540,7 +544,7 @@
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {
-                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''));
+                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''), true);
                     }
                     else if (item.charAt(1) === 'l' && item.charAt(2) === '(') {
                         return item.replace(/^\$l\(('.+?'|".+?"|[a-zA-Z0-9_.-]+)(?:,(.+?))*\)/, function(m, p1, p2) {
@@ -552,7 +556,7 @@
                             return opener + 'l(\'' + p1 + '\')' + closer;
                         });
                     }
-                    return parseVar(item.substr(1).replace(/^this\.?/, ''));
+                    return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');
@@ -565,7 +569,7 @@
                     return opener + 'l.' + item.substr(1) + closer;
                 }
                 else if(item.charAt(0) === '{' && item.charAt(1) === '{') {
-                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''));
+                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''), true);
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');

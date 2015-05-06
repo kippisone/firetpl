@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-7
+ * FireTPL template engine v0.5.4-8
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.5.4-7'
+		version: '0.5.4-8'
 	};
 
 	return FireTPL;
@@ -171,7 +171,7 @@ var FireTPL;
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial,d=t.registerData(data);' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -212,8 +212,10 @@ var FireTPL;
      * @return {String}      Prettified html str
      */
     FireTPL.prettify = function(html) {
-        var inlineTags = ['a', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'br', 'small', 'code'];
-        var voidTags = ['br', 'img', 'input'];
+        var inlineTags = ['a', 'b', 'big', 'dd', 'dt', 'em', 'i', 's', 'small', 'span', 'sub', 'sup',
+            'td', 'th', 'track', 'tt', 'u', 'var', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'br'];
+        var voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
+            'link', 'meta', 'param', 'track', 'source', 'wbr'];
         var inlineTagPattern = new RegExp('^<(' + inlineTags.join('|') + ')\\b');
         var voidTagPattern = new RegExp('^<(' + voidTags.join('|') + ')\\b');
         var indentStr = '    ';
@@ -267,7 +269,6 @@ var FireTPL;
             return (skipNewLine === 0 ? getIndention() + item + '\n' : item);
         });
 
-        // console.log(split);
 
         return split.join('').trim();
     };

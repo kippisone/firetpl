@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-8
+ * FireTPL template engine v0.5.4-9
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -42,7 +42,7 @@ var FireTPL;
 	 * // html = <div>Andi</div>
 	 */
 	FireTPL = {
-		version: '0.5.4-8'
+		version: '0.5.4-9'
 	};
 
 	return FireTPL;
@@ -572,12 +572,16 @@ var FireTPL;
             return arg;
         };
 
-        var parseVar = function(m) {
+        var parseVar = function(m, escape) {
+            if (isCode) {
+                escape = false;
+            }
+            
             if (m === '') {
                 if (self.scopeTags) {
                     return '\'+data+\'';
                 }
-                return opener + 'f.escape(data)' + closer;
+                return escape ? opener + 'f.escape(data)' + closer : opener + 'data' + closer;
             }
             
             var chunks = m.split('.'),
@@ -617,13 +621,13 @@ var FireTPL;
             }
 
             if (self.curScope[0] === 'root' && !isCode) {
-                return opener + 'f.escape(' + m + ')' + closer;
+                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
             }
             else if (self.scopeTags) {
                 return altOpener + m + altCloser;
             }
             else {
-                return opener + 'f.escape(' + m + ')' + closer;
+                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
             }
         };
 
@@ -638,9 +642,19 @@ var FireTPL;
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {
-                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''));
+                        return parseVar(item.slice(2, -1).replace(/^this\.?/, ''), true);
                     }
-                    return parseVar(item.substr(1).replace(/^this\.?/, ''));
+                    else if (item.charAt(1) === 'l' && item.charAt(2) === '(') {
+                        return item.replace(/^\$l\(('.+?'|".+?"|[a-zA-Z0-9_.-]+)(?:,(.+?))*\)/, function(m, p1, p2) {
+                            p1 = p1.replace(/^['"]|['"]$/g, '');
+                            if (p2) {
+                                return opener + 'l(\'' + p1 + '\', ' + p2 + ')' + closer;
+                            }
+
+                            return opener + 'l(\'' + p1 + '\')' + closer;
+                        });
+                    }
+                    return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');
@@ -653,7 +667,7 @@ var FireTPL;
                     return opener + 'l.' + item.substr(1) + closer;
                 }
                 else if(item.charAt(0) === '{' && item.charAt(1) === '{') {
-                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''));
+                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''), true);
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');
@@ -1071,7 +1085,7 @@ var FireTPL;
      */
     FireTPL.prettify = function(html) {
         var inlineTags = ['a', 'b', 'big', 'dd', 'dt', 'em', 'i', 's', 'small', 'span', 'sub', 'sup',
-            'td', 'th', 'track', 'tt', 'u', 'var', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code'];
+            'td', 'th', 'track', 'tt', 'u', 'var', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'code', 'br'];
         var voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen',
             'link', 'meta', 'param', 'track', 'source', 'wbr'];
         var inlineTagPattern = new RegExp('^<(' + inlineTags.join('|') + ')\\b');
@@ -1606,6 +1620,7 @@ FireTPL.Syntax["hbs"] = {
                 l = FireTPL.locale,
                 f = FireTPL.fn,
                 p = runTime.execPartial.bind(runTime);
+
             var s;
 
             //jshint evil:true
@@ -1844,6 +1859,22 @@ FireTPL.Syntax["hbs"] = {
         }
 
         return arguments.length === 2 ? str : altValue;
+    });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+    
+    FireTPL.registerFunction('escape', function(str) {
+        var chars = {
+            '"': '&quot;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;'
+        };
+
+        return str.replace(/["&<>]/g, function(ch) {
+            return chars[ch];
+        });
     });
 })(FireTPL);
 (function(FireTPL) {

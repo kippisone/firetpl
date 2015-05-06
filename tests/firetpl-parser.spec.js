@@ -275,84 +275,84 @@ describe('Parser', function() {
             var str = 'Hello $name!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Hello \'+d(\'data.name\')+\'!');
+            expect(out).to.eql('Hello \'+f.escape(data.name)+\'!');
         });
 
         it('Should parse a string for variables and inline functions', function() {
             var str = 'Hello $name.ucase()!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Hello \'+f.ucase(d(\'data.name\'))+\'!');
+            expect(out).to.eql('Hello \'+f.escape(f.ucase(data.name))+\'!');
         });
 
         it('Should parse a string for variables and inline chained functions', function() {
             var str = 'Hello $name.ucase().bold()!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Hello \'+f.bold(f.ucase(d(\'data.name\')))+\'!');
+            expect(out).to.eql('Hello \'+f.escape(f.bold(f.ucase(data.name)))+\'!');
         });
 
         it('Should parse a string for variables and inline functions with args', function() {
             var str = 'Hello $name.when("green").then("Green")!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Hello \'+f.then(f.when(d(\'data.name\'),\'green\'),\'Green\')+\'!');
+            expect(out).to.eql('Hello \'+f.escape(f.then(f.when(data.name,\'green\'),\'Green\'))+\'!');
         });
 
         it('Should parse a string for locale tags', function() {
             var str = '$l(\'hello\') $name!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data.name\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'!');
         });
 
         it('Should parse a string for locale tags, key wrapped in double quotes', function() {
             var str = '$l("hello") $name!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data.name\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'!');
         });
 
         it('Should parse a string for multiple variables and locale tags', function() {
             var str = '$l(\'hello\') $name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data.name\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string ', function() {
             var str = '$l(\'hello\') $name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data.name\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $this should point to data', function() {
             var str = '$l(\'hello\') $this! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $this.name should point to data', function() {
             var str = '$l(\'hello\') $this.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'data.name\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $parent.name should point to data', function() {
             var str = '$l(\'hello\') $parent.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'parent.name\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(parent.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $root.name should point to data', function() {
             var str = '$l(\'hello\') $root.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+d(\'root.name\')+\'! I\\\'m \'+d(\'data.reporter\')+\' and live in \'+d(\'data.country\')+\'!');
+            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(root.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
     });
 
@@ -953,21 +953,21 @@ describe('Parser', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name!');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+d(\'data.name\')+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.escape(data.name)+\'!\';');
         });
 
         it('Should parse a string with with multiple variables', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name.firstname $name.lastname!');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+d(\'data.name.firstname\')+\' \'+d(\'data.name.lastname\')+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.escape(data.name.firstname)+\' \'+f.escape(data.name.lastname)+\'!\';');
         });
 
         it('Should parse a string with inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseString('Hello $name.if("andi", "Andi", "Other")!');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.if(d(\'data.name\'),\'andi\',\'Andi\',\'Other\')+\'!\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'Hello \'+f.escape(f.if(data.name,\'andi\',\'Andi\',\'Other\'))+\'!\';');
         });
 
         it('Should parse a string with line options (space)', function() {
@@ -984,119 +984,119 @@ describe('Parser', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'data.name\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data.name)+\'\';');
         });
 
         it('Should parse a brace wrapped variable', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('${name}');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'data.name\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data.name)+\'\';');
         });
 
         it('Should parse $this', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$this');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'data\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data)+\'\';');
         });
 
         it('Should parse $root', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'root.name\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(root.name)+\'\';');
         });
 
         it('Should parse $parent', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'parent.name\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(parent.name)+\'\';');
         });
 
         it('Should parse a chained variable variables', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.firstname');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+d(\'data.name.firstname\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data.name.firstname)+\'\';');
         });
 
         it('Should parse a variable with inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", "Andi", "Other")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(d(\'data.name\'),\'andi\',\'Andi\',\'Other\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'Andi\',\'Other\'))+\'\';');
         });
 
         it('Should parse a variable with inline functions, using single quotes', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if(\'andi\', \'Andi\', \'Other\')');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(d(\'data.name\'),\'andi\',\'Andi\',\'Other\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'Andi\',\'Other\'))+\'\';');
         });
 
         it('Should parse an inline function with an integer value', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$number.eq(3)');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.eq(d(\'data.number\'),3)+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.eq(data.number,3))+\'\';');
         });
 
         it('Should parse a variable with inline functions, using single quotes in args', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", "\'Andi\'", "\'Other\'")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(d(\'data.name\'),\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\'))+\'\';');
         });
 
         it('Should parse a variable with inline functions, using double quotes in args', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.if("andi", \'\"Andi\"\', \'\"Other\"\')');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.if(d(\'data.name\'),\'andi\',\'\"Andi\"\',\'\"Other\"\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'\"Andi\"\',\'\"Other\"\'))+\'\';');
         });
 
         it('Should parse a variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'data.name\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(data.name,\'andi\'),\'Andi\'))+\'\';');
         });
 
         it('Should parse a chained variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'data.name.firstname\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(data.name.firstname,\'andi\'),\'Andi\'))+\'\';');
         });
 
         it('Should parse a parent variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'parent.name\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(parent.name,\'andi\'),\'Andi\'))+\'\';');
         });
 
         it('Should parse a chained parent variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$parent.name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'parent.name.firstname\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(parent.name.firstname,\'andi\'),\'Andi\'))+\'\';');
         });
 
         it('Should parse a root variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'root.name\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(root.name,\'andi\'),\'Andi\'))+\'\';');
         });
 
         it('Should parse a chained root variable with multiple inline functions', function() {
             var fireTpl = new Parser();
             fireTpl.parseVariable('$root.name.firstname.when("andi").then("Andi")');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.then(f.when(d(\'root.name.firstname\'),\'andi\'),\'Andi\')+\'\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(root.name.firstname,\'andi\'),\'Andi\'))+\'\';');
         });
     });
 
@@ -1349,7 +1349,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseVariable');
             expect(step.args[0]).to.eql('$version');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'');
             expect(parser.closer).to.eql(['</div>', '</span>']);
         });
 
@@ -1357,7 +1357,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('    ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>');
             expect(parser.closer).to.eql(['</div>']);
         });
 
@@ -1366,7 +1366,7 @@ describe('Parser', function() {
             expect(step.name).to.eql('parseHelper');
             expect(step.args[0]).to.eql('if');
             expect(step.args[1]).to.eql('$listing');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
@@ -1375,7 +1375,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('        ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
@@ -1384,7 +1384,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</h2>']);
         });
@@ -1393,7 +1393,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('Has listings:');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</h2>']);
         });
@@ -1402,7 +1402,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('        ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
@@ -1411,8 +1411,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseHelper');
             expect(step.args).to.eql(['each', '$listing', 'ul', undefined]);
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope']);
         });
@@ -1421,8 +1421,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('            ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope']);
         });
@@ -1431,8 +1431,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('li');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>']);
         });
@@ -1441,8 +1441,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseAttribute');
             expect(step.args[0]).to.eql('class', 'item');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>']);
         });
@@ -1451,8 +1451,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('                ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>']);
         });
@@ -1461,8 +1461,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
@@ -1471,8 +1471,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseAttribute');
             expect(step.args[0]).to.eql('class', 'name');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
@@ -1481,9 +1481,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseVariable');
             expect(step.args[0]).to.eql('$name');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1491,9 +1491,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('                ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>']);
         });
 
@@ -1501,9 +1501,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1511,9 +1511,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseAttribute');
             expect(step.args[0]).to.eql('class', 'gender');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1521,9 +1521,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseVariable');
             expect(step.args[0]).to.eql('$gender');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1531,9 +1531,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('    ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>']);
         });
 
@@ -1541,9 +1541,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseHelper');
             expect(step.args[0]).to.eql('else');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope']);
         });
 
@@ -1551,9 +1551,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseIndention');
             expect(step.args[0]).to.eql('        ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope']);
         });
 
@@ -1561,9 +1561,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope', '</h2>']);
         });
 
@@ -1571,17 +1571,17 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('Hasn\'t any listings!');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope', '</h2>']);
         });
 
         it(' ... indent zero', function() {
             parser.parseIndention('');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);s+=\'</div>');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);s+=\'</div>');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql([]);
         });
 
@@ -1672,7 +1672,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('{{version}}');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'');
             expect(parser.closer).to.eql(['</div>', '</span>']);
         });
 
@@ -1680,7 +1680,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>');
             expect(parser.closer).to.eql(['</div>']);
         });
 
@@ -1689,7 +1689,7 @@ describe('Parser', function() {
             expect(step.name).to.eql('parseHelper');
             expect(step.args[0]).to.eql('if');
             expect(step.args[1]).to.eql('listing');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
@@ -1698,7 +1698,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</h2>']);
         });
@@ -1707,7 +1707,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('Has listings:');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</h2>']);
         });
@@ -1716,7 +1716,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
@@ -1725,7 +1725,7 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('ul');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>']);
         });
@@ -1734,8 +1734,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseHelper');
             expect(step.args).to.eql(['each', 'listing']);
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope']);
         });
@@ -1744,8 +1744,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('li');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
         });
@@ -1754,8 +1754,8 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
             expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
@@ -1764,9 +1764,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('{{name}}');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1774,9 +1774,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
         });
 
@@ -1784,9 +1784,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1794,9 +1794,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('{{gender}}');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>', '</span>']);
         });
 
@@ -1804,9 +1804,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('span');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope', '</li>']);
         });
 
@@ -1814,9 +1814,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('li');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>', '', ['code', 'return s;});'], 'scope']);
         });
 
@@ -1824,9 +1824,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseHelper');
             expect(step.args[0]).to.eql('each');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope', '</ul>']);
         });
 
@@ -1834,9 +1834,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('ul');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', '', ['code', 'return s;});s+=r;'], 'scope']);
         });
 
@@ -1844,9 +1844,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseElseHelper');
             expect(step.args[0]).to.eql('else');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope']);
         });
 
@@ -1854,9 +1854,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope', '</h2>']);
         });
 
@@ -1864,9 +1864,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseString');
             expect(step.args[0]).to.eql('Hasn\'t any listings!');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope', '</h2>']);
         });
 
@@ -1874,9 +1874,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('h2');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>', ['code', ''], ['code', 'return s;});}'], 'scope']);
         });
 
@@ -1884,9 +1884,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseHelper');
             expect(step.args[0]).to.eql('if');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql(['</div>']);
         });
         
@@ -1894,9 +1894,9 @@ describe('Parser', function() {
             var step = rec.next();
             expect(step.name).to.eql('parseCloseTag');
             expect(step.args[0]).to.eql('div');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+d(\'data.version\')+\'</span>\';s+=scopes.scope001(d(\'data.listing\'),data);s+=\'</div>');
-            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(d(\'data.listing\'),data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
-            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+d(\'data.name\')+\'</span><span class="gender">\'+d(\'data.gender\')+\'</span></li>\';return s;});');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);s+=\'</div>');
+            expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!</h2>\';return s;});}');
+            expect(parser.out.scope002).to.eql('s+=h(\'each\',data,parent,root,function(data){var s=\'\';s+=\'<li class="item"><span class="name">\'+f.escape(data.name)+\'</span><span class="gender">\'+f.escape(data.gender)+\'</span></li>\';return s;});');
             expect(parser.closer).to.eql([]);
         });
     });
@@ -1984,13 +1984,13 @@ describe('Parser', function() {
             expect(step.name).to.eql('parseCodeBlock');
             expect(step.args[0]).to.eql('js');
             expect(step.args[1]).to.eql('\n        $bla = \'blubb\';\n        var log = function() {\n            console.log($bla, `$inlineVar`);\n            return true;\n        }\n    ');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"codeBlock js\">$bla = \\\'blubb\\\';\\n\\\nvar log = function() {\\n\\\n    console.log($bla, \'+d(\'data.inlineVar\')+\');\\n\\\n    return true;\\n\\\n}</code>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"codeBlock js\">$bla = \\\'blubb\\\';\\n\\\nvar log = function() {\\n\\\n    console.log($bla, \'+f.escape(data.inlineVar)+\');\\n\\\n    return true;\\n\\\n}</code>');
             expect(parser.closer).to.eql(['</div>', '']);
         });
 
         it(' ... indent zero', function() {
             parser.parseIndention('');
-            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"codeBlock js\">$bla = \\\'blubb\\\';\\n\\\nvar log = function() {\\n\\\n    console.log($bla, \'+d(\'data.inlineVar\')+\');\\n\\\n    return true;\\n\\\n}</code></div>');
+            expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>My Code</h1><code class=\"codeBlock js\">$bla = \\\'blubb\\\';\\n\\\nvar log = function() {\\n\\\n    console.log($bla, \'+f.escape(data.inlineVar)+\');\\n\\\n    return true;\\n\\\n}</code></div>');
             expect(parser.closer).to.eql([]);
         });
     });
@@ -2124,7 +2124,7 @@ describe('Parser', function() {
 
             expect(partials).to.eql([{
                 partial: 'header',
-                source: 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<header><h1>Hello \'+d(\'data.name\')+\'</h1></header>\';'
+                source: 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<header><h1>Hello \'+f.escape(data.name)+\'</h1></header>\';'
             }]);
         });
     });

@@ -161,7 +161,7 @@ describe('FireTPL', function() {
 				'return s;});s+=r;return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' + 
-				's+=scopes.scope001(d(\'data.sayit\'),data);' +
+				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
@@ -192,7 +192,7 @@ describe('FireTPL', function() {
 				'return s;});}return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(d(\'data.sayit\'),data);' +
+				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -223,7 +223,7 @@ describe('FireTPL', function() {
 				'return s;});}return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(d(\'data.sayit\'),data);' +
+				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</div>\';s+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -248,7 +248,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(d(\'data.sayit\'),data);' +
+				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -273,7 +273,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(d(\'data.sayit\'),data);' +
+				's+=scopes.scope001(data.sayit,data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
@@ -298,7 +298,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body>\';' +
-				's+=scopes.scope001(d(\'data.listing\'),data);' +
+				's+=scopes.scope001(data.listing,data);' +
 				's+=\'</body></html>\';' +
 				'return s;};'
 			);
@@ -323,7 +323,7 @@ describe('FireTPL', function() {
 				'return s;});return s;' +
 				'};var s=\'\';' +
 				's+=\'<html><head></head><body><div>\';' +
-				's+=scopes.scope001(d(\'data.listing\'),data);' +
+				's+=scopes.scope001(data.listing,data);' +
 				's+=\'</div></body></html>\';' +
 				'return s;};'
 			);
