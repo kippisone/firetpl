@@ -118,3 +118,23 @@ div
     a href="#a1" "Apple".
     a href="#a1" "Banana".
     a href="#a1" "Coconut".
+
+Lang support
+------------
+
+* Plural support
+* Placeholder
+* Lang switch for a specific tag
+* Point to other tag
+* Different lang fallback
+
+@myvar = {
+	sing: 'A lang var string with $name tags'
+	plur: 'A plural lang var string with $name tags'
+	key: $number
+}
+
+@myvar => f.lang(l.myvar, data)
+
+
+

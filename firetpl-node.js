@@ -638,22 +638,13 @@ var FireTPL;
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
-                    return opener + 'l.' + item.substr(1) + closer;
+                    return opener + 'f.lang(l.' + item.substr(1) + ',data)' + closer;
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {
                         return parseVar(item.slice(2, -1).replace(/^this\.?/, ''), true);
                     }
-                    else if (item.charAt(1) === 'l' && item.charAt(2) === '(') {
-                        return item.replace(/^\$l\(('.+?'|".+?"|[a-zA-Z0-9_.-]+)(?:,(.+?))*\)/, function(m, p1, p2) {
-                            p1 = p1.replace(/^['"]|['"]$/g, '');
-                            if (p2) {
-                                return opener + 'l(\'' + p1 + '\', ' + p2 + ')' + closer;
-                            }
-
-                            return opener + 'l(\'' + p1 + '\')' + closer;
-                        });
-                    }
+                    
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
                 else {
@@ -1875,6 +1866,36 @@ FireTPL.Syntax["hbs"] = {
         return str.replace(/["&<>]/g, function(ch) {
             return chars[ch];
         });
+    });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+    var getValue = function(path, obj) {
+        if(path) {
+            path = path.split('.');
+            path.forEach(function(key) {
+                obj = obj[key];
+            });
+        }
+
+        return obj;
+    };
+    
+    FireTPL.registerFunction('lang', function(lng, data) {
+        console.log('LNG', lng);
+        if (typeof lng === 'object') {
+            if (lng.key) {
+                var val = getValue(lng.key, data);
+                console.log('VAL', val);
+                if (val && val === 1) {
+                    return lng.sing;
+                }
+            }
+
+            return lng.plur || lng.sing;
+        }
+
+        return lng;
     });
 })(FireTPL);
 (function(FireTPL) {

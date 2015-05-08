@@ -278,6 +278,13 @@ describe('Parser', function() {
             expect(out).to.eql('Hello \'+f.escape(data.name)+\'!');
         });
 
+         it('Should parse a string for variables', function() {
+            var str = '@hello $name!';
+            var fireTpl = new Parser();
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data.name)+\'!');
+        });
+
         it('Should parse a string for variables and inline functions', function() {
             var str = 'Hello $name.ucase()!';
             var fireTpl = new Parser();
@@ -300,59 +307,52 @@ describe('Parser', function() {
         });
 
         it('Should parse a string for locale tags', function() {
-            var str = '$l(\'hello\') $name!';
+            var str = '@hello $name!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'!');
-        });
-
-        it('Should parse a string for locale tags, key wrapped in double quotes', function() {
-            var str = '$l("hello") $name!';
-            var fireTpl = new Parser();
-            var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data.name)+\'!');
         });
 
         it('Should parse a string for multiple variables and locale tags', function() {
-            var str = '$l(\'hello\') $name! I\'m $reporter and live in $country!';
+            var str = '@hello $name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string ', function() {
-            var str = '$l(\'hello\') $name! I\'m $reporter and live in $country!';
+            var str = '@hello $name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $this should point to data', function() {
-            var str = '$l(\'hello\') $this! I\'m $reporter and live in $country!';
+            var str = '@hello $this! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $this.name should point to data', function() {
-            var str = '$l(\'hello\') $this.name! I\'m $reporter and live in $country!';
+            var str = '@hello $this.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $parent.name should point to data', function() {
-            var str = '$l(\'hello\') $parent.name! I\'m $reporter and live in $country!';
+            var str = '@hello $parent.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(parent.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(parent.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
 
         it('Should parse a string and $root.name should point to data', function() {
-            var str = '$l(\'hello\') $root.name! I\'m $reporter and live in $country!';
+            var str = '@hello $root.name! I\'m $reporter and live in $country!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('\'+l(\'hello\')+\' \'+f.escape(root.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+            expect(out).to.eql('\'+f.lang(l.hello,data)+\' \'+f.escape(root.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
         });
     });
 
