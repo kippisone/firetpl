@@ -546,6 +546,9 @@
                     if (item.charAt(1) === '{') {
                         return parseVar(item.slice(2, -1).replace(/^this\.?/, ''), true);
                     }
+                    else if(item.charAt(1) === '$') {
+                        return parseVar(item.substr(2).replace(/^this\.?/, ''), false);
+                    }
                     
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }

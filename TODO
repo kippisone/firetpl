@@ -3,7 +3,6 @@ FireTPL v1.0.0
 	- Better condition support. :if $eq($bla, blubb) && $isSuperBlubb
 	- Ignore empty lines after string blocks and tags
 
-	- add escape func to $bla and {{bla}}
 	- inline html
 	- Pretty error messages
 
@@ -128,10 +127,54 @@ Lang support
 * Point to other tag
 * Different lang fallback
 
-@myvar = {
-	sing: 'A lang var string with $name tags'
-	plur: 'A plural lang var string with $name tags'
-	key: $number
+
+lang.en.json
+{
+	myvar: {
+		sing: 'A lang var string with $name tags'
+		plur: 'A plural lang var string with $name tags'
+		key: $number
+	}
+}
+
+compile to ->
+{
+	var l = function(key, data) {
+		var curLang = 'en';
+
+		switch(curLang + '.' + key) {
+			case 'de.myvar':
+			case 'en.myvar':
+				return: {
+					data.number === 1 ?
+						'A lang var string with ' + data.name + ' tags' :
+						'A plural lang var string with ' + data.name + ' tags';
+			}
+		}
+	}
+
+	var l = function(key, data) {
+		var curLang = 'en';
+		var lang = {
+			'en': {
+				'myvar':  {
+					data.number === 1 ?
+						'A lang var string with ' + data.name + ' tags' :
+						'A plural lang var string with ' + data.name + ' tags';
+				}
+			}
+		};
+		
+		switch(curLang + '.' + key) {
+			case 'de.myvar':
+			case 'en.myvar':
+				return: {
+					data.number === 1 ?
+						'A lang var string with ' + data.name + ' tags' :
+						'A plural lang var string with ' + data.name + ' tags';
+			}
+		}
+	}
 }
 
 @myvar => f.lang(l.myvar, data)

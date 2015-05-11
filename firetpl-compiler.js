@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-8
+ * FireTPL template engine v0.5.4-10
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -14,38 +14,55 @@
 var FireTPL;
 
 (function (root, factory) {
-	/*global define:false */
-	'use strict';
+    /*global define:false */
+    'use strict';
 
-	if (typeof define === 'function' && define.amd) {
-		define('firetpl', [], factory);
-	} else if (typeof module !== 'undefined' && module.exports) {
-		module.exports = factory();
-	} else {
-		root.FireTPL = factory();
-	}
+    if (typeof define === 'function' && define.amd) {
+        define('firetpl', [], factory);
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory();
+    } else {
+        root.FireTPL = factory();
+    }
 }(this, function () {
-	'use strict';
+    'use strict';
 
-	/**
-	 * FireTPL template engine
-	 *
-	 * @module  FireTPL
-	 *
-	 * @example {js}
-	 * var fireTPL = new FireTPL();
-	 * var tmpl = fireTpl.compile('div $name');
-	 * var html = tmpl({
-	 *   name: 'Andi'
-	 * });
-	 *
-	 * // html = <div>Andi</div>
-	 */
-	FireTPL = {
-		version: '0.5.4-8'
-	};
+    /**
+     * FireTPL template engine
+     *
+     * @module  FireTPL
+     *
+     * @example {js}
+     * var fireTPL = new FireTPL();
+     * var tmpl = fireTpl.compile('div $name');
+     * var html = tmpl({
+     *   name: 'Andi'
+     * });
+     *
+     * // html = <div>Andi</div>
+     */
+    FireTPL = {
+        /**
+         * Contains current version
+         * @property {String} version
+         * @default v0.6.0
+         */
+        version: '0.5.4-10',
 
-	return FireTPL;
+        /**
+         * Defines the default language
+         * @property {String} i18nDefault
+         */
+        i18nDefault: 'en',
+
+        /**
+         * Defines the current selected language
+         * @property {String} i18nCurrent
+         */
+        i18nCurrent: 'en'
+    };
+
+    return FireTPL;
 }));
 (function(FireTPL) {
 
@@ -94,7 +111,27 @@ var FireTPL;
         return out;
     };
 
+    var ParseError = function(err, data, tmpl) {
+        if (typeof err === 'string') {
+            err = new Error(err);
+        }
+
+        console.error('FireTPL parse error', err);
+        console.error(err.stack);
+
+        if (data) {
+            console.log('Data: ', data);
+        }
+
+        if (tmpl) {
+            console.log('----- Template source -----');
+            console.log(prettify(tmpl));
+            console.log('----- Template source -----');
+        }
+    };
+
     FireTPL.Error = FireError;
+    FireTPL.ParseError = ParseError;
 })(FireTPL);
 /**
  * FireTPL compiler node module
@@ -171,7 +208,7 @@ var FireTPL;
             output = ';(function(FireTPL) {';
         }
 
-        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial,d=t.registerData(data);' + precompiled + 'return s;};';
+        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
 
         if (options.commonjs) {
             output += '})(require);';
@@ -271,6 +308,10 @@ var FireTPL;
 
 
         return split.join('').trim();
+    };
+
+    FireTPL.compileLang = function(lang) {
+        
     };
 
     FireTPL.Compiler = Compiler;
@@ -399,7 +440,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "variableString",
-                    "pattern": "([@\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+))"
+                    "pattern": "([@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+))"
                 }
             ]
         }, {

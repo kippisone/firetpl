@@ -175,5 +175,9 @@
         return split.join('').trim();
     };
 
+    FireTPL.compileLang = function(lang) {
+        
+    };
+
     FireTPL.Compiler = Compiler;
 })(FireTPL);

@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-9
+ * FireTPL template engine v0.5.4-11
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -14,38 +14,55 @@
 var FireTPL;
 
 (function (root, factory) {
-	/*global define:false */
-	'use strict';
+    /*global define:false */
+    'use strict';
 
-	if (typeof define === 'function' && define.amd) {
-		define('firetpl', [], factory);
-	} else if (typeof module !== 'undefined' && module.exports) {
-		module.exports = factory();
-	} else {
-		root.FireTPL = factory();
-	}
+    if (typeof define === 'function' && define.amd) {
+        define('firetpl', [], factory);
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory();
+    } else {
+        root.FireTPL = factory();
+    }
 }(this, function () {
-	'use strict';
+    'use strict';
 
-	/**
-	 * FireTPL template engine
-	 *
-	 * @module  FireTPL
-	 *
-	 * @example {js}
-	 * var fireTPL = new FireTPL();
-	 * var tmpl = fireTpl.compile('div $name');
-	 * var html = tmpl({
-	 *   name: 'Andi'
-	 * });
-	 *
-	 * // html = <div>Andi</div>
-	 */
-	FireTPL = {
-		version: '0.5.4-9'
-	};
+    /**
+     * FireTPL template engine
+     *
+     * @module  FireTPL
+     *
+     * @example {js}
+     * var fireTPL = new FireTPL();
+     * var tmpl = fireTpl.compile('div $name');
+     * var html = tmpl({
+     *   name: 'Andi'
+     * });
+     *
+     * // html = <div>Andi</div>
+     */
+    FireTPL = {
+        /**
+         * Contains current version
+         * @property {String} version
+         * @default v0.6.0
+         */
+        version: '0.5.4-11',
 
-	return FireTPL;
+        /**
+         * Defines the default language
+         * @property {String} i18nDefault
+         */
+        i18nDefault: 'en',
+
+        /**
+         * Defines the current selected language
+         * @property {String} i18nCurrent
+         */
+        i18nCurrent: 'en'
+    };
+
+    return FireTPL;
 }));
 (function(FireTPL) {
 
@@ -94,7 +111,27 @@ var FireTPL;
         return out;
     };
 
+    var ParseError = function(err, data, tmpl) {
+        if (typeof err === 'string') {
+            err = new Error(err);
+        }
+
+        console.error('FireTPL parse error', err);
+        console.error(err.stack);
+
+        if (data) {
+            console.log('Data: ', data);
+        }
+
+        if (tmpl) {
+            console.log('----- Template source -----');
+            console.log(prettify(tmpl));
+            console.log('----- Template source -----');
+        }
+    };
+
     FireTPL.Error = FireError;
+    FireTPL.ParseError = ParseError;
 })(FireTPL);
 /**
  * FireTPL parser
@@ -644,6 +681,9 @@ var FireTPL;
                     if (item.charAt(1) === '{') {
                         return parseVar(item.slice(2, -1).replace(/^this\.?/, ''), true);
                     }
+                    else if(item.charAt(1) === '$') {
+                        return parseVar(item.substr(2).replace(/^this\.?/, ''), false);
+                    }
                     
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
@@ -960,6 +1000,122 @@ var FireTPL;
     FireTPL.Parser = Parser;
 })(FireTPL);
 /**
+ * FireTPL i18n parser
+ *
+ * @module  i18nParser
+ */
+(function(FireTPL) {
+    'use strict';
+
+    /**
+     * I18nParser constructor
+     *
+     * @constructor
+     *
+     * @example {js}
+     * var parser = new FireTPL.Parser();
+     * parser.parse('input string');
+     * var parsedStr = parser.flush();
+     *
+     * Options:
+     *
+     * @arg eventTags {boolean}
+     * Strip html event tags and add all into an `on` tag. The tag contains all event tags as a list seperated by a semicolon.
+     * For example: `on="click:click-handler;mousedown:mouse-handler"`
+     * 
+     */
+    var I18nParser = function(options) {
+        this.lang = {};
+    };
+
+    I18nParser.prototype.add = function(lang, data) {
+        this.flattn(data).forEach(function(item) {
+            if (!this.lang[item[0]]) {
+                this.lang[item[0]] = {};
+            }
+
+            this.lang[item[0]][lang] = item[1];
+        }, this);
+    };
+
+    I18nParser.prototype.parse = function() {
+        if (typeof this.lang !== 'object') {
+            throw new FireTPL.ParseError('No i18n data found!');
+        }
+
+        var parseItem = function(val) {
+            if (typeof val === 'string') {
+                return '\'' + val + '\'';
+            }
+            else if (!val.key) {
+                return '\'' + val.plur || val.sing + '\'';
+            }
+            else if (!val) {
+                throw new FireTPL.ParseError('');
+            }
+
+            return 'data.' + val.key.replace(/^\$/, '') + '===1?\'' + val.sing + '\':\'' + val.plur + '\'';
+        };
+
+        var fn = 'var l=function(key,data,lang){var curLang=lang||FireTPL.i18nCurrent;switch(key){';
+
+        for (var el in this.lang) {
+            if (this.lang.hasOwnProperty(el)) {
+                var item = this.lang[el];
+
+                fn += 'case\'' + el + '\':switch(curLang){';
+                
+                for (var l in item) {
+                    if (l === FireTPL.i18nDefault) {
+                        continue;
+                    }
+                    if (item.hasOwnProperty(l)) {
+                        var langItem = item[l];
+                        
+                        fn += 'case\'' + l + '\':return ' + parseItem(langItem) + ';';
+                    }
+                }                
+                
+                fn += 'default:return ' + parseItem(item[FireTPL.i18nDefault]) + ';}';
+            }
+        }
+
+        fn += 'default:return FireTPL.i18nFallbackText;}};';
+        return fn;
+    };
+
+    I18nParser.prototype.flattn = function(key, data) {
+        if (arguments.length === 1) {
+            data = key;
+            key = '';
+        }
+
+        var values = [];
+        for (var el in data) {
+            if (data.hasOwnProperty(el)) {
+                var item = data[el];
+                
+                if (typeof item === 'object') {
+                    if (typeof item.sing === 'string' || typeof item.plur === 'string') {
+                        values.push([key + el, item.key ? item : (item.plur || item.sing)]);
+                    }
+                    else {
+                        values = values.concat(this.flattn(key + el + '.', item));
+                    }
+                }
+                else {
+                    values.push([key + el, item]);
+                }
+            }
+        }
+
+
+        return values;
+    };
+
+    FireTPL.I18nParser = I18nParser;
+})(FireTPL);
+/**
  * FireTPL compiler node module
  *
  * Usage:
@@ -1136,6 +1292,10 @@ var FireTPL;
         return split.join('').trim();
     };
 
+    FireTPL.compileLang = function(lang) {
+        
+    };
+
     FireTPL.Compiler = Compiler;
 })(FireTPL);
 FireTPL.Syntax = FireTPL.Syntax || {};
@@ -1262,7 +1422,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "variableString",
-                    "pattern": "([@\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+))"
+                    "pattern": "([@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+))"
                 }
             ]
         }, {
@@ -1620,11 +1780,7 @@ FireTPL.Syntax["hbs"] = {
                 return eval(tmpl);
             }
             catch (err) {
-                console.error('FireTPL parse error', err);
-                console.log('Data: ', data);
-                console.log('----- Template source -----');
-                console.log(prettify(tmpl));
-                console.log('----- Template source -----');
+                throw new FireTPL.ParseError(err, data, prettify(tmpl));
             }
 
             return s;
@@ -1856,6 +2012,10 @@ FireTPL.Syntax["hbs"] = {
     'use strict';
     
     FireTPL.registerFunction('escape', function(str) {
+        if (typeof str !== 'string') {
+            return str;
+        }
+
         var chars = {
             '"': '&quot;',
             '<': '&lt;',

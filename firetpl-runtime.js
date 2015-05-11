@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-8
+ * FireTPL template engine v0.5.4-10
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -14,38 +14,55 @@
 var FireTPL;
 
 (function (root, factory) {
-	/*global define:false */
-	'use strict';
+    /*global define:false */
+    'use strict';
 
-	if (typeof define === 'function' && define.amd) {
-		define('firetpl', [], factory);
-	} else if (typeof module !== 'undefined' && module.exports) {
-		module.exports = factory();
-	} else {
-		root.FireTPL = factory();
-	}
+    if (typeof define === 'function' && define.amd) {
+        define('firetpl', [], factory);
+    } else if (typeof module !== 'undefined' && module.exports) {
+        module.exports = factory();
+    } else {
+        root.FireTPL = factory();
+    }
 }(this, function () {
-	'use strict';
+    'use strict';
 
-	/**
-	 * FireTPL template engine
-	 *
-	 * @module  FireTPL
-	 *
-	 * @example {js}
-	 * var fireTPL = new FireTPL();
-	 * var tmpl = fireTpl.compile('div $name');
-	 * var html = tmpl({
-	 *   name: 'Andi'
-	 * });
-	 *
-	 * // html = <div>Andi</div>
-	 */
-	FireTPL = {
-		version: '0.5.4-8'
-	};
+    /**
+     * FireTPL template engine
+     *
+     * @module  FireTPL
+     *
+     * @example {js}
+     * var fireTPL = new FireTPL();
+     * var tmpl = fireTpl.compile('div $name');
+     * var html = tmpl({
+     *   name: 'Andi'
+     * });
+     *
+     * // html = <div>Andi</div>
+     */
+    FireTPL = {
+        /**
+         * Contains current version
+         * @property {String} version
+         * @default v0.6.0
+         */
+        version: '0.5.4-10',
 
-	return FireTPL;
+        /**
+         * Defines the default language
+         * @property {String} i18nDefault
+         */
+        i18nDefault: 'en',
+
+        /**
+         * Defines the current selected language
+         * @property {String} i18nCurrent
+         */
+        i18nCurrent: 'en'
+    };
+
+    return FireTPL;
 }));
 (function(FireTPL) {
 
@@ -94,7 +111,27 @@ var FireTPL;
         return out;
     };
 
+    var ParseError = function(err, data, tmpl) {
+        if (typeof err === 'string') {
+            err = new Error(err);
+        }
+
+        console.error('FireTPL parse error', err);
+        console.error(err.stack);
+
+        if (data) {
+            console.log('Data: ', data);
+        }
+
+        if (tmpl) {
+            console.log('----- Template source -----');
+            console.log(prettify(tmpl));
+            console.log('----- Template source -----');
+        }
+    };
+
     FireTPL.Error = FireError;
+    FireTPL.ParseError = ParseError;
 })(FireTPL);
 /**
  * FireTPL runtime module
@@ -208,27 +245,6 @@ var FireTPL;
         this.partialCache[partial] = fn;
     };
 
-    Runtime.prototype.registerData = function(data) {
-        data = data || {};
-
-        var fn = function(path) {
-            var obj = data;
-            
-            path = path.split('.');
-            path.forEach(function(key) {
-                obj = obj[key];
-                if (!obj) {
-                    console.warn('FireTPL runtime warning! Data %s not defined!', data);
-                    return '';
-                }
-            });
-
-            return obj;
-        };
-
-        return fn;
-    };
-
     /**
      * Compiles and executes a template string
      *
@@ -281,7 +297,7 @@ var FireTPL;
                     try {
                         runTime.registerPartial(item.partial, 
                             //jshint evil:true
-                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial,d=t.registerData(data);' + item.source + 'return s;})')
+                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + item.source + 'return s;})')
                         );
                     }
                     catch(err) {
@@ -295,8 +311,7 @@ var FireTPL;
             var h = runTime.execHelper,
                 l = FireTPL.locale,
                 f = FireTPL.fn,
-                p = runTime.execPartial.bind(runTime),
-                d = runTime.registerData(data);
+                p = runTime.execPartial.bind(runTime);
 
             var s;
 
@@ -306,11 +321,7 @@ var FireTPL;
                 return eval(tmpl);
             }
             catch (err) {
-                console.error('FireTPL parse error', err);
-                console.log('Data: ', data);
-                console.log('----- Template source -----');
-                console.log(prettify(tmpl));
-                console.log('----- Template source -----');
+                throw new FireTPL.ParseError(err, data, prettify(tmpl));
             }
 
             return s;
@@ -536,5 +547,55 @@ var FireTPL;
         }
 
         return arguments.length === 2 ? str : altValue;
+    });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+    
+    FireTPL.registerFunction('escape', function(str) {
+        if (typeof str !== 'string') {
+            return str;
+        }
+
+        var chars = {
+            '"': '&quot;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '&': '&amp;'
+        };
+
+        return str.replace(/["&<>]/g, function(ch) {
+            return chars[ch];
+        });
+    });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+    var getValue = function(path, obj) {
+        if(path) {
+            path = path.split('.');
+            path.forEach(function(key) {
+                obj = obj[key];
+            });
+        }
+
+        return obj;
+    };
+    
+    FireTPL.registerFunction('lang', function(lng, data) {
+        console.log('LNG', lng);
+        if (typeof lng === 'object') {
+            if (lng.key) {
+                var val = getValue(lng.key, data);
+                console.log('VAL', val);
+                if (val && val === 1) {
+                    return lng.sing;
+                }
+            }
+
+            return lng.plur || lng.sing;
+        }
+
+        return lng;
     });
 })(FireTPL);

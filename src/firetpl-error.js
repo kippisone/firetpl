@@ -45,5 +45,25 @@
         return out;
     };
 
+    var ParseError = function(err, data, tmpl) {
+        if (typeof err === 'string') {
+            err = new Error(err);
+        }
+
+        console.error('FireTPL parse error', err);
+        console.error(err.stack);
+
+        if (data) {
+            console.log('Data: ', data);
+        }
+
+        if (tmpl) {
+            console.log('----- Template source -----');
+            console.log(prettify(tmpl));
+            console.log('----- Template source -----');
+        }
+    };
+
     FireTPL.Error = FireError;
+    FireTPL.ParseError = ParseError;
 })(FireTPL);

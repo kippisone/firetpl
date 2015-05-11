@@ -1,47 +1,48 @@
 #!/usr/bin/env node
 /*global XQCore:true */
 var fs = require('fs'),
-	path = require('path');
+    path = require('path');
 
-var mkdirp = require('mkdirp'),
-	program = require('commander'),
-	pkg = require('../package.json');
+var program = require('commander'),
+    grunt = require('grunt'),
+    pkg = require('../package.json');
 
-var FireTPL = require('../firetpl'),
-	LocalePrecompiler = require('../modules/localePrecompiler');
+var FireTPL = require('../firetpl');
 
 program.version(pkg.version)
-	.description('Parse a locale dir (i18n support)')
-	.usage('[options] <localeDir>')
-	.option('-o, --out <outdir>', 'Write precompiled file to <outdir>. Default is current working dir')
-	.option('-v, --verbose', 'Print more infos')
-	.parse(process.argv);
+    .description('Parse a locale dir (i18n support)')
+    .usage('[options] <inputFiles>')
+    .option('-o, --out <outfile>', 'Write precompiled file to <outfile>')
+    .option('-v, --verbose', 'Print more infos')
+    .parse(process.argv);
 
-var compiler = new LocalePrecompiler();
-var locales = compiler.compile({
-	baseDir: program.args[0],
-	verbose: program.verbose
-});
+if (program.args.length) {
+    var parser = new FireTPL.I18nParser();
+    console.log('FILES:', program.args);
 
-var dir = program.out || process.cwd();
-
-if (program.verbose) {
-	console.log('\nWrite locales to %s', dir);
+    program.args.forEach(function(file) {
+        var filepath = path.join(process.cwd(), file);
+        if (grunt.file.isFile(filepath)) {
+            var langCode = file.match(/([a-zA-Z_-]+)\.json$/);
+            if (Array.isArray(langCode) && langCode[1]) {
+                var langConf = require(filepath);
+                console.log('ADD FILE', langCode, file);
+                parser.add(langCode, langConf);
+            }
+        }
+    });
 }
 
-mkdirp.sync(dir, {
-	mode: 0755
-});
 
-Object.keys(locales).forEach(function(locale) {
-	var outfile = path.join(dir, locale + '.json');
+if (program.out) {
+    var outFile = program.out;
 
-	if (program.verbose) {
-		console.log(' >> write locale %s', outfile);
-	}
+    if (program.verbose) {
+        console.log('\nWrite locales to %s', outFile);
+    }
 
-	fs.writeFileSync(outfile, JSON.stringify(locales[locale]), {
-		mode: 0644,
-		flag: 'w'
-	});
-});
+    grunt.file.write(outFile, parser.parse());
+}
+else {
+    console.log(parser.parse());
+}

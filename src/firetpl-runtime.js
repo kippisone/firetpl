@@ -186,11 +186,7 @@
                 return eval(tmpl);
             }
             catch (err) {
-                console.error('FireTPL parse error', err);
-                console.log('Data: ', data);
-                console.log('----- Template source -----');
-                console.log(prettify(tmpl));
-                console.log('----- Template source -----');
+                throw new FireTPL.ParseError(err, data, prettify(tmpl));
             }
 
             return s;

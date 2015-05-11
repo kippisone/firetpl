@@ -1276,4 +1276,36 @@ describe('FireTPL Runtime', function() {
                 '</div>');
         });
     });
+
+    describe('i18n support', function() {
+        var l;
+
+        before(function() {
+            l = function(key, data, lang) {
+                var curLang = lang || FireTPL.i18nCurrent;
+
+                switch(key) {
+                    case 'hello':
+                        switch(curLang) {
+                            case 'de': return 'Hallo ' + data.name + '!';
+                            case 'se': return 'Hej ' + data.name + '!';
+                            default: return 'Hello ' + data.name + '!';
+                        }
+                }
+            };
+        });
+
+        it('Should return a german welcome message', function() {
+            expect(l('hello', { name: 'Andi' }, 'de')).to.eql('Hallo Andi!');
+        });
+        
+        it('Should return an english welcome message', function() {
+            expect(l('hello', { name: 'Andi' })).to.eql('Hello Andi!');
+        });
+        
+        it('Should return an swedish welcome message', function() {
+            FireTPL.i18nCurrent = 'se';
+            expect(l('hello', { name: 'Andi' })).to.eql('Hej Andi!');
+        });
+    });
 });
