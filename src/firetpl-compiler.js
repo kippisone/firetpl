@@ -97,6 +97,7 @@
 
     FireTPL.fire2html = function(tmpl, data, options) {
         data = data || {};
+        options = options || {};
 
         var template = FireTPL.compile(tmpl, options);
 

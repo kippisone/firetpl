@@ -72,11 +72,11 @@
             if (typeof val === 'string') {
                 return '\'' + val + '\'';
             }
+            else if (!val) {
+                throw new FireTPL.ParseError('Unsupported i18n item! (' + String(val) + ')');
+            }
             else if (!val.key) {
                 return '\'' + val.plur || val.sing + '\'';
-            }
-            else if (!val) {
-                throw new FireTPL.ParseError('');
             }
 
             return 'data.' + val.key.replace(/^\$/, '') + '===1?\'' + val.sing + '\':\'' + val.plur + '\'';
@@ -101,7 +101,9 @@
                     }
                 }                
                 
-                fn += 'default:return ' + parseItem(item[FireTPL.i18nDefault]) + ';}';
+                if ((FireTPL.i18nDefault in item)) {
+                    fn += 'default:return ' + parseItem(item[FireTPL.i18nDefault]) + ';}';
+                }
             }
         }
 
