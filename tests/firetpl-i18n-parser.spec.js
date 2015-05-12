@@ -89,6 +89,26 @@ describe('I18n parser', function() {
         });
     });
 
+    describe.only('addItem', function() {
+        var parser;
+
+        before(function() {
+            parser = new FireTPL.I18nParser();
+        });
+        
+        it('Should add an i18n item', function() {
+            parser.addItem('en', 'txt.value', 'English text');
+            parser.addItem('de', 'txt.value', 'German text');
+
+            expect(parser.lang).to.eql({
+                'txt.value': {
+                    'en': 'English text',
+                    'de': 'German text'
+                }
+            });
+        });
+    });
+
     describe('parse', function() {var parser;
 
         before(function() {

@@ -131,6 +131,7 @@ module.exports = function() {
 			
 			var data = {},
 				d = data;
+				
 			objPath.forEach(function(str) {
 				if (str !== '.') {
 					d[str] = {};

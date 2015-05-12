@@ -23,11 +23,19 @@ if (program.args.length) {
     program.args.forEach(function(file) {
         var filepath = path.join(process.cwd(), file);
         if (grunt.file.isFile(filepath)) {
-            var langCode = file.match(/([a-zA-Z_-]+)\.json$/);
-            if (Array.isArray(langCode) && langCode[1]) {
+            var filePart = file.match(/([a-zA-Z_-]+)\.(json|fire)$/);
+            
+            if (path.extname(file) === '.fire') {
+                var objPath = path.dirname(file).split('/');
+            
+                parser.addItem();
+            }
+            
+            
+            if (Array.isArray(filePart) && filePart[1]) {
                 var langConf = require(filepath);
-                console.log('ADD FILE', langCode, file);
-                parser.add(langCode, langConf);
+                console.log('ADD FILE', filePart, file);
+                parser.add(filePart, langConf);
             }
         }
     });

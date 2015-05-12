@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-10
+ * FireTPL template engine v0.5.4-11
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -47,7 +47,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.5.4-10',
+        version: '0.5.4-11',
 
         /**
          * Defines the default language
@@ -1028,6 +1028,12 @@ var FireTPL;
         this.lang = {};
     };
 
+    /**
+     * Add i18n data
+     * @method add
+     * @param  {String} lang Language code
+     * @param  {Object} data Language data
+     */
     I18nParser.prototype.add = function(lang, data) {
         this.flattn(data).forEach(function(item) {
             if (!this.lang[item[0]]) {
@@ -1038,6 +1044,26 @@ var FireTPL;
         }, this);
     };
 
+    /**
+     * Add one i18n item
+     * @method addItem
+     * @param  {String} lang  Language code
+     * @param  {String} value Data key
+     * @param  {String|Object} value Data value
+     */
+    I18nParser.prototype.addItem = function(lang, key, value) {
+        if (!this.lang[key]) {
+            this.lang[key] = {};
+        }
+        
+        this.lang[key][lang] = value;
+    };
+
+    /**
+     * Parse i18n data
+     * @method parse
+     * @return {String} Returns parser result
+     */
     I18nParser.prototype.parse = function() {
         if (typeof this.lang !== 'object') {
             throw new FireTPL.ParseError('No i18n data found!');
@@ -1049,6 +1075,9 @@ var FireTPL;
             }
             else if (!val.key) {
                 return '\'' + val.plur || val.sing + '\'';
+            }
+            else if (!val) {
+                throw new FireTPL.ParseError('');
             }
 
             return 'data.' + val.key.replace(/^\$/, '') + '===1?\'' + val.sing + '\':\'' + val.plur + '\'';
@@ -1081,6 +1110,15 @@ var FireTPL;
         return fn;
     };
 
+    /**
+     * Flattn a an i18n data object
+     * 
+     * @method flattn
+     * @private
+     * @param  {String} key  Key prefix
+     * @param  {Object} data Data object
+     * @return {Object}      Returns a flatted data object
+     */
     I18nParser.prototype.flattn = function(key, data) {
         if (arguments.length === 1) {
             data = key;
@@ -1109,6 +1147,8 @@ var FireTPL;
 
         return values;
     };
+
+    //--
 
     FireTPL.I18nParser = I18nParser;
 })(FireTPL);

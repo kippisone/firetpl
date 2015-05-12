@@ -27,6 +27,12 @@
         this.lang = {};
     };
 
+    /**
+     * Add i18n data
+     * @method add
+     * @param  {String} lang Language code
+     * @param  {Object} data Language data
+     */
     I18nParser.prototype.add = function(lang, data) {
         this.flattn(data).forEach(function(item) {
             if (!this.lang[item[0]]) {
@@ -37,6 +43,26 @@
         }, this);
     };
 
+    /**
+     * Add one i18n item
+     * @method addItem
+     * @param  {String} lang  Language code
+     * @param  {String} value Data key
+     * @param  {String|Object} value Data value
+     */
+    I18nParser.prototype.addItem = function(lang, key, value) {
+        if (!this.lang[key]) {
+            this.lang[key] = {};
+        }
+        
+        this.lang[key][lang] = value;
+    };
+
+    /**
+     * Parse i18n data
+     * @method parse
+     * @return {String} Returns parser result
+     */
     I18nParser.prototype.parse = function() {
         if (typeof this.lang !== 'object') {
             throw new FireTPL.ParseError('No i18n data found!');
@@ -83,6 +109,15 @@
         return fn;
     };
 
+    /**
+     * Flattn a an i18n data object
+     * 
+     * @method flattn
+     * @private
+     * @param  {String} key  Key prefix
+     * @param  {Object} data Data object
+     * @return {Object}      Returns a flatted data object
+     */
     I18nParser.prototype.flattn = function(key, data) {
         if (arguments.length === 1) {
             data = key;
@@ -111,6 +146,8 @@
 
         return values;
     };
+
+    //--
 
     FireTPL.I18nParser = I18nParser;
 })(FireTPL);
