@@ -20,6 +20,8 @@ FireTPL v1.0.0
 	- Use @tags in the same manner like in Handlebars.
 	- Better language integration. For example $t('string')
 	- Print stack trace in error messages
+	- i18n support for compile method
+	- grunt-firetpl-compile i18n support
 
 Bugs:
 
