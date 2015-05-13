@@ -24,7 +24,10 @@
      * 
      */
     var I18nParser = function(options) {
+        options = options || {};
+        
         this.lang = {};
+        this.varName = options.varName || 'FireTPL.locale';
     };
 
     /**
@@ -82,7 +85,7 @@
             return 'data.' + val.key.replace(/^\$/, '') + '===1?\'' + val.sing + '\':\'' + val.plur + '\'';
         };
 
-        var fn = 'var l=function(key,data,lang){var curLang=lang||FireTPL.i18nCurrent;switch(key){';
+        var fn = this.varName + '=function(key,data,lang){var curLang=lang||FireTPL.i18nCurrent;switch(key){';
 
         for (var el in this.lang) {
             if (this.lang.hasOwnProperty(el)) {
