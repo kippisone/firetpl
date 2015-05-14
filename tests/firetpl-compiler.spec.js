@@ -464,8 +464,8 @@ describe('FireTPL', function() {
 				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
 				's+=\'<html><head></head><body>' +
-				'<div class="description">\'+f.lang(l.txt.description,data)+\'</div>' +
-				'<button>\'+f.lang(l.btn.submit,data)+\'</button></body></html>\';' +
+				'<div class="description">\'+l(\'txt.description\',data)+\'</div>' +
+				'<button>\'+l(\'btn.submit\',data)+\'</button></body></html>\';' +
 				'return s;};'
 			);
 		});

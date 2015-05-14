@@ -1,7 +1,7 @@
 /**
  * FireTPL i18n parser
  *
- * @module  i18nParser
+ * @module  FireTPL.I18nParser
  */
 (function(FireTPL) {
     'use strict';
@@ -71,15 +71,19 @@
             throw new FireTPL.ParseError('No i18n data found!');
         }
 
+        var replaceVars = function(str) {
+            return str.replace(/\$([a-zA-Z][a-zA-Z0-9_.-]*)/g, '\'+data.$1+\'');
+        };
+
         var parseItem = function(val) {
             if (typeof val === 'string') {
-                return '\'' + val + '\'';
+                return '\'' + replaceVars(val) + '\'';
             }
             else if (!val) {
                 throw new FireTPL.ParseError('Unsupported i18n item! (' + String(val) + ')');
             }
             else if (!val.key) {
-                return '\'' + val.plur || val.sing + '\'';
+                return '\'' + replaceVars(val.plur) || replaceVars(val.sing) + '\'';
             }
 
             return 'data.' + val.key.replace(/^\$/, '') + '===1?\'' + val.sing + '\':\'' + val.plur + '\'';
@@ -105,8 +109,10 @@
                 }                
                 
                 if ((FireTPL.i18nDefault in item)) {
-                    fn += 'default:return ' + parseItem(item[FireTPL.i18nDefault]) + ';}';
+                    fn += 'default:return ' + parseItem(item[FireTPL.i18nDefault]) + ';';
                 }
+
+                fn += '}';
             }
         }
 

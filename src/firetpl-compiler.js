@@ -176,8 +176,24 @@
         return split.join('').trim();
     };
 
-    FireTPL.compileLang = function(lang) {
-        
+    /**
+     * Compile locales
+     *
+     * @method compileLocales
+     * @param  {Object} locales Compiles locales and register it in FireTPL.locale
+     * @return {[type]}         [description]
+     */
+    FireTPL.compileLocales = function(locales) {
+        var parser = new FireTPL.I18nParser();
+        for (var l in locales) {
+            if (locales.hasOwnProperty(l)) {
+                var item = locales[l];
+                parser.add(l, item);
+            }
+        }
+
+        //jshint evil:true
+        eval(parser.parse());
     };
 
     FireTPL.Compiler = Compiler;

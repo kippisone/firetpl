@@ -35,7 +35,10 @@ Documentation:
 	- Tags
 	- Helper
 	- Strings
+	- Inline HTML
+	- Code blocks
 	- Events
+	- i18n
 	- CLI interface
 	- Grunt plugins
 	- How to
@@ -53,22 +56,24 @@ Helper:
 
 Special vars:
 
-$$root $$parent
+$$ftlRoot $$__parent
 $$root $$parent
 @@root @@parent
 
 Loop vars:
 
-$$index $$first
+$ftlIndex
+$ftlFirst
+
+
 
 Unescaped vars:
 
-$foo.html()
+$$foo
 
 Lang vars:
 
 @lang
-$l('key')
 
 
 Syntax type | Vars       | HTML Vars          | Special Vars    | Lang Vars              | Variable vars

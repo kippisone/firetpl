@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.5.4-21
+ * FireTPL template engine v0.6.0-2
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -12,6 +12,12 @@
  */
 
 var FireTPL;
+
+/**
+ * FireTPL
+ *
+ * @module FireTPL
+ */
 
 (function (root, factory) {
     /*global define:false */
@@ -47,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.5.4-21',
+        version: '0.6.0-2',
 
         /**
          * Defines the default language
@@ -64,6 +70,11 @@ var FireTPL;
 
     return FireTPL;
 }));
+/**
+ * FireTPL error handler
+ *
+ * @module FireTPL Error handler
+ */
 (function(FireTPL) {
 
     var FireError = function(instance, msg) {
@@ -125,7 +136,7 @@ var FireTPL;
 
         if (tmpl) {
             console.log('----- Template source -----');
-            console.log(prettify(tmpl));
+            // console.log(prettify(tmpl));
             console.log('----- Template source -----');
         }
     };
@@ -311,8 +322,24 @@ var FireTPL;
         return split.join('').trim();
     };
 
-    FireTPL.compileLang = function(lang) {
-        
+    /**
+     * Compile locales
+     *
+     * @method compileLocales
+     * @param  {Object} locales Compiles locales and register it in FireTPL.locale
+     * @return {[type]}         [description]
+     */
+    FireTPL.compileLocales = function(locales) {
+        var parser = new FireTPL.I18nParser();
+        for (var l in locales) {
+            if (locales.hasOwnProperty(l)) {
+                var item = locales[l];
+                parser.add(l, item);
+            }
+        }
+
+        //jshint evil:true
+        eval(parser.parse());
     };
 
     FireTPL.Compiler = Compiler;

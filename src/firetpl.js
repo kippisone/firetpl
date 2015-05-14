@@ -13,6 +13,12 @@
 
 var FireTPL;
 
+/**
+ * FireTPL
+ *
+ * @module FireTPL
+ */
+
 (function (root, factory) {
     /*global define:false */
     'use strict';

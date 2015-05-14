@@ -1,3 +1,8 @@
+/**
+ * FireTPL error handler
+ *
+ * @module FireTPL Error handler
+ */
 (function(FireTPL) {
 
     var FireError = function(instance, msg) {
@@ -59,7 +64,7 @@
 
         if (tmpl) {
             console.log('----- Template source -----');
-            console.log(prettify(tmpl));
+            // console.log(prettify(tmpl));
             console.log('----- Template source -----');
         }
     };

@@ -1,5 +1,7 @@
 /**
- * FireTPL runtime module
+ * FireTPL runtime
+ *
+ * @module  FireTPL.Runtime
  */
 (function(FireTPL) {
     'use strict';

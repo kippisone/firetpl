@@ -1,7 +1,7 @@
 /**
  * FireTPL parser
  *
- * @module  Parser
+ * @module  FireTPL.Parser
  */
 (function(FireTPL) {
     'use strict';
@@ -540,7 +540,7 @@
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
-                    return opener + 'f.lang(l.' + item.substr(1) + ',data)' + closer;
+                    return opener + 'l(\'' + item.substr(1) + '\',data)' + closer;
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {

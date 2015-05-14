@@ -89,7 +89,7 @@ describe('I18n parser', function() {
         });
     });
 
-    describe.only('addItem', function() {
+    describe('addItem', function() {
         var parser;
 
         before(function() {
@@ -177,9 +177,9 @@ describe('I18n parser', function() {
 
         it('Should parse an i18n file', function() {
             var fn = parser.parse();
-            expect(fn).to.eql('var l=function(key,data,lang){var curLang=lang||FireTPL.i18nCurrent;' +
+            expect(fn).to.eql('FireTPL.locale=function(key,data,lang){var curLang=lang||FireTPL.i18nCurrent;' +
                 'switch(key){' +
-                'case\'hello\':switch(curLang){case\'de\':return \'Hallo $name!\';default:return \'Hello $name!\';}' +
+                'case\'hello\':switch(curLang){case\'de\':return \'Hallo \'+data.name+\'!\';default:return \'Hello \'+data.name+\'!\';}' +
                 'case\'btn.submit\':switch(curLang){case\'de\':return \'Absenden\';default:return \'Submit\';}' +
                 'case\'btn.cancle\':switch(curLang){case\'de\':return \'Abbrechen\';default:return \'Cancel\';}' +
                 'case\'msg.prompt.error.login\':switch(curLang){case\'de\':return \'Login fehlgeschlagen\';default:return \'Login failed\';}' +

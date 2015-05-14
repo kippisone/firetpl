@@ -1,3 +1,8 @@
+/**
+ * FireTPL node.js/io.js extensions
+ *
+ * @module Node
+ */
 (function(FireTPL) {
     'use strict';
 

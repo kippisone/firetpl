@@ -1,3 +1,8 @@
+/**
+ * FireTPL browser extension
+ *
+ * @module FireTPL Browser extensions
+ */
 (function(FireTPL) {
     'use strict';
 
