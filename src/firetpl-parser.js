@@ -534,7 +534,7 @@
         };
 
         var pat = this.patternBuilder('variable');
-        var reg = new RegExp(pat.pattern.slice(1, -1), 'g');
+        var reg = new RegExp('(?:\\\\.)|' + pat.pattern.slice(1, -1), 'g');
         var split = str.split(reg);
 
         if (this.tmplType === 'fire') {
