@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-4
+ * FireTPL template engine v0.6.0-5
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-4',
+        version: '0.6.0-5',
 
         /**
          * Defines the default language
@@ -316,7 +316,11 @@ var FireTPL;
      * @param {string} tag attrs Tag attribute string
      */
     Parser.prototype.parseTag = function(tag, attrs) {
-        attrs = attrs ? ' ' + attrs.trim() : '';
+        attrs = this.matchAttributes(attrs);
+        if (attrs) {
+            attrs = ' ' + this.matchVariables(attrs);
+        }
+        
         this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
 
         if (tag === 'dtd') {
@@ -324,7 +328,7 @@ var FireTPL;
             this.closer.push('');
         }
         else {
-            this.append('str', '<' + tag + this.matchVariables(attrs) + '>');
+            this.append('str', '<' + tag + attrs + '>');
             if (this.voidElements.indexOf(tag) === -1) {
                     this.closer.push('</' + tag + '>');
             }
@@ -532,7 +536,11 @@ var FireTPL;
      * @param  {string} attribute Tag name
      */
     Parser.prototype.parseAttribute = function(attrName, attrValue) {
-        var attr = attrName + '="' + this.matchVariables(attrValue.replace(/^["\']|["\']$/g, '')) + '"';
+        if (attrValue.charAt(0) !== '"' && attrValue.charAt(0) !== '\'') {
+            attrValue = '"' + attrValue + '"';
+        }
+
+        var attr = attrName + '=' + this.matchVariables(attrValue);
 
         if (this.parseEventTags && /^on?[A-Z]/.test(attrName)) {
             var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
@@ -680,8 +688,9 @@ var FireTPL;
         };
 
         var pat = this.patternBuilder('variable');
-        var reg = new RegExp('(?:\\\\.)|' + pat.pattern.slice(1, -1), 'g');
+        var reg = new RegExp(this.syntax.stringVariable, 'g');
         var split = str.split(reg);
+
 
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
@@ -698,6 +707,9 @@ var FireTPL;
                     
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
+                else if (item.charAt(0) === '\\') {
+                    return item.charAt(1);
+                }
                 else {
                     return item.replace(/\'/g, '\\\'');
                 }
@@ -706,10 +718,16 @@ var FireTPL;
         else {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
-                    return opener + 'l.' + item.substr(1) + closer;
+                    return opener + 'l(\'' + item.substr(1) + '\',data)' + closer;
+                }
+                else if(item.charAt(0) === '{' && item.charAt(1) === '{' && item.charAt(2) === '{') {
+                    return parseVar(item.replace(/^\{{3}|\}{3}$/g, '').replace(/^this\.?/, ''), false);
                 }
                 else if(item.charAt(0) === '{' && item.charAt(1) === '{') {
-                    return parseVar(item.replace(/^\{{2,3}|\}{2,3}$/g, '').replace(/^this\.?/, ''), true);
+                    return parseVar(item.replace(/^\{{2}|\}{2}$/g, '').replace(/^this\.?/, ''), true);
+                }
+                else if (item.charAt(0) === '\\') {
+                    return item.charAt(1);
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');
@@ -718,6 +736,27 @@ var FireTPL;
         }
 
         return split.join('');
+    };
+
+    Parser.prototype.matchAttributes = function(attrs) {
+        if (!attrs) {
+            return '';
+        }
+
+        var reg = new RegExp(this.syntax.tagAttributes, 'g');
+        var res = [];
+
+        while (true) {
+            var match = reg.exec(attrs);
+            if (match && match[1]) {
+                res.push(match[1]);
+                continue;
+            }
+
+            break;
+        }
+
+        return res.join(' ');
     };
 
     Parser.prototype.parsePartial = function(partialName) {
@@ -1340,6 +1379,10 @@ var FireTPL;
                     return item;
                 }
 
+                if (voidTagPattern.test(item)) {
+                    return getIndention() + item + '\n';
+                }
+                
                 item = getIndention() + item;
                 indention++;
                 return item + '\n';
@@ -1535,7 +1578,9 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }
-    ]
+    ],
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
+    "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 FireTPL.Syntax["hbs"] = {
     "name": "Handelbars",
@@ -1665,8 +1710,20 @@ FireTPL.Syntax["hbs"] = {
                     "pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
                 }
             ]
+        }, {
+            "name": "langVariable",
+            "func": "parseVariable",
+            "args": ["variableString"],
+            "parts": [
+                {
+                    "name": "variableString",
+                    "pattern": "(@(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*))+)"
+                }
+            ]
         }
-    ]
+    ],
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-z]+)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 /**
  * FireTPL runtime

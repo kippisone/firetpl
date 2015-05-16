@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-3
+ * FireTPL template engine v0.6.0-5
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-3',
+        version: '0.6.0-5',
 
         /**
          * Defines the default language
@@ -310,6 +310,10 @@ var FireTPL;
                     return item;
                 }
 
+                if (voidTagPattern.test(item)) {
+                    return getIndention() + item + '\n';
+                }
+                
                 item = getIndention() + item;
                 indention++;
                 return item + '\n';
@@ -505,7 +509,9 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }
-    ]
+    ],
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
+    "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 FireTPL.Syntax["hbs"] = {
     "name": "Handelbars",
@@ -635,6 +641,18 @@ FireTPL.Syntax["hbs"] = {
                     "pattern": "(\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3})"
                 }
             ]
+        }, {
+            "name": "langVariable",
+            "func": "parseVariable",
+            "args": ["variableString"],
+            "parts": [
+                {
+                    "name": "variableString",
+                    "pattern": "(@(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*))+)"
+                }
+            ]
         }
-    ]
+    ],
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-z]+)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };

@@ -18,7 +18,6 @@
         xhr.open('GET', src, false);
         xhr.send();
 
-
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 content = xhr.responseText;

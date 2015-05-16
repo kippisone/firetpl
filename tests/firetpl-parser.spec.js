@@ -278,11 +278,18 @@ describe('Parser', function() {
             expect(out).to.eql('Hello \'+f.escape(data.name)+\'!');
         });
 
-         it('Should parse a string for variables', function() {
+        it('Should parse a string for variables', function() {
             var str = '@hello $name!';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
             expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'!');
+        });
+
+        it('Should parse a string for variables and skip any escape seequences', function() {
+            var str = 'Hello $name, my name is Dr \\$uper!';
+            var fireTpl = new Parser();
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(data.name)+\', my name is Dr $uper!');
         });
 
         it('Should parse a string for variables and inline functions', function() {
@@ -353,6 +360,113 @@ describe('Parser', function() {
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
             expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(root.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse escape sequences', function() {
+            var str = 'Escape \\$name \\@at \\{brackets} and \\\\ within a string';
+            var fireTpl = new Parser();
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Escape $name @at {brackets} and \\ within a string');
+        });
+    });
+
+    describe('matchVariables in hbs mode', function() {
+        it('Should parse a string for variables', function() {
+            var str = 'Hello {{name}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(data.name)+\'!');
+        });
+
+        it('Should parse a string for variables', function() {
+            var str = '@hello {{name}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'!');
+        });
+
+        it('Should parse a string for variables and skip any escape seequences', function() {
+            var str = 'Hello {{name}}, my name is Dr \\{{super}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(data.name)+\', my name is Dr {{super}}!');
+        });
+
+        it('Should parse a string for variables and inline functions', function() {
+            var str = 'Hello {{name.ucase()}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(f.ucase(data.name))+\'!');
+        });
+
+        it('Should parse a string for variables and inline chained functions', function() {
+            var str = 'Hello {{name.ucase().bold()}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(f.bold(f.ucase(data.name)))+\'!');
+        });
+
+        it('Should parse a string for variables and inline functions with args', function() {
+            var str = 'Hello {{name.when("green").then("Green")}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Hello \'+f.escape(f.then(f.when(data.name,\'green\'),\'Green\'))+\'!');
+        });
+
+        it('Should parse a string for locale tags', function() {
+            var str = '@hello {{name}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'!');
+        });
+
+        it('Should parse a string for multiple variables and locale tags', function() {
+            var str = '@hello {{name}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse a string ', function() {
+            var str = '@hello {{name}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse a string and $this should point to data', function() {
+            var str = '@hello {{this}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse a string and $this.name should point to data', function() {
+            var str = '@hello {{this.name}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(data.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse a string and $parent.name should point to data', function() {
+            var str = '@hello {{parent.name}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(parent.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse a string and $root.name should point to data', function() {
+            var str = '@hello {{root.name}}! I\'m {{reporter}} and live in {{country}}!';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('\'+l(\'hello\',data)+\' \'+f.escape(root.name)+\'! I\\\'m \'+f.escape(data.reporter)+\' and live in \'+f.escape(data.country)+\'!');
+        });
+
+        it('Should parse escape sequences', function() {
+            var str = 'Escape \\$name \\@at \\{brackets} and \\\\ within a string';
+            var fireTpl = new Parser({ type: 'hbs' });
+            var out = fireTpl.matchVariables(str);
+            expect(out).to.eql('Escape $name @at {brackets} and \\ within a string');
         });
     });
 
@@ -428,6 +542,54 @@ describe('Parser', function() {
             fireTpl.curScope.unshift('scope001');
             var out = fireTpl.matchVariables(str);
             expect(out).to.eql('\'+l.hello+\' \'+root+\'! I\\\'m \'+data.reporter+\' and live in \'+data.country+\'!');
+        });
+    });
+
+    describe('matchAttributes', function() {
+        var fireTpl;
+
+        beforeEach(function() {
+            fireTpl = new Parser();    
+        });
+
+        it('Should match all attributes', function() {
+            var attrs = ' class="item"';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('class="item"');
+        });
+
+        it('Should match all attributes, using single quotes', function() {
+            var attrs = ' class="item"  id=\'item001\'';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('class="item" id=\'item001\'');
+        });
+
+        it('Should match all attributes, using no quotes', function() {
+            var attrs = ' class="item"  id=item001';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('class="item" id=item001');
+        });
+
+        it('Should match all attributes, using no value', function() {
+            var attrs = ' class="item"  checked';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('class="item" checked');
+        });
+
+        it('Should match all attributes, over multiple lines', function() {
+            var attrs = ' class="item"  \n      id=\'item001\'\n\n        tag=true   checked';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('class="item" id=\'item001\' tag=true checked');
+        });
+
+        it('Should not match any attributes if value is undefined', function() {
+            var attrs;
+            expect(fireTpl.matchAttributes(attrs)).to.eql('');
+        });
+
+        it('Should not match any attributes if value is null', function() {
+            var attrs = null;
+            expect(fireTpl.matchAttributes(attrs)).to.eql('');
+        });
+
+        it('Should not match any attributes if value is ""', function() {
+            var attrs = '';
+            expect(fireTpl.matchAttributes(attrs)).to.eql('');
         });
     });
 
@@ -1138,7 +1300,7 @@ describe('Parser', function() {
             fireTpl.parseTag('div');
             fireTpl.parseAttribute('class', '\'bla\'');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\\\'bla\\\'></div>\';');
         });
 
         it('Should parse an tag with multiple attributes', function() {
@@ -1147,7 +1309,7 @@ describe('Parser', function() {
             fireTpl.parseAttribute('class', '\'bla\'');
             fireTpl.parseAttribute('id', '\'blubb\'');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\\\'bla\\\' id=\\\'blubb\\\'></div>\';');
         });
 
         it('Should parse a tag with a newline attribute', function() {
@@ -1157,7 +1319,7 @@ describe('Parser', function() {
             fireTpl.parseAttribute('class', '\'bla\'');
             fireTpl.parseAttribute('id', '\'blubb\'');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class="bla" id="blubb"></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div class=\\\'bla\\\' id=\\\'blubb\\\'></div>\';');
         });
 
         it('Should parse a tag with an event attribute', function() {
@@ -1171,7 +1333,7 @@ describe('Parser', function() {
             fireTpl.parseAttribute('onClick', '\'click-handler\'');
             fireTpl.parseAttribute('onMove', '\'move-handler\'');
 
-            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><div class="bla" on="click:click-handler;move:move-handler"></div></div>\';');
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<div><div class=\\\'bla\\\' on="click:click-handler;move:move-handler"></div></div>\';');
         });
     });
 

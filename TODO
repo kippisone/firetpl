@@ -22,6 +22,7 @@ FireTPL v1.0.0
 	- Print stack trace in error messages
 	- i18n support for compile method
 	- grunt-firetpl-compile i18n support
+	- strings shold escape html in fire mode
 
 Bugs:
 
@@ -76,12 +77,23 @@ Lang vars:
 @lang
 
 
-Syntax type | Vars       | HTML Vars          | Special Vars    | Lang Vars              | Variable vars
+Syntax type | Vars       | HTML Vars          | Special Vars    | Lang Vars | Variable vars
 ---------------------------------------------------------------------------------------------------------
-fire        | $myvar     | $$myvar            | @index          | $l('myvar', $title)    | ${$varname}
-hbs         | {{myvar}}  | {{{myvar}}}        | @index          | $l('myvar', {{title}}) | -
+fire        | $myvar     | $$myvar            | $ftl-index        | @myvar    | ${$varname}
+hbs         | {{myvar}}  | {{{myvar}}}        | {{@index}}      | @myvar    | -
+
 internal    | f.escape(data.myvar) | data.myvar | f.escape(data.__ftlIndex) | l('myvar', data.title) | f.escape(data[data.varname])
 
+Hbs requires support for
+
+../
+./
+this/
+this.
+
+Template comments with {{!-- --}} or {{! }} (First one goes to out stream)
+
+Conditions false, undefined, null, "", 0, or [] becomes false. All other becomes true
 
 TODO
 ====

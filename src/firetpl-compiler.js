@@ -164,6 +164,10 @@
                     return item;
                 }
 
+                if (voidTagPattern.test(item)) {
+                    return getIndention() + item + '\n';
+                }
+                
                 item = getIndention() + item;
                 indention++;
                 return item + '\n';
