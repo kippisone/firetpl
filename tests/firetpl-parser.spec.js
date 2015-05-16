@@ -891,7 +891,7 @@ describe('Parser', function() {
             result;
 
         beforeEach(function() {
-            stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
+            stubs = ['parseTag', 'parseCloseTag', 'parseHtmlString', 'parseVariable', 'parseHelper',
             'parseCodeBlock', 'parseAttribute', 'parseIndention', 'parseEmptyLine', 'parseComment',
             'parsePartial'];
 
@@ -942,19 +942,19 @@ describe('Parser', function() {
                 ['parseTag', 'div', undefined],
                 ['parseComment', '{{! A simple example }}'],
                 ['parseTag', 'span', undefined],
-                ['parseString', 'Hello World'],
+                ['parseHtmlString', 'Hello World'],
                 ['parseCloseTag', 'span'],
                 ['parseComment', '{{! Say hello ;) }}'],
                 ['parseHelper', 'if', 'name'],
                 ['parseTag', 'span', undefined],
-                ['parseString', '{{name}}'],
+                ['parseHtmlString', '{{name}}'],
                 ['parseCloseTag', 'span'],
                 ['parseTag', 'span', undefined],
-                ['parseString', '{{state.if("loggedin", "Logged-in", "Logged-out")}}'],
+                ['parseHtmlString', '{{state.if("loggedin", "Logged-in", "Logged-out")}}'],
                 ['parseCloseTag', 'span'],
                 ['parseComment', '<!-- Register block -->'],
                 ['parseTag', 'div', 'class="register" id="regform"'],
-                ['parseString', 'Create new account {{name}}\n    '],
+                ['parseHtmlString', 'Create new account {{name}}\n    '],
                 ['parseCloseTag', 'div'],
                 ['parseCloseTag', 'div']
             ]);
@@ -1762,7 +1762,7 @@ describe('Parser', function() {
             next,
             rec,
             res = [],
-            stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
+            stubs = ['parseTag', 'parseCloseTag', 'parseHtmlString', 'parseVariable', 'parseHelper',
                 'parseCodeBlock', 'parseAttribute', 'parseIndention', 'parseCloseHelper', 'parseElseHelper'];
 
         before(function() {
@@ -1815,7 +1815,7 @@ describe('Parser', function() {
 
         it(' ... add a string', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('This is a basic firetpl tempalte');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte');
             expect(parser.closer).to.eql(['</div>', '</h1>']);
@@ -1839,7 +1839,7 @@ describe('Parser', function() {
 
         it(' ... add a {{version}} string', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('{{version}}');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'');
             expect(parser.closer).to.eql(['</div>', '</span>']);
@@ -1874,7 +1874,7 @@ describe('Parser', function() {
 
         it(' ... add a string', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('Has listings:');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:');
@@ -1931,7 +1931,7 @@ describe('Parser', function() {
 
         it(' ... add {{name}} variable', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('{{name}}');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
@@ -1961,7 +1961,7 @@ describe('Parser', function() {
 
         it(' ... add {{gender}} variable', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('{{gender}}');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);');
@@ -2031,7 +2031,7 @@ describe('Parser', function() {
 
         it(' ... add string', function() {
             var step = rec.next();
-            expect(step.name).to.eql('parseString');
+            expect(step.name).to.eql('parseHtmlString');
             expect(step.args[0]).to.eql('Hasn\'t any listings!');
             expect(parser.out.root).to.eql('s+=\'<div class="firetpl-template"><h1>This is a basic firetpl tempalte</h1><span>\'+f.escape(data.version)+\'</span>\';s+=scopes.scope001(data.listing,data);');
             expect(parser.out.scope001).to.eql('var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Has listings:</h2><ul>\';s+=scopes.scope002(data.listing,data);s+=\'</ul>\';return s;});s+=r;if(!r){s+=h(\'else\',c,parent,root,function(data){var s=\'\';s+=\'<h2>Hasn\\\'t any listings!');

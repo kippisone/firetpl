@@ -84,7 +84,17 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "\\\"([^\\\"]*)\\\""
+                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(?:\\/\\/.+)?$)))"
+                }
+            ]
+        }, {
+            "name": "htmlString",
+            "func": "parseHtmlString",
+            "args": ["htmlStringValue"],
+            "parts": [
+                {
+                    "name": "htmlStringValue",
+                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(?:\\/\\/.+)?$)))"
                 }
             ]
         }, {
@@ -273,7 +283,7 @@ FireTPL.Syntax["hbs"] = {
             ]
         }, {
             "name": "string",
-            "func": "parseString",
+            "func": "parseHtmlString",
             "args": ["stringValue"],
             "parts": [
                 {

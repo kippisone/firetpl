@@ -108,7 +108,7 @@
             ]
         }, {
             "name": "string",
-            "func": "parseString",
+            "func": "parseHtmlString",
             "args": ["stringValue"],
             "parts": [
                 {

@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-5
+ * FireTPL template engine v0.6.0-6
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-5',
+        version: '0.6.0-6',
 
         /**
          * Defines the default language
@@ -320,7 +320,7 @@ var FireTPL;
         if (attrs) {
             attrs = ' ' + this.matchVariables(attrs);
         }
-        
+
         this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
 
         if (tag === 'dtd') {
@@ -408,9 +408,30 @@ var FireTPL;
      */
     Parser.prototype.parseString = function(str) {
         str = str.trim().replace(/\s+/g, ' ');
+        str = this.htmlEscape(str);
         str = this.matchVariables(str);
         
         if (this.tmplType === 'fire' && this.grepNextChar() === '"') {
+            str += ' ';
+        }
+
+        this.append('str', str);
+        if (this.addEmptyCloseTags && this.tmplType === 'fire' && this.isNewLine) {
+            this.closer.push('');
+        }
+    };
+
+    /**
+     * Parse a string
+     * 
+     * @private
+     * @param  {string} str Tag name
+     */
+    Parser.prototype.parseHtmlString = function(str) {
+        str = str.trim().replace(/\s+/g, ' ');
+        str = this.matchVariables(str);
+        
+        if (this.tmplType === 'fire' && this.grepNextChar() === '\'') {
             str += ' ';
         }
 
@@ -1503,7 +1524,17 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "\\\"([^\\\"]*)\\\""
+                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(\\/\\/.+)?$)))"
+                }
+            ]
+        }, {
+            "name": "htmlString",
+            "func": "parseHtmlString",
+            "args": ["htmlStringValue"],
+            "parts": [
+                {
+                    "name": "htmlStringValue",
+                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(\\/\\/.+)?$)))"
                 }
             ]
         }, {
@@ -1692,7 +1723,7 @@ FireTPL.Syntax["hbs"] = {
             ]
         }, {
             "name": "string",
-            "func": "parseString",
+            "func": "parseHtmlString",
             "args": ["stringValue"],
             "parts": [
                 {

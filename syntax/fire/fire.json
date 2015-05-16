@@ -83,7 +83,17 @@
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "\\\"([^\\\"]*)\\\""
+                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(?:\\/\\/.+)?$)))"
+                }
+            ]
+        }, {
+            "name": "htmlString",
+            "func": "parseHtmlString",
+            "args": ["htmlStringValue"],
+            "parts": [
+                {
+                    "name": "htmlStringValue",
+                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(?:\\/\\/.+)?$)))"
                 }
             ]
         }, {
