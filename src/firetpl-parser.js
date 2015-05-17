@@ -263,7 +263,6 @@
      */
     Parser.prototype.parseString = function(str) {
         str = str.trim().replace(/\s+/g, ' ');
-        // str = this.htmlEscape(str);
         str = this.matchVariables(str, false, true);
         
         if (this.tmplType === 'fire' && this.grepNextChar() === '"') {
@@ -277,7 +276,7 @@
     };
 
     /**
-     * Parse a string
+     * Parse a html string
      * 
      * @private
      * @param  {string} str Tag name

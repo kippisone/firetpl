@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-5
+ * FireTPL template engine v0.6.0-6
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-5',
+        version: '0.6.0-6',
 
         /**
          * Defines the default language
@@ -434,7 +434,17 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "\\\"([^\\\"]*)\\\""
+                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(?:\\/\\/.+)?$)))"
+                }
+            ]
+        }, {
+            "name": "htmlString",
+            "func": "parseHtmlString",
+            "args": ["htmlStringValue"],
+            "parts": [
+                {
+                    "name": "htmlStringValue",
+                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(?:\\/\\/.+)?$)))"
                 }
             ]
         }, {
@@ -495,7 +505,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringLineOption",
-                    "pattern": "(\\.(?=(\\s*\\/\\/.+)?$))"
+                    "pattern": "(\\.(?=(?:\\s*\\/\\/.+)?$))"
                 }
             ]
         }, {
@@ -623,7 +633,7 @@ FireTPL.Syntax["hbs"] = {
             ]
         }, {
             "name": "string",
-            "func": "parseString",
+            "func": "parseHtmlString",
             "args": ["stringValue"],
             "parts": [
                 {

@@ -233,15 +233,16 @@ var FireTPL;
                 throw 'Infinite loop!';
             }
 
-            pat.lastIndex = this.pos;
+            reg.lastIndex = this.pos;
             match = reg.exec(this.inputStream);
-            this.pos = pat.lastIndex;
+            this.pos = reg.lastIndex;
+
 
             if (!match) {
                 break;
             }
 
-            // console.log(match);// console.log(pat);
+            // console.log(match[0]);// console.log(pat);
             for (var i = 0, len = pat.funcs.length; i < len; i++) {
                 if (match[pat.funcs[i].index]) {
                     //Map args
@@ -408,8 +409,7 @@ var FireTPL;
      */
     Parser.prototype.parseString = function(str) {
         str = str.trim().replace(/\s+/g, ' ');
-        str = this.htmlEscape(str);
-        str = this.matchVariables(str);
+        str = this.matchVariables(str, false, true);
         
         if (this.tmplType === 'fire' && this.grepNextChar() === '"') {
             str += ' ';
@@ -422,7 +422,7 @@ var FireTPL;
     };
 
     /**
-     * Parse a string
+     * Parse a html string
      * 
      * @private
      * @param  {string} str Tag name
@@ -620,7 +620,7 @@ var FireTPL;
      * @param  {string} str Input string
      * @return {string}     Returns a variable replaced string
      */
-    Parser.prototype.matchVariables = function(str, isCode) {
+    Parser.prototype.matchVariables = function(str, isCode, strEscape) {
         var opener = '',
             closer = '',
             altOpener = '',
@@ -731,6 +731,9 @@ var FireTPL;
                 else if (item.charAt(0) === '\\') {
                     return item.charAt(1);
                 }
+                else if (strEscape) {
+                    return self.htmlEscape(item.replace(/\'/g, '\\\''));
+                }
                 else {
                     return item.replace(/\'/g, '\\\'');
                 }
@@ -749,6 +752,9 @@ var FireTPL;
                 }
                 else if (item.charAt(0) === '\\') {
                     return item.charAt(1);
+                }
+                else if (strEscape) {
+                    return self.htmlEscape(item.replace(/\'/g, '\\\''));
                 }
                 else {
                     return item.replace(/\'/g, '\\\'');
@@ -1524,7 +1530,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(\\/\\/.+)?$)))"
+                    "pattern": "(?:\"([^]*?)(?:\"(?=\\.?\\s*(?:\\/\\/.+)?$)))"
                 }
             ]
         }, {
@@ -1534,7 +1540,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "htmlStringValue",
-                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(\\/\\/.+)?$)))"
+                    "pattern": "(?:'([^]*?)(?:'(?=\\.?\\s*(?:\\/\\/.+)?$)))"
                 }
             ]
         }, {
@@ -1595,7 +1601,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringLineOption",
-                    "pattern": "(\\.(?=(\\s*\\/\\/.+)?$))"
+                    "pattern": "(\\.(?=(?:\\s*\\/\\/.+)?$))"
                 }
             ]
         }, {

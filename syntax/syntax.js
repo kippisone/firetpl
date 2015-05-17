@@ -155,7 +155,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "stringLineOption",
-                    "pattern": "(\\.(?=(\\s*\\/\\/.+)?$))"
+                    "pattern": "(\\.(?=(?:\\s*\\/\\/.+)?$))"
                 }
             ]
         }, {
