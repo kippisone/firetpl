@@ -19,11 +19,11 @@
      * @param {Function} fn Helper function
      */
     FireTPL.registerHelper = function(helper, fn) {
-        this.helpers[helper] = fn;
+        FireTPL.helpers[helper] = fn;
     };
 
     FireTPL.registerFunction = function(func, fn) {
-        this.fn[func] = fn;
+        FireTPL.fn[func] = fn;
     };
 
     /**
