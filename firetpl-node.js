@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-8
+ * FireTPL template engine v0.6.0-11
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-8',
+        version: '0.6.0-11',
 
         /**
          * Defines the default language
@@ -461,7 +461,8 @@ var FireTPL;
      * @param  {string} helper Tag name
      */
     Parser.prototype.parseHelper = function(helper, expr, tag, tagAttrs) {
-        var scopeId;
+        var scopeId,
+            tagStr = '';
 
         if (helper === 'else') {
             this.closer.push(['code', '']);
@@ -482,6 +483,7 @@ var FireTPL;
                 tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
             this.parseTag(tag, tagAttrs);
+            tagStr = ',\'' + tag + '\', \'' + tagAttrs + '\'';
         }
         else {
             this.closer.push('');
@@ -510,12 +512,26 @@ var FireTPL;
             this.closer.push(['code', 'return s;});s+=r;']);
         }
         else {
-            this.append('code', 's+=h(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
+            this.append('code', 's+=h(\'' + helper + '\',data,parent,root' + tagStr + ',function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});']);
         }
 
         this.closer.push('scope');
         // this.appendCloser();
+    };
+
+    /**
+     * Parse a sub helper
+     * 
+     * @private
+     * @param {String} name Sub helper name
+     * @param {Any} expr Expression
+     * @param {String} tag Tag name
+     * @param {String} attrs Attributes string
+     */
+    Parser.prototype.parseSubHelper = function(name, expr, tag, attrs) {
+        this.append('code', 's+=this.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
+        this.closer.push(['code', 'return s;});']);
     };
 
     /**
@@ -1291,7 +1307,8 @@ var FireTPL;
         var tplName = options.name;
 
         var parser = new FireTPL.Parser({
-            type: options.type || 'fire'
+            type: options.type || 'fire',
+            pretty: options.pretty
         });
         
         parser.parse(tmpl);
@@ -1327,7 +1344,7 @@ var FireTPL;
             output += '})(FireTPL);';
         }
 
-        return output;
+        return options.pretty ? this.prettifyJs(output) : output;
     };
 
     /* +---------- FireTPL methods ---------- */
@@ -1420,6 +1437,41 @@ var FireTPL;
 
 
         return split.join('').trim();
+    };
+
+    Compiler.prototype.prettifyJs = function(str) {
+        var indention = 0,
+            out = '';
+
+        var repeat = function(str, i) {
+            var out = '';
+            while (i > 0) {
+                out += str;
+                i--;
+            }
+            return out;
+        };
+
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charAt(i);
+            
+            if(c === '}' && str.charAt(i - 1) !== '{') {
+                indention--;
+                out += '\n' + repeat('\t', indention);
+            }
+
+            out += c;
+
+            if (c === '{' && str.charAt(i + 1) !== '}') {
+                indention++;
+                out += '\n' + repeat('\t', indention);
+            }
+            else if(c === ';') {
+                out += '\n' + repeat('\t', indention);
+            }
+        }
+
+        return out;
     };
 
     /**
@@ -1565,6 +1617,34 @@ FireTPL.Syntax["fire"] = {
                                 "pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
                             }, {
                                 "name": "helperTagAttrs",
+                                "pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }, {
+            "name": "subHelper",
+            "func": "parseSubHelper",
+            "args": ["subHelperName", "subHelperExpression", "subHelperTagName", "subHelperTagAttrs"],
+            "parts": [
+                {
+                    "name": "subHelperName",
+                    "pattern": "&([a-zA-Z][a-zA-Z0-9_-]*)"
+                }, {
+                    "name": "subHelperExpression",
+                    "pattern": "(?:[\\t ]*([\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))?"
+                }, {
+                    "name": "subHelperTag",
+                    "pattern": {
+                        "start": "([\\t ]*:[\\t ]*",
+                        "end": ")?",
+                        "parts": [
+                            {
+                                "name": "subHelperTagName",
+                                "pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
+                            }, {
+                                "name": "subHelperTagAttrs",
                                 "pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
                             }
                         ]
@@ -1851,15 +1931,23 @@ FireTPL.Syntax["hbs"] = {
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
+        }
+
+        if (typeof tag === 'function') {
+            fn = tag;
+            tag = null;
+            attrs = null;
         }
 
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            tag: tag,
+            attrs: attrs
         }, fn);
     };
 
@@ -2236,15 +2324,60 @@ FireTPL.Syntax["hbs"] = {
  * @module  Tree helper
  * @submodule  Helper
  */
-FireTPL.registerHelper('tree', function(context, fn) {
-    var s = '';
 
-    if (context.data) {
-        s += fn(context.parent, context.root);
-    }
+(function() {
+    'use strict';
 
-    return s;
-});
+    var helper = function(ctx, fn) {
+        // console.log('Call helper', ctx, fn);
+        var s = '';
+
+        var ctxFuncs = {
+            next: function(item, tag, attrs, itemFn) {
+                var s = '';
+
+                // console.log('Call next', item, itemFn);
+
+                if (Array.isArray(item) && item.length) {
+                    s = '';
+
+                    if (tag) {
+                        s += '<' + tag + (attrs ? ' ' + attrs : '') + '>';
+                    }
+
+                    s += helper({
+                        data: item,
+                        parent: ctx.parent,
+                        root: ctx.root,
+                        tag: ctx.tag,
+                        attrs: ctx.attrs
+                    }, fn);
+
+                    if (tag) {
+                        s += '</' + tag + '>';
+                    }
+                }
+
+                return s;
+            }
+        };
+
+        if (ctx.data) {
+            if (Array.isArray(ctx.data)) {
+                ctx.data.forEach(function(d) {
+                    s += fn.bind(ctxFuncs)(d,ctx.parent, ctx.root);
+                });
+            }
+            else {
+                s += fn.bind(ctxFuncs)(ctx.data,ctx.parent, ctx.root);
+            }
+        }
+
+        return s;
+    };
+
+    FireTPL.registerHelper('tree', helper);
+})();
 /**
  * FireTPL node.js/io.js extensions
  *

@@ -315,7 +315,8 @@
      * @param  {string} helper Tag name
      */
     Parser.prototype.parseHelper = function(helper, expr, tag, tagAttrs) {
-        var scopeId;
+        var scopeId,
+            tagStr = '';
 
         if (helper === 'else') {
             this.closer.push(['code', '']);
@@ -336,6 +337,7 @@
                 tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
             this.parseTag(tag, tagAttrs);
+            tagStr = ',\'' + tag + '\', \'' + tagAttrs + '\'';
         }
         else {
             this.closer.push('');
@@ -364,12 +366,26 @@
             this.closer.push(['code', 'return s;});s+=r;']);
         }
         else {
-            this.append('code', 's+=h(\'' + helper + '\',data,parent,root,function(data){var s=\'\';');
+            this.append('code', 's+=h(\'' + helper + '\',data,parent,root' + tagStr + ',function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});']);
         }
 
         this.closer.push('scope');
         // this.appendCloser();
+    };
+
+    /**
+     * Parse a sub helper
+     * 
+     * @private
+     * @param {String} name Sub helper name
+     * @param {Any} expr Expression
+     * @param {String} tag Tag name
+     * @param {String} attrs Attributes string
+     */
+    Parser.prototype.parseSubHelper = function(name, expr, tag, attrs) {
+        this.append('code', 's+=this.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
+        this.closer.push(['code', 'return s;});']);
     };
 
     /**

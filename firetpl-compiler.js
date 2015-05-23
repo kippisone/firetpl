@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-7
+ * FireTPL template engine v0.6.0-10
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-7',
+        version: '0.6.0-10',
 
         /**
          * Defines the default language
@@ -195,7 +195,8 @@ var FireTPL;
         var tplName = options.name;
 
         var parser = new FireTPL.Parser({
-            type: options.type || 'fire'
+            type: options.type || 'fire',
+            pretty: options.pretty
         });
         
         parser.parse(tmpl);
@@ -231,7 +232,7 @@ var FireTPL;
             output += '})(FireTPL);';
         }
 
-        return output;
+        return options.pretty ? this.prettifyJs(output) : output;
     };
 
     /* +---------- FireTPL methods ---------- */
@@ -324,6 +325,41 @@ var FireTPL;
 
 
         return split.join('').trim();
+    };
+
+    Compiler.prototype.prettifyJs = function(str) {
+        var indention = 0,
+            out = '';
+
+        var repeat = function(str, i) {
+            var out = '';
+            while (i > 0) {
+                out += str;
+                i--;
+            }
+            return out;
+        };
+
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charAt(i);
+            
+            if(c === '}' && str.charAt(i - 1) !== '{') {
+                indention--;
+                out += '\n' + repeat('\t', indention);
+            }
+
+            out += c;
+
+            if (c === '{' && str.charAt(i + 1) !== '}') {
+                indention++;
+                out += '\n' + repeat('\t', indention);
+            }
+            else if(c === ';') {
+                out += '\n' + repeat('\t', indention);
+            }
+        }
+
+        return out;
     };
 
     /**
@@ -473,6 +509,19 @@ FireTPL.Syntax["fire"] = {
                             }
                         ]
                     }
+                }
+            ]
+        }, {
+            "name": "subHelper",
+            "func": "parseSubHelper",
+            "args": ["subHelperName", "subHelperExpression"],
+            "parts": [
+                {
+                    "name": "subHelperName",
+                    "pattern": "&([a-zA-Z][a-zA-Z0-9_-]*)"
+                }, {
+                    "name": "subHelperExpression",
+                    "pattern": "(?:[\\t ]*([\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))?"
                 }
             ]
         }, {

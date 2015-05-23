@@ -57,13 +57,5 @@ describe.only('Tree helper', function() {
         it('Should be a helper function', function() {
             expect(FireTPL.helpers.tree).to.be.a('function');
         });
-
-        it('It should create a tree view', function() {
-            var fn = function(data, parent) {
-                
-            };
-
-            FireTPL.helpers.tree(data, fn);
-        });
     });
 });

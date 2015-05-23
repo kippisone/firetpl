@@ -125,6 +125,34 @@
                 }
             ]
         }, {
+            "name": "subHelper",
+            "func": "parseSubHelper",
+            "args": ["subHelperName", "subHelperExpression", "subHelperTagName", "subHelperTagAttrs"],
+            "parts": [
+                {
+                    "name": "subHelperName",
+                    "pattern": "&([a-zA-Z][a-zA-Z0-9_-]*)"
+                }, {
+                    "name": "subHelperExpression",
+                    "pattern": "(?:[\\t ]*([\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))?"
+                }, {
+                    "name": "subHelperTag",
+                    "pattern": {
+                        "start": "([\\t ]*:[\\t ]*",
+                        "end": ")?",
+                        "parts": [
+                            {
+                                "name": "subHelperTagName",
+                                "pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
+                            }, {
+                                "name": "subHelperTagAttrs",
+                                "pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
+                            }
+                        ]
+                    }
+                }
+            ]
+        }, {
             "name": "variable",
             "func": "parseVariable",
             "args": ["variableString"],

@@ -87,15 +87,23 @@
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
+        }
+
+        if (typeof tag === 'function') {
+            fn = tag;
+            tag = null;
+            attrs = null;
         }
 
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            tag: tag,
+            attrs: attrs
         }, fn);
     };
 

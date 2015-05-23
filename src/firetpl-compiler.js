@@ -49,7 +49,8 @@
         var tplName = options.name;
 
         var parser = new FireTPL.Parser({
-            type: options.type || 'fire'
+            type: options.type || 'fire',
+            pretty: options.pretty
         });
         
         parser.parse(tmpl);
@@ -85,7 +86,7 @@
             output += '})(FireTPL);';
         }
 
-        return output;
+        return options.pretty ? this.prettifyJs(output) : output;
     };
 
     /* +---------- FireTPL methods ---------- */
@@ -178,6 +179,41 @@
 
 
         return split.join('').trim();
+    };
+
+    Compiler.prototype.prettifyJs = function(str) {
+        var indention = 0,
+            out = '';
+
+        var repeat = function(str, i) {
+            var out = '';
+            while (i > 0) {
+                out += str;
+                i--;
+            }
+            return out;
+        };
+
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charAt(i);
+            
+            if(c === '}' && str.charAt(i - 1) !== '{') {
+                indention--;
+                out += '\n' + repeat('\t', indention);
+            }
+
+            out += c;
+
+            if (c === '{' && str.charAt(i + 1) !== '}') {
+                indention++;
+                out += '\n' + repeat('\t', indention);
+            }
+            else if(c === ';') {
+                out += '\n' + repeat('\t', indention);
+            }
+        }
+
+        return out;
     };
 
     /**
