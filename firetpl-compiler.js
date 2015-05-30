@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-10
+ * FireTPL template engine v0.6.0-12
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-10',
+        version: '0.6.0-12',
 
         /**
          * Defines the default language
@@ -91,6 +91,9 @@ var FireTPL;
         return new Error(msg);
     };
 
+    FireError.prototype = Object.create(Error.prototype);
+    FireError.prototype.constructor = FireError;
+
     FireError.prototype.stripSource = function(pos, tmpl) {
         var sourceStr,
             counter = 0;
@@ -127,6 +130,9 @@ var FireTPL;
             err = new Error(err);
         }
 
+        this.name = 'FireTPL parse error';
+        this.message = err.message;
+
         console.error('FireTPL parse error', err);
         console.error(err.stack);
 
@@ -140,6 +146,9 @@ var FireTPL;
             console.log('----- Template source -----');
         }
     };
+
+    ParseError.prototype = Object.create(Error.prototype);
+    ParseError.prototype.constructor = ParseError;
 
     FireTPL.Error = FireError;
     FireTPL.ParseError = ParseError;
@@ -514,7 +523,7 @@ FireTPL.Syntax["fire"] = {
         }, {
             "name": "subHelper",
             "func": "parseSubHelper",
-            "args": ["subHelperName", "subHelperExpression"],
+            "args": ["subHelperName", "subHelperExpression", "subHelperTagName", "subHelperTagAttrs"],
             "parts": [
                 {
                     "name": "subHelperName",
@@ -522,6 +531,21 @@ FireTPL.Syntax["fire"] = {
                 }, {
                     "name": "subHelperExpression",
                     "pattern": "(?:[\\t ]*([\\$](?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))?"
+                }, {
+                    "name": "subHelperTag",
+                    "pattern": {
+                        "start": "([\\t ]*:[\\t ]*",
+                        "end": ")?",
+                        "parts": [
+                            {
+                                "name": "subHelperTagName",
+                                "pattern": "([a-zA-Z][a-zA-Z0-9_:-]*)"
+                            }, {
+                                "name": "subHelperTagAttrs",
+                                "pattern": "(?:[\\t ]+([a-zA-Z0-9_-]+=(?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+)))*"
+                            }
+                        ]
+                    }
                 }
             ]
         }, {

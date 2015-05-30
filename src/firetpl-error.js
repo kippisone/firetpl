@@ -19,6 +19,9 @@
         return new Error(msg);
     };
 
+    FireError.prototype = Object.create(Error.prototype);
+    FireError.prototype.constructor = FireError;
+
     FireError.prototype.stripSource = function(pos, tmpl) {
         var sourceStr,
             counter = 0;
@@ -55,6 +58,9 @@
             err = new Error(err);
         }
 
+        this.name = 'FireTPL parse error';
+        this.message = err.message;
+
         console.error('FireTPL parse error', err);
         console.error(err.stack);
 
@@ -68,6 +74,9 @@
             console.log('----- Template source -----');
         }
     };
+
+    ParseError.prototype = Object.create(Error.prototype);
+    ParseError.prototype.constructor = ParseError;
 
     FireTPL.Error = FireError;
     FireTPL.ParseError = ParseError;

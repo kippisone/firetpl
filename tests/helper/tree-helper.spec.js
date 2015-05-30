@@ -1,4 +1,4 @@
-describe.only('Tree helper', function() {
+describe('Tree helper', function() {
     'use strict';
     
     var data = [
