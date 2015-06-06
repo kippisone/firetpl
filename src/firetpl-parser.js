@@ -939,6 +939,10 @@
                 partial: partial,
                 source: subParser.flush()
             });
+
+            if (subParser.partials.length) {
+                partialStore.concat(subParser.partialParser());
+            }
         });
 
         return partialStore.length > 0 ? partialStore : null;

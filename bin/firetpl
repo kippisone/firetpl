@@ -17,7 +17,7 @@ program.version(pkg.version)
 	.option('-f, --firetpl-module <name>', 'Set the name of FireTPL module for AMD and CommonJS ( var FireTPL = require(\'myFireTPLModule\'))')
 	.option('-m, --module-name <name>', 'Set the name of the AMD module ( define(\'myname\', [\'firetpl\'] ... ); )')
 	.option('-s, --no-scope', 'Don\'t wrap a scope function. (Ignored if the AMD or CommonJS option is set)')
-	.option('-n, --name <name>', 'Set the template name. If this option isn\'t set, the name will be extracted from the tempalte filename')
+	.option('-n, --sname <name>', 'Set the template name. If this option isn\'t set, the name will be extracted from the tempalte filename')
 	.option('-d, --debug', 'Enable debug mode')
 	.option('-p, --pretty', 'Prettify output')
 	.option('-P, --partial', 'Precompile as partial')
@@ -29,7 +29,7 @@ program.version(pkg.version)
 // console.log('Args', program.args);
 var src = program.args[0],
 	source = fs.readFileSync(src, 'utf8'),
-	tplName = program.name || path.basename(src, path.extname(src));
+	tplName = program.sname || path.basename(src, path.extname(src));
 
 //Set debug mode
 FireTPL.debug = !!program.debug;

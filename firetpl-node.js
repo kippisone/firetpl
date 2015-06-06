@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-13
+ * FireTPL template engine v0.6.0-14
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-13',
+        version: '0.6.0-14',
 
         /**
          * Defines the default language
@@ -1571,7 +1571,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "partialName",
-                    "pattern": "(?:\\(>\\s*(\\S+)\\))"
+                    "pattern": "(?:\\(?>\\s*(\\S+)\\)?)"
                 }
             ]
         }, {

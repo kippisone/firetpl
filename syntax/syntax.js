@@ -64,7 +64,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "partialName",
-                    "pattern": "(?:\\(>\\s*(\\S+)\\))"
+                    "pattern": "(?:\\(?>\\s*(\\S+)\\)?)"
                 }
             ]
         }, {

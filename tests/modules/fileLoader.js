@@ -10,8 +10,13 @@ module.exports = function(dir) {
         curData;
 
     glob('**/*', {
-        cwd: dir
+        cwd: dir,
+        nodir: true
     }).forEach(function(file) {
+        if (path.basename(file).charAt(0) === '_') {
+            return;
+        }
+
         var key = file.split('.');
         if (lastFile !== key[0]) {
             lastFile = key[0];
