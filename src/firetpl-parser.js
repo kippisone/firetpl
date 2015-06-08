@@ -657,10 +657,13 @@
     };
 
     Parser.prototype.parsePartial = function(partialName) {
+        partialName = partialName.replace(/\)$/, '');
         this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
         if (this.partials.indexOf(partialName) === -1) {
             this.partials.push(partialName);
         }
+
+        this.closer.push('');
     };
 
     Parser.prototype.parsePlain = function(code) {
