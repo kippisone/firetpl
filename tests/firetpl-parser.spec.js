@@ -1269,6 +1269,127 @@ describe('Parser', function() {
         });
     });
 
+    describe('parseVariable in hbs mode', function() {
+        it('Should parse a variable', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data.name)+\'\';');
+        });
+
+        it('Should parse a noescape variable', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{{name}}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+data.name+\'\';');
+        });
+
+        it('Should parse $this', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{this}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data)+\'\';');
+        });
+
+        it('Should parse $root', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{root.name}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(root.name)+\'\';');
+        });
+
+        it('Should parse $parent', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{parent.name}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(parent.name)+\'\';');
+        });
+
+        it('Should parse a chained variable variables', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.firstname}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(data.name.firstname)+\'\';');
+        });
+
+        it('Should parse a variable with inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.if("andi", "Andi", "Other")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'Andi\',\'Other\'))+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using single quotes', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.if(\'andi\', \'Andi\', \'Other\')}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'Andi\',\'Other\'))+\'\';');
+        });
+
+        it('Should parse an inline function with an integer value', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{number.eq(3)}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.eq(data.number,3))+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using single quotes in args', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.if("andi", "\'Andi\'", "\'Other\'")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'\\\'Andi\\\'\',\'\\\'Other\\\'\'))+\'\';');
+        });
+
+        it('Should parse a variable with inline functions, using double quotes in args', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.if("andi", \'\"Andi\"\', \'\"Other\"\')}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.if(data.name,\'andi\',\'\"Andi\"\',\'\"Other\"\'))+\'\';');
+        });
+
+        it('Should parse a variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(data.name,\'andi\'),\'Andi\'))+\'\';');
+        });
+
+        it('Should parse a chained variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{name.firstname.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(data.name.firstname,\'andi\'),\'Andi\'))+\'\';');
+        });
+
+        it('Should parse a parent variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{parent.name.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(parent.name,\'andi\'),\'Andi\'))+\'\';');
+        });
+
+        it('Should parse a chained parent variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{parent.name.firstname.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(parent.name.firstname,\'andi\'),\'Andi\'))+\'\';');
+        });
+
+        it('Should parse a root variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{root.name.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(root.name,\'andi\'),\'Andi\'))+\'\';');
+        });
+
+        it('Should parse a chained root variable with multiple inline functions', function() {
+            var fireTpl = new Parser({ type: 'hbs' });
+            fireTpl.parseVariable('{{root.name.firstname.when("andi").then("Andi")}}');
+
+            expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'\'+f.escape(f.then(f.when(root.name.firstname,\'andi\'),\'Andi\'))+\'\';');
+        });
+    });
+
     describe('parseHelper', function() {
         it('Should parse a helper', function() {
             var fireTpl = new Parser();

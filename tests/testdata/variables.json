@@ -1,0 +1,7 @@
+{
+    "name": "Test",
+    "version": "v0.0.1",
+    "cssClass": "email",
+    "email": "a@b.de",
+    "html": "<b>html</b>"
+}
