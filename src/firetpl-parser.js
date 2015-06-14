@@ -159,8 +159,12 @@
         // console.log('Empty line "%s"', line);
     };
 
-    Parser.prototype.parseComment = function(comment) {
-        // console.log('Empty comment "%s"', comment);
+    Parser.prototype.parseComment = function(comment, htmlComment) {
+        if (htmlComment) {
+            htmlComment = '<!-- ' + htmlComment.trim() + ' -->';
+            this.append('str', htmlComment);
+            this.closer.push('');
+        }
     };
 
     /**
