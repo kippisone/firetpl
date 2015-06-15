@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-19
+ * FireTPL template engine v0.6.0-27
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-19',
+        version: '0.6.0-27',
 
         /**
          * Defines the default language
@@ -198,7 +198,7 @@ var FireTPL;
         this.addEmptyCloseTags = false;
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
-        this.parseEventTags = options.eventTags || false;
+        this.parseEventAttributes = options.eventAttrs || false;
         this.pretty = options.pretty || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
@@ -314,8 +314,12 @@ var FireTPL;
         // console.log('Empty line "%s"', line);
     };
 
-    Parser.prototype.parseComment = function(comment) {
-        // console.log('Empty comment "%s"', comment);
+    Parser.prototype.parseComment = function(comment, htmlComment) {
+        if (htmlComment) {
+            htmlComment = '<!-- ' + htmlComment.trim() + ' -->';
+            this.append('str', htmlComment);
+            this.closer.push('');
+        }
     };
 
     /**
@@ -588,7 +592,7 @@ var FireTPL;
 
         var attr = attrName + '=' + this.matchVariables(attrValue);
 
-        if (this.parseEventTags && /^on?[A-Z]/.test(attrName)) {
+        if (this.parseEventAttributes && /^on?[A-Z]/.test(attrName)) {
             var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
             this.injectAtribute('on', val, ';');
         }
@@ -1081,11 +1085,23 @@ var FireTPL;
             return null;
         }
 
-        if (!self.partialsPath) {
-            throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
-        }
+        // if (this.partials.every(function(partial) {
+        //     return (partial in FireTPL.partialCache);
+        // })) {
+        //     return null;
+        // }
+
+        // if (!self.partialsPath) {
+        //     throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
+        // }
+
+        self.partialsPath = self.partialsPath || '';
 
         this.partials.forEach(function(partial) {
+            if (partial in FireTPL.partialCache) {
+                return;
+            }
+            
             var source = FireTPL.readFile(self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType);
             var subParser = new FireTPL.Parser();
             subParser.parse(source, {
@@ -1539,6 +1555,16 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }, {
+            "name": "htmlComment",
+            "func": "parseComment",
+            "args": ["htmlCommentLine"],
+            "parts": [
+                {
+                    "name": "htmlCommentLine",
+                    "pattern": "\\s*(/\\*![^]*?\\*/)$"
+                }
+            ]
+        }, {
             "name": "blockComment",
             "func": "parseComment",
             "args": ["commentBlock"],
@@ -1884,6 +1910,33 @@ FireTPL.Syntax["hbs"] = {
 
     FireTPL.registerFunction = function(func, fn) {
         FireTPL.fn[func] = fn;
+    };
+
+    /**
+     * Register a global partial
+     * @method registerPartial
+     * @param  {String}   partial Partial name
+     * @param  {Function|String} fn      Precompiled partial or a partial string
+     * @param  {Object}   options (Optional) If second arg is a string, add parser options here
+     */
+    FireTPL.registerPartial = function(partial, fn, options) {
+        if (typeof fn === 'string') {
+            options = options || {};
+            options.partial = true;
+            fn = FireTPL.compile(fn, options);
+        }
+
+        FireTPL.partialCache[partial] = fn;
+    };
+
+    /**
+     * Clears a global partial cache
+     *
+     * @method clearPartials
+     * 
+     */
+    FireTPL.clearPartials = function() {
+        FireTPL.partialCache = [];
     };
 
     /**

@@ -43,7 +43,7 @@
         this.addEmptyCloseTags = false;
         this.indentionPattern = /\t| {1,4}/g;
         this.isNewLine = true;
-        this.parseEventTags = options.eventTags || false;
+        this.parseEventAttributes = options.eventAttrs || false;
         this.pretty = options.pretty || false;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
@@ -437,7 +437,7 @@
 
         var attr = attrName + '=' + this.matchVariables(attrValue);
 
-        if (this.parseEventTags && /^on?[A-Z]/.test(attrName)) {
+        if (this.parseEventAttributes && /^on?[A-Z]/.test(attrName)) {
             var val = attrName.substr(2).toLowerCase() + ':' + attrValue.slice(1, -1);
             this.injectAtribute('on', val, ';');
         }
@@ -930,11 +930,23 @@
             return null;
         }
 
-        if (!self.partialsPath) {
-            throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
-        }
+        // if (this.partials.every(function(partial) {
+        //     return (partial in FireTPL.partialCache);
+        // })) {
+        //     return null;
+        // }
+
+        // if (!self.partialsPath) {
+        //     throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
+        // }
+
+        self.partialsPath = self.partialsPath || '';
 
         this.partials.forEach(function(partial) {
+            if (partial in FireTPL.partialCache) {
+                return;
+            }
+            
             var source = FireTPL.readFile(self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType);
             var subParser = new FireTPL.Parser();
             subParser.parse(source, {

@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-19
+ * FireTPL template engine v0.6.0-27
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-19',
+        version: '0.6.0-27',
 
         /**
          * Defines the default language
@@ -179,6 +179,33 @@ var FireTPL;
 
     FireTPL.registerFunction = function(func, fn) {
         FireTPL.fn[func] = fn;
+    };
+
+    /**
+     * Register a global partial
+     * @method registerPartial
+     * @param  {String}   partial Partial name
+     * @param  {Function|String} fn      Precompiled partial or a partial string
+     * @param  {Object}   options (Optional) If second arg is a string, add parser options here
+     */
+    FireTPL.registerPartial = function(partial, fn, options) {
+        if (typeof fn === 'string') {
+            options = options || {};
+            options.partial = true;
+            fn = FireTPL.compile(fn, options);
+        }
+
+        FireTPL.partialCache[partial] = fn;
+    };
+
+    /**
+     * Clears a global partial cache
+     *
+     * @method clearPartials
+     * 
+     */
+    FireTPL.clearPartials = function() {
+        FireTPL.partialCache = [];
     };
 
     /**

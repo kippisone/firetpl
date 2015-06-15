@@ -27,6 +27,33 @@
     };
 
     /**
+     * Register a global partial
+     * @method registerPartial
+     * @param  {String}   partial Partial name
+     * @param  {Function|String} fn      Precompiled partial or a partial string
+     * @param  {Object}   options (Optional) If second arg is a string, add parser options here
+     */
+    FireTPL.registerPartial = function(partial, fn, options) {
+        if (typeof fn === 'string') {
+            options = options || {};
+            options.partial = true;
+            fn = FireTPL.compile(fn, options);
+        }
+
+        FireTPL.partialCache[partial] = fn;
+    };
+
+    /**
+     * Clears a global partial cache
+     *
+     * @method clearPartials
+     * 
+     */
+    FireTPL.clearPartials = function() {
+        FireTPL.partialCache = [];
+    };
+
+    /**
      * Register core helper
      *
      * @private

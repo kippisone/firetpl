@@ -25,6 +25,16 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }, {
+            "name": "htmlComment",
+            "func": "parseComment",
+            "args": ["htmlCommentLine"],
+            "parts": [
+                {
+                    "name": "htmlCommentLine",
+                    "pattern": "\\s*(/\\*![^]*?\\*/)$"
+                }
+            ]
+        }, {
             "name": "blockComment",
             "func": "parseComment",
             "args": ["commentBlock"],
