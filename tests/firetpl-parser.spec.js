@@ -163,8 +163,7 @@ describe('Parser', function() {
     });
 
     describe('patternBuilder with subpattern', function() {
-        var parser,
-            getSyntaxConfStub;
+        var parser;
 
         beforeEach(function() {
             parser = new Parser();
@@ -2411,6 +2410,20 @@ describe('Parser', function() {
                 partial: 'header',
                 source: 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<header><h1>Hello \'+f.escape(data.name)+\'</h1></header>\';'
             }]);
+        });
+    });
+
+    describe.only('Escaping', function() {
+        var parser;
+
+        beforeEach(function() {
+            parser = new FireTPL.Parser();
+        });
+
+        it('Should handle escaped special chars in a string block', function() {
+            var str = 'String with escaped chars \\" \\< \\> \\& \\$ \\@';
+            parser.parseString(str);
+            expect(parser.out.root).to.eql('s+=\'String with escaped chars " < > & $ @');
         });
     });
 });

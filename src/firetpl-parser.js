@@ -612,6 +612,7 @@
         var reg = new RegExp(this.syntax.stringVariable, 'g');
         var split = str.split(reg);
 
+        console.log(split);
 
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {

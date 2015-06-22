@@ -199,3 +199,30 @@ compile to ->
 
 
 
+Escaping
+
+String block
+------------
+
+\" | "	||	" | &quote;
+\< | <	||	< | &lt;
+\> | >	||	> | &gt;
+\& | &  ||	& | &amp;
+\$ | $	||
+\@ | $	||
+
+
+HTML block
+------------
+
+\' | '	||	' | '
+\$ | $	||
+\@ | @	||
+
+
+Code block
+----------
+
+\``` | ```
+\$ | $	Only $ within ` needs to bee escaped!
+\@ | @

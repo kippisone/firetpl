@@ -775,6 +775,7 @@ var FireTPL;
         var reg = new RegExp(this.syntax.stringVariable, 'g');
         var split = str.split(reg);
 
+        console.log(split);
 
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
@@ -1778,7 +1779,7 @@ FireTPL.Syntax["fire"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
+    "stringVariable": "((?:\\\\[${\"'@\\\\<>&])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 FireTPL.Syntax["hbs"] = {
