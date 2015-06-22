@@ -183,7 +183,7 @@ FireTPL.Syntax["fire"] = {
                     "pattern": "```(\\w+)?"
                 }, {
                     "name": "codeValue",
-                    "pattern": "([^]*?)```"
+                    "pattern": "((?:\\\\```|[^])*?)```(?=\\.?\\s*(?:\\/\\/.+)?$)"
                 }
             ]
         }, {
@@ -216,23 +216,23 @@ FireTPL.Syntax["hbs"] = {
     "modifer": "gm",
     "pattern": [
         {
-            "name": "comment",
-            "func": "parseComment",
-            "args": ["commentLine"],
-            "parts": [
-                {
-                    "name": "commentLine",
-                    "pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
-                }
-            ]
-        }, {
             "name": "htmlComment",
             "func": "parseComment",
             "args": ["htmlCommentLine"],
             "parts": [
                 {
                     "name": "htmlCommentLine",
-                    "pattern": "(<!--[^]*?-->)"
+                    "pattern": "((?:\\{\\{!--[^]*?--\\}\\})|(?:<!--[^]*?-->))"
+                }
+            ]
+        }, {
+            "name": "comment",
+            "func": "parseComment",
+            "args": ["commentLine"],
+            "parts": [
+                {
+                    "name": "commentLine",
+                    "pattern": "(\\{\\{![^]*?\\}\\})"
                 }
             ]
         }, {
@@ -326,7 +326,7 @@ FireTPL.Syntax["hbs"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!|else\\}))))+[^])"
                 }
             ]
         }, {
@@ -351,6 +351,6 @@ FireTPL.Syntax["hbs"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-z]+)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };

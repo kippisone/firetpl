@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-28
+ * FireTPL template engine v0.6.0-41
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-28',
+        version: '0.6.0-41',
 
         /**
          * Defines the default language
@@ -79,10 +79,14 @@ var FireTPL;
 
     var FireError = function(instance, msg) {
         if (typeof instance === 'object') {
-            // if (instance instanceof FireTPL.Parser) {
-            //  var pos = instance.pos;
-            //  msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
-            // }
+            if (instance instanceof FireTPL.Parser) {
+                var pos = instance.pos;
+                msg = msg + '\n\n' + this.stripSource(pos, instance.inputStream);
+
+                if (instance.fileName) {
+                    msg += ' in file ' + instance.fileName;
+                }
+            }
         }
         else if (arguments.length) {
             msg = instance;
@@ -96,17 +100,21 @@ var FireTPL;
 
     FireError.prototype.stripSource = function(pos, tmpl) {
         var sourceStr,
-            counter = 0;
+            counter = 0,
+            line = 0;
 
         var source = tmpl.split('\n');
         for (var i = 0, len = source.length; i < len; i++) {
             counter += source[i].length + 1; //Add +1 because line breaks
+            ++line;
             if (counter > pos) {
                 sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
                 sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
                 break;
             }
         }
+
+        sourceStr += '\nat line ' + line;
 
         return sourceStr;
     };
@@ -578,7 +586,7 @@ FireTPL.Syntax["fire"] = {
                     "pattern": "```(\\w+)?"
                 }, {
                     "name": "codeValue",
-                    "pattern": "([^]*?)```"
+                    "pattern": "((?:\\\\```|[^])*?)```(?=\\.?\\s*(?:\\/\\/.+)?$)"
                 }
             ]
         }, {
@@ -611,23 +619,23 @@ FireTPL.Syntax["hbs"] = {
     "modifer": "gm",
     "pattern": [
         {
-            "name": "comment",
-            "func": "parseComment",
-            "args": ["commentLine"],
-            "parts": [
-                {
-                    "name": "commentLine",
-                    "pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
-                }
-            ]
-        }, {
             "name": "htmlComment",
             "func": "parseComment",
             "args": ["htmlCommentLine"],
             "parts": [
                 {
                     "name": "htmlCommentLine",
-                    "pattern": "(<!--[^]*?-->)"
+                    "pattern": "((?:\\{\\{!--[^]*?--\\}\\})|(?:<!--[^]*?-->))"
+                }
+            ]
+        }, {
+            "name": "comment",
+            "func": "parseComment",
+            "args": ["commentLine"],
+            "parts": [
+                {
+                    "name": "commentLine",
+                    "pattern": "(\\{\\{![^]*?\\}\\})"
                 }
             ]
         }, {
@@ -721,7 +729,7 @@ FireTPL.Syntax["hbs"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!|else\\}))))+[^])"
                 }
             ]
         }, {
@@ -746,6 +754,6 @@ FireTPL.Syntax["hbs"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-z]+)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };

@@ -268,7 +268,7 @@ describe('FireTPL', function() {
 				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h(\'unless\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'unless\',data,parent,root,\'div\',\'\',function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +
@@ -318,7 +318,7 @@ describe('FireTPL', function() {
 				'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
 				'scopes=scopes||{};var root=data,parent=data;' +
 				'scopes.scope001=function(data,parent){var s=\'\';' +
-				's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
+				's+=h(\'each\',data,parent,root,\'div\',\'\',function(data){var s=\'\';' +
 				's+=\'<div>Hello World</div>\';' +
 				'return s;});return s;' +
 				'};var s=\'\';' +

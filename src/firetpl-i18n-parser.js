@@ -121,16 +121,6 @@
     };
 
     /**
-     * Compiles i18n data
-     *
-     * @method  compile
-     */
-    I18nParser.prototype.compile = function() {
-        //jshint evil:true
-        return eval(this.parse());
-    };
-
-    /**
      * Flattn a an i18n data object
      * 
      * @method flattn

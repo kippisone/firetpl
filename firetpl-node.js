@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-28
+ * FireTPL template engine v0.6.0-42
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-28',
+        version: '0.6.0-42',
 
         /**
          * Defines the default language
@@ -79,10 +79,14 @@ var FireTPL;
 
     var FireError = function(instance, msg) {
         if (typeof instance === 'object') {
-            // if (instance instanceof FireTPL.Parser) {
-            //  var pos = instance.pos;
-            //  msg = msg + '\n\n' + this.stripSource(pos, instance.tmpl);
-            // }
+            if (instance instanceof FireTPL.Parser) {
+                var pos = instance.pos;
+                msg = msg + '\n\n' + this.stripSource(pos, instance.inputStream);
+
+                if (instance.fileName) {
+                    msg += ' in file ' + instance.fileName;
+                }
+            }
         }
         else if (arguments.length) {
             msg = instance;
@@ -96,17 +100,21 @@ var FireTPL;
 
     FireError.prototype.stripSource = function(pos, tmpl) {
         var sourceStr,
-            counter = 0;
+            counter = 0,
+            line = 0;
 
         var source = tmpl.split('\n');
         for (var i = 0, len = source.length; i < len; i++) {
             counter += source[i].length + 1; //Add +1 because line breaks
+            ++line;
             if (counter > pos) {
                 sourceStr = (source[i - 1] || '') + '\n' + (source[i]);
                 sourceStr += '\n' + this.strRepeat(pos - (counter - source[i].length), ' ') + '^';
                 break;
             }
         }
+
+        sourceStr += '\nat line ' + line;
 
         return sourceStr;
     };
@@ -191,7 +199,7 @@ var FireTPL;
         this.closer = [];
         this.curScope = ['root'];
         this.out = { root: '' };
-        this.lastTagPos = { 'root' : 0 };
+        this.lastTagPos = { 'root' : 4 };
         this.lastItemType = 'code';
         this.nextScope = 0;
         this.pos = 0;
@@ -200,6 +208,7 @@ var FireTPL;
         this.isNewLine = true;
         this.parseEventAttributes = options.eventAttrs || false;
         this.pretty = options.pretty || false;
+        this.fileName = options.fileName;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -314,11 +323,26 @@ var FireTPL;
         // console.log('Empty line "%s"', line);
     };
 
-    Parser.prototype.parseComment = function(comment, htmlComment) {
+    Parser.prototype.parseComment = function(comment) {
+        var htmlComment;
+
+        if (this.tmplType === 'fire') {
+            if (/^\/\*!/.test(comment)) {
+                htmlComment = comment.replace(/(^\/\*!|\*\/$)/g, '');
+            }
+        }
+        else {
+            if (/^\{\{!--/.test(comment)) {
+                htmlComment = comment.replace(/(^\{\{!--|--\}\}$)/g, '');
+            }
+        }
+
         if (htmlComment) {
-            htmlComment = '<!-- ' + htmlComment.trim() + ' -->';
+            htmlComment = '<!--' + htmlComment.replace(/\n/g, '\\n') + '-->';
             this.append('str', htmlComment);
-            this.closer.push('');
+            if (this.tmplType === 'fire') {
+                this.closer.push('');
+            }
         }
     };
 
@@ -335,7 +359,13 @@ var FireTPL;
             attrs = ' ' + this.matchVariables(attrs);
         }
 
-        this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
+        if (this.lastItemType !== 'str') {
+            //If last item type != str, s+=' is prexixed to string'
+            this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length + 4;
+        }
+        else {
+            this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
+        }
 
         if (tag === 'dtd') {
             this.append('str', '<!DOCTYPE html>');
@@ -496,7 +526,7 @@ var FireTPL;
                 tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
             this.parseTag(tag, tagAttrs);
-            tagStr = ',\'' + tag + '\', \'' + tagAttrs + '\'';
+            tagStr = ',\'' + tag + '\',\'' + tagAttrs + '\'';
         }
         else {
             this.closer.push('');
@@ -557,9 +587,13 @@ var FireTPL;
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
         var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
+        var pat = new RegExp('`(' + this.syntax.stringVariable + ')`');
+
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
-        code = code.replace(/`(.*)`/g, function(match, p1) {
+
+        code = code.replace(pat, function(match, p1) {
+            console.log('P1', p1);
             return self.matchVariables(p1);
         });
 
@@ -801,15 +835,27 @@ var FireTPL;
 
         var reg = new RegExp(this.syntax.tagAttributes, 'g');
         var res = [];
+        var onAttr = [];
 
         while (true) {
             var match = reg.exec(attrs);
             if (match && match[1]) {
+                if (this.parseEventAttributes && /^on?[A-Z]/.test(match[1])) {
+                    var attr = /^(.+?)=["']?(.*?)["']?$/.exec(match[1]);
+                    var val = attr[1].substr(2).toLowerCase() + ':' + attr[2];
+                    onAttr.push(val);
+                    continue;
+                }
+                
                 res.push(match[1]);
                 continue;
             }
 
             break;
+        }
+
+        if (onAttr.length) {
+            res.push('on="' + onAttr.join(';') + '"');
         }
 
         return res.join(' ');
@@ -822,7 +868,9 @@ var FireTPL;
             this.partials.push(partialName);
         }
 
-        this.closer.push('');
+        if (this.tmplType === 'fire') {
+            this.closer.push('');
+        }
     };
 
     Parser.prototype.parsePlain = function(code) {
@@ -1085,16 +1133,6 @@ var FireTPL;
             return null;
         }
 
-        // if (this.partials.every(function(partial) {
-        //     return (partial in FireTPL.partialCache);
-        // })) {
-        //     return null;
-        // }
-
-        // if (!self.partialsPath) {
-        //     throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
-        // }
-
         self.partialsPath = self.partialsPath || '';
 
         this.partials.forEach(function(partial) {
@@ -1102,12 +1140,14 @@ var FireTPL;
                 return;
             }
             
-            var source = FireTPL.readFile(self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType);
-            var subParser = new FireTPL.Parser();
-            subParser.parse(source, {
+            var fileName = self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType;
+            var source = FireTPL.readFile(fileName);
+            var subParser = new FireTPL.Parser({
                 type: self.tmplType,
-                partialsPath: self.partialsPath
+                partialsPath: self.partialsPath,
+                fileName: fileName
             });
+            subParser.parse(source);
 
             partialStore.push({
                 partial: partial,
@@ -1244,16 +1284,6 @@ var FireTPL;
 
         fn += 'default:return FireTPL.i18nFallbackText;}};';
         return fn;
-    };
-
-    /**
-     * Compiles i18n data
-     *
-     * @method  compile
-     */
-    I18nParser.prototype.compile = function() {
-        //jshint evil:true
-        return eval(this.parse());
     };
 
     /**
@@ -1723,7 +1753,7 @@ FireTPL.Syntax["fire"] = {
                     "pattern": "```(\\w+)?"
                 }, {
                     "name": "codeValue",
-                    "pattern": "([^]*?)```"
+                    "pattern": "((?:\\\\```|[^])*?)```(?=\\.?\\s*(?:\\/\\/.+)?$)"
                 }
             ]
         }, {
@@ -1756,23 +1786,23 @@ FireTPL.Syntax["hbs"] = {
     "modifer": "gm",
     "pattern": [
         {
-            "name": "comment",
-            "func": "parseComment",
-            "args": ["commentLine"],
-            "parts": [
-                {
-                    "name": "commentLine",
-                    "pattern": "(\\{\\{!(?:--)?[^]*?\\}\\})"
-                }
-            ]
-        }, {
             "name": "htmlComment",
             "func": "parseComment",
             "args": ["htmlCommentLine"],
             "parts": [
                 {
                     "name": "htmlCommentLine",
-                    "pattern": "(<!--[^]*?-->)"
+                    "pattern": "((?:\\{\\{!--[^]*?--\\}\\})|(?:<!--[^]*?-->))"
+                }
+            ]
+        }, {
+            "name": "comment",
+            "func": "parseComment",
+            "args": ["commentLine"],
+            "parts": [
+                {
+                    "name": "commentLine",
+                    "pattern": "(\\{\\{![^]*?\\}\\})"
                 }
             ]
         }, {
@@ -1866,7 +1896,7 @@ FireTPL.Syntax["hbs"] = {
             "parts": [
                 {
                     "name": "stringValue",
-                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!))))+[^])"
+                    "pattern": "(\\S(?:[^](?!(?:<|\\{\\{(?:#|\\/|!|else\\}))))+[^])"
                 }
             ]
         }, {
@@ -1891,7 +1921,7 @@ FireTPL.Syntax["hbs"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-z]+)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 /**

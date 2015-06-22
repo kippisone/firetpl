@@ -36,7 +36,7 @@
         this.closer = [];
         this.curScope = ['root'];
         this.out = { root: '' };
-        this.lastTagPos = { 'root' : 0 };
+        this.lastTagPos = { 'root' : 4 };
         this.lastItemType = 'code';
         this.nextScope = 0;
         this.pos = 0;
@@ -45,6 +45,7 @@
         this.isNewLine = true;
         this.parseEventAttributes = options.eventAttrs || false;
         this.pretty = options.pretty || false;
+        this.fileName = options.fileName;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -159,11 +160,26 @@
         // console.log('Empty line "%s"', line);
     };
 
-    Parser.prototype.parseComment = function(comment, htmlComment) {
+    Parser.prototype.parseComment = function(comment) {
+        var htmlComment;
+
+        if (this.tmplType === 'fire') {
+            if (/^\/\*!/.test(comment)) {
+                htmlComment = comment.replace(/(^\/\*!|\*\/$)/g, '');
+            }
+        }
+        else {
+            if (/^\{\{!--/.test(comment)) {
+                htmlComment = comment.replace(/(^\{\{!--|--\}\}$)/g, '');
+            }
+        }
+
         if (htmlComment) {
-            htmlComment = '<!-- ' + htmlComment.trim() + ' -->';
+            htmlComment = '<!--' + htmlComment.replace(/\n/g, '\\n') + '-->';
             this.append('str', htmlComment);
-            this.closer.push('');
+            if (this.tmplType === 'fire') {
+                this.closer.push('');
+            }
         }
     };
 
@@ -180,7 +196,13 @@
             attrs = ' ' + this.matchVariables(attrs);
         }
 
-        this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
+        if (this.lastItemType !== 'str') {
+            //If last item type != str, s+=' is prexixed to string'
+            this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length + 4;
+        }
+        else {
+            this.lastTagPos[this.curScope[0]] = this.out[this.curScope[0]].length;
+        }
 
         if (tag === 'dtd') {
             this.append('str', '<!DOCTYPE html>');
@@ -341,7 +363,7 @@
                 tagAttrs += ' fire-scope="scope' + scopeId + '" fire-path="' + expr.replace(/^\$([a-zA-Z0-9_.-]+)/, '$1') + '"';
             }
             this.parseTag(tag, tagAttrs);
-            tagStr = ',\'' + tag + '\', \'' + tagAttrs + '\'';
+            tagStr = ',\'' + tag + '\',\'' + tagAttrs + '\'';
         }
         else {
             this.closer.push('');
@@ -402,9 +424,13 @@
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
         var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
+        var pat = new RegExp('`(' + this.syntax.stringVariable + ')`');
+
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
-        code = code.replace(/`(.*)`/g, function(match, p1) {
+
+        code = code.replace(pat, function(match, p1) {
+            console.log('P1', p1);
             return self.matchVariables(p1);
         });
 
@@ -646,15 +672,27 @@
 
         var reg = new RegExp(this.syntax.tagAttributes, 'g');
         var res = [];
+        var onAttr = [];
 
         while (true) {
             var match = reg.exec(attrs);
             if (match && match[1]) {
+                if (this.parseEventAttributes && /^on?[A-Z]/.test(match[1])) {
+                    var attr = /^(.+?)=["']?(.*?)["']?$/.exec(match[1]);
+                    var val = attr[1].substr(2).toLowerCase() + ':' + attr[2];
+                    onAttr.push(val);
+                    continue;
+                }
+                
                 res.push(match[1]);
                 continue;
             }
 
             break;
+        }
+
+        if (onAttr.length) {
+            res.push('on="' + onAttr.join(';') + '"');
         }
 
         return res.join(' ');
@@ -667,7 +705,9 @@
             this.partials.push(partialName);
         }
 
-        this.closer.push('');
+        if (this.tmplType === 'fire') {
+            this.closer.push('');
+        }
     };
 
     Parser.prototype.parsePlain = function(code) {
@@ -930,16 +970,6 @@
             return null;
         }
 
-        // if (this.partials.every(function(partial) {
-        //     return (partial in FireTPL.partialCache);
-        // })) {
-        //     return null;
-        // }
-
-        // if (!self.partialsPath) {
-        //     throw new FireTPL.Error('Can not parse partials. Partial path option was not set!');
-        // }
-
         self.partialsPath = self.partialsPath || '';
 
         this.partials.forEach(function(partial) {
@@ -947,12 +977,14 @@
                 return;
             }
             
-            var source = FireTPL.readFile(self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType);
-            var subParser = new FireTPL.Parser();
-            subParser.parse(source, {
+            var fileName = self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType;
+            var source = FireTPL.readFile(fileName);
+            var subParser = new FireTPL.Parser({
                 type: self.tmplType,
-                partialsPath: self.partialsPath
+                partialsPath: self.partialsPath,
+                fileName: fileName
             });
+            subParser.parse(source);
 
             partialStore.push({
                 partial: partial,
