@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-42
+ * FireTPL template engine v0.6.0-43
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-42',
+        version: '0.6.0-43',
 
         /**
          * Defines the default language
@@ -587,14 +587,18 @@ var FireTPL;
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
         var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
-        var pat = new RegExp('`(' + this.syntax.stringVariable + ')`');
+        var pat = new RegExp(this.syntax.codeVariable, 'g');
 
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
 
+        // console.log('CODE', code, pat);
         code = code.replace(pat, function(match, p1) {
-            console.log('P1', p1);
-            return self.matchVariables(p1);
+            if (p1.charAt(0) === '\\') {
+                return p1.slice(1);
+            }
+
+            return self.matchVariables(p1.slice(1, -1));
         });
 
         code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
@@ -775,7 +779,6 @@ var FireTPL;
         var reg = new RegExp(this.syntax.stringVariable, 'g');
         var split = str.split(reg);
 
-
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
@@ -792,7 +795,7 @@ var FireTPL;
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
                 else if (item.charAt(0) === '\\') {
-                    return item.charAt(1);
+                    return item.slice(1);
                 }
                 else if (strEscape) {
                     return self.htmlEscape(item.replace(/\'/g, '\\\''));
@@ -814,7 +817,7 @@ var FireTPL;
                     return parseVar(item.replace(/^\{{2}|\}{2}$/g, '').replace(/^this\.?/, ''), true);
                 }
                 else if (item.charAt(0) === '\\') {
-                    return item.charAt(1);
+                    return item.slice(1);
                 }
                 else if (strEscape) {
                     return self.htmlEscape(item.replace(/\'/g, '\\\''));
@@ -1778,7 +1781,8 @@ FireTPL.Syntax["fire"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
+    "stringVariable": "((?:\\\\[$\"'@\\\\<>&])|(?:[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+)))",
+    "codeVariable": "((?:\\\\(?:```|\\$|@|\\\\))|(?:`[@\\$]{1,2}(?:(?:\\{.+?\\})|(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+))`)",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 FireTPL.Syntax["hbs"] = {
@@ -1921,7 +1925,8 @@ FireTPL.Syntax["hbs"] = {
             ]
         }
     ],
-    "stringVariable": "((?:\\\\[${\"'@\\\\])|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "stringVariable": "((?:\\\\(?:\\{{2,3}|@|\\\\))|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
+    "codeVariable": "((?:\\\\(?:\\{{2,3}|@|\\\\)|(?:@[a-zA-Z0-9_]+(?:\\.[a-zA-Z0-9_]+)*)|(?:\\{{2,3}(?:\\.?(?:[a-zA-Z][a-zA-Z0-9_-]*)(?:\\((?:[, ]*(?:\"[^\"]*\"|'[^']*'|\\d+))*\\))?)+\\}{2,3}))",
     "tagAttributes": "([a-zA-Z0-9_]+(?:=(?:(?:\".*?\")|(?:'.*?')|(?:\\S+)))?)"
 };
 /**

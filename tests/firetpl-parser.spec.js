@@ -362,10 +362,10 @@ describe('Parser', function() {
         });
 
         it('Should parse escape sequences', function() {
-            var str = 'Escape \\$name \\@at \\{brackets} and \\\\ within a string';
+            var str = 'Escape \\$name \\@at and \\\\ within a string';
             var fireTpl = new Parser();
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Escape $name @at {brackets} and \\ within a string');
+            expect(out).to.eql('Escape $name @at and \\ within a string');
         });
     });
 
@@ -462,10 +462,10 @@ describe('Parser', function() {
         });
 
         it('Should parse escape sequences', function() {
-            var str = 'Escape \\$name \\@at \\{brackets} and \\\\ within a string';
+            var str = 'Escape \\@at \\{{brackets}} and \\\\ within a string';
             var fireTpl = new Parser({ type: 'hbs' });
             var out = fireTpl.matchVariables(str);
-            expect(out).to.eql('Escape $name @at {brackets} and \\ within a string');
+            expect(out).to.eql('Escape @at {{brackets}} and \\ within a string');
         });
     });
 
@@ -2413,17 +2413,51 @@ describe('Parser', function() {
         });
     });
 
-    describe.only('Escaping', function() {
+    describe('Escaping', function() {
         var parser;
 
         beforeEach(function() {
             parser = new FireTPL.Parser();
         });
 
-        it('Should handle escaped special chars in a string block', function() {
-            var str = 'String with escaped chars \\" \\< \\> \\& \\$ \\@';
+        it('Should handle escaping of special chars in a string block', function() {
+            var str = 'String with escaped chars \\" \\< \\> \\& \\$ \\@ \\\\';
             parser.parseString(str);
-            expect(parser.out.root).to.eql('s+=\'String with escaped chars " < > & $ @');
+            expect(parser.out.root).to.eql('s+=\'String with escaped chars " < > & $ @ \\');
+        });
+
+        it('Should handle escaping of special chars in a html block', function() {
+            var str = 'String with escaped chars \\\' \\< \\> \\& \\$ \\@';
+            parser.parseHtmlString(str);
+            expect(parser.out.root).to.eql('s+=\'String with escaped chars \' < > & $ @');
+        });
+
+        it('Should handle escaping of special chars in a code block', function() {
+            var str = 'String with escaped chars \\\``` \\$ \\@';
+            parser.parseCodeBlock('', str);
+            expect(parser.out.root).to.eql('s+=\'<code class="codeBlock">String with escaped chars ``` $ @</code>');
+        });
+    });
+
+    describe('Escaping in hbs', function() {
+        var parser;
+
+        beforeEach(function() {
+            parser = new FireTPL.Parser({
+                type: 'hbs'
+            });
+        });
+
+        it('Should handle escaping of special chars in a string block', function() {
+            var str = 'String with escaped chars \\{{{bla}}} \\{{blub}} \\@ \\\\';
+            parser.parseString(str);
+            expect(parser.out.root).to.eql('s+=\'String with escaped chars {{{bla}}} {{blub}} @ \\');
+        });
+
+        it('Should handle escaping of special chars in a html block', function() {
+            var str = 'String with escaped chars \\{{{bla}}} \\{{blub}} \\@ \\\\';
+            parser.parseHtmlString(str);
+            expect(parser.out.root).to.eql('s+=\'String with escaped chars {{{bla}}} {{blub}} @ \\');
         });
     });
 });

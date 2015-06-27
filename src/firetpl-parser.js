@@ -424,14 +424,18 @@
     Parser.prototype.parseCodeBlock = function(type, code) {
         var self = this;
         var cssClass = 'class="' + ('codeBlock ' + type).trim() + '"';
-        var pat = new RegExp('`(' + this.syntax.stringVariable + ')`');
+        var pat = new RegExp(this.syntax.codeVariable, 'g');
 
         code = this.undent(this.indention + 1, code);
         code = this.escape(code).trim();
 
+        // console.log('CODE', code, pat);
         code = code.replace(pat, function(match, p1) {
-            console.log('P1', p1);
-            return self.matchVariables(p1);
+            if (p1.charAt(0) === '\\') {
+                return p1.slice(1);
+            }
+
+            return self.matchVariables(p1.slice(1, -1));
         });
 
         code = this.htmlEscape(code).replace(/\n/g, '\\n\\\n');
@@ -612,8 +616,6 @@
         var reg = new RegExp(this.syntax.stringVariable, 'g');
         var split = str.split(reg);
 
-        console.log(split);
-
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
@@ -630,7 +632,7 @@
                     return parseVar(item.substr(1).replace(/^this\.?/, ''), true);
                 }
                 else if (item.charAt(0) === '\\') {
-                    return item.charAt(1);
+                    return item.slice(1);
                 }
                 else if (strEscape) {
                     return self.htmlEscape(item.replace(/\'/g, '\\\''));
@@ -652,7 +654,7 @@
                     return parseVar(item.replace(/^\{{2}|\}{2}$/g, '').replace(/^this\.?/, ''), true);
                 }
                 else if (item.charAt(0) === '\\') {
-                    return item.charAt(1);
+                    return item.slice(1);
                 }
                 else if (strEscape) {
                     return self.htmlEscape(item.replace(/\'/g, '\\\''));
