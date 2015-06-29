@@ -209,6 +209,7 @@ var FireTPL;
         this.parseEventAttributes = options.eventAttrs || false;
         this.pretty = options.pretty || false;
         this.fileName = options.fileName;
+        this.lastIndention = 0;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.partialsPath = options.partialsPath;
@@ -404,7 +405,6 @@ var FireTPL;
             }
         }
                 
-        this.lastIndention = this.indention;
         this.indention = indention;
         this.isNewLine = true;
     };
@@ -1042,7 +1042,6 @@ var FireTPL;
         var i = 0;
 
         this.indentionPattern.lastIndex = 0;
-        // console.log('Get indention of str:', str, ': length:', str.length);
         while(true) {
             var match = this.indentionPattern.exec(str);
             if (!match) {
@@ -1056,9 +1055,12 @@ var FireTPL;
             i++;
         }
 
-        if (this.indentionPattern.lastIndex) {
+        // console.log('IND', this.lastIndention, 'CUR', i);
+        if (this.lastIndention < i - 1) {
+            throw new FireTPL.Error(this, 'Invalid indention! + ' + this.lastIndention + ':' + i);
         }
 
+        this.lastIndention = i;
         return i;
     };
 

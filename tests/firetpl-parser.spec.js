@@ -196,44 +196,65 @@ describe('Parser', function() {
     describe('getIndention', function() {
         it('Should get the number of indention', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('\t\t');
             expect(indention).to.eql(2);
         });
 
         it('Should get indention from an empty string', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('');
             expect(indention).to.eql(0);
         });
 
         it('Should get indention from a null object', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention(null);
             expect(indention).to.eql(0);
+        });
+
+        it('Should throw an indention error if indention is to deep', function() {
+            var fireTpl = new Parser();
+            fireTpl.inputStream = '';
+            fireTpl.lastIndention = 1;
+            
+            var fn = function()  {
+                fireTpl.getIndention('\t\t\t');
+            };
+
+            expect(fn).to.throwError('invalid indention');
         });
     });
 
     describe('getIndention (using spaces)', function() {
         it('Should get the number of indention', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('        ');
             expect(indention).to.eql(2);
         });
 
         it('Should get indention from an empty string', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('');
             expect(indention).to.eql(0);
         });
 
         it('Should get indention from a null object', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention(null);
             expect(indention).to.eql(0);
         });
 
         it('Should throw an invalid indention error', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
+            fireTpl.inputStream = '';
+
             var fn = function() {
                 fireTpl.getIndention('       ');
             };
@@ -244,24 +265,28 @@ describe('Parser', function() {
     describe('getIndention (using spaces and tabs)', function() {
         it('Should get the number of indention', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('\t    ');
             expect(indention).to.eql(2);
         });
 
         it('Should get indention from an empty string', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention('');
             expect(indention).to.eql(0);
         });
 
         it('Should get indention from a null object', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var indention = fireTpl.getIndention(null);
             expect(indention).to.eql(0);
         });
 
         it('Should throw an invalid indention error (using spaces and tabs)', function() {
             var fireTpl = new Parser();
+            fireTpl.lastIndention = 1;
             var fn = function() {
                 fireTpl.getIndention('\t       ');
             };
@@ -1014,6 +1039,7 @@ describe('Parser', function() {
         it('Should handle indention on indent', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('\t\t\t');
 
@@ -1025,6 +1051,7 @@ describe('Parser', function() {
         it('Should handle indention on outdent', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('\t');
 
@@ -1036,6 +1063,7 @@ describe('Parser', function() {
         it('Should handle indention on same indention', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('\t\t');
 
@@ -1047,6 +1075,7 @@ describe('Parser', function() {
         it('Should handle 5 step outdention', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 8;
+            fireTpl.lastIndention = 8;
             fireTpl.closer = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
             fireTpl.parseIndention('\t\t\t');
 
@@ -1060,6 +1089,7 @@ describe('Parser', function() {
         it('Should handle indention on indent', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('            ');
 
@@ -1071,6 +1101,7 @@ describe('Parser', function() {
         it('Should handle indention on outdent', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('    ');
 
@@ -1082,6 +1113,7 @@ describe('Parser', function() {
         it('Should handle indention on same indention', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 2;
+            fireTpl.lastIndention = 2;
             fireTpl.closer = ['a', 'b', 'c'];
             fireTpl.parseIndention('        ');
 
@@ -1093,6 +1125,7 @@ describe('Parser', function() {
         it('Should handle 5 step outdention', function() {
             var fireTpl = new Parser();
             fireTpl.indention = 8;
+            fireTpl.lastIndention = 8;
             fireTpl.closer = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'];
             fireTpl.parseIndention('            ');
 
