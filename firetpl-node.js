@@ -1636,7 +1636,7 @@ FireTPL.Syntax["fire"] = {
             "parts": [
                 {
                     "name": "attributeName",
-                    "pattern": "([a-zA-Z0-9_]+)="
+                    "pattern": "([a-zA-Z0-9_-]+)="
                 }, {
                     "name": "attributeValue",
                     "pattern": "((?:\\\"[^\\\"]*\\\")|(?:\\'[^\\']*\\')|(?:\\S+))"
