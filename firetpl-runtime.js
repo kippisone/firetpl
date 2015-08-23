@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-43
+ * FireTPL template engine v0.6.0-45
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-43',
+        version: '0.6.0-45',
 
         /**
          * Defines the default language
@@ -526,7 +526,12 @@ var FireTPL;
      * @return {boolean}    Returns true if input and value are identical
      */
     FireTPL.registerFunction('eq', function(str, cmp) {
-        return Number(str) === Number(cmp);
+        if (isNaN(str)) {
+            return str === cmp;
+        }
+        else {
+            return Number(str) === Number(cmp);
+        }
     });
 
     /**
@@ -540,7 +545,12 @@ var FireTPL;
      * @return {boolean}    Returns true if input and value aren't identical
      */
     FireTPL.registerFunction('not', function(str, cmp) {
-        return Number(str) !== Number(cmp);
+        if (isNaN(str)) {
+            return str !== cmp;
+        }
+        else {
+            return Number(str) !== Number(cmp);
+        }
     });
 
     /**

@@ -72,7 +72,12 @@
      * @return {boolean}    Returns true if input and value are identical
      */
     FireTPL.registerFunction('eq', function(str, cmp) {
-        return Number(str) === Number(cmp);
+        if (isNaN(str)) {
+            return str === cmp;
+        }
+        else {
+            return Number(str) === Number(cmp);
+        }
     });
 
     /**
@@ -86,7 +91,12 @@
      * @return {boolean}    Returns true if input and value aren't identical
      */
     FireTPL.registerFunction('not', function(str, cmp) {
-        return Number(str) !== Number(cmp);
+        if (isNaN(str)) {
+            return str !== cmp;
+        }
+        else {
+            return Number(str) !== Number(cmp);
+        }
     });
 
     /**
