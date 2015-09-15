@@ -52,10 +52,10 @@
         this.partialsPath = options.partialsPath;
 
         /**
-         * Stores names of required partials
+         * Stores names of required includes
          * @property {Array}
          */
-        this.partials = [];
+        this.includes = [];
     };
 
     /**
@@ -704,8 +704,8 @@
     Parser.prototype.parsePartial = function(partialName) {
         partialName = partialName.replace(/\)$/, '');
         this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
-        if (this.partials.indexOf(partialName) === -1) {
-            this.partials.push(partialName);
+        if (this.includes.indexOf(partialName) === -1) {
+            this.includes.push(partialName);
         }
 
         if (this.tmplType === 'fire') {
@@ -971,13 +971,13 @@
         var self = this,
             partialStore = [];
 
-        if (!this.partials.length) {
+        if (!this.includes.length) {
             return null;
         }
 
         self.partialsPath = self.partialsPath || '';
 
-        this.partials.forEach(function(partial) {
+        this.includes.forEach(function(partial) {
             if (partial in FireTPL.partialCache) {
                 return;
             }
@@ -996,7 +996,7 @@
                 source: subParser.flush()
             });
 
-            if (subParser.partials.length) {
+            if (subParser.includes.length) {
                 partialStore.concat(subParser.partialParser());
             }
         });

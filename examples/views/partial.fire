@@ -1,2 +1,2 @@
 div
-    (> myPartial)
+    (> partials/myPartial)

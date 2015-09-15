@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-45
+ * FireTPL template engine v0.6.0-75
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-45',
+        version: '0.6.0-75',
 
         /**
          * Defines the default language
@@ -215,10 +215,10 @@ var FireTPL;
         this.partialsPath = options.partialsPath;
 
         /**
-         * Stores names of required partials
+         * Stores names of required includes
          * @property {Array}
          */
-        this.partials = [];
+        this.includes = [];
     };
 
     /**
@@ -867,8 +867,8 @@ var FireTPL;
     Parser.prototype.parsePartial = function(partialName) {
         partialName = partialName.replace(/\)$/, '');
         this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
-        if (this.partials.indexOf(partialName) === -1) {
-            this.partials.push(partialName);
+        if (this.includes.indexOf(partialName) === -1) {
+            this.includes.push(partialName);
         }
 
         if (this.tmplType === 'fire') {
@@ -1134,13 +1134,13 @@ var FireTPL;
         var self = this,
             partialStore = [];
 
-        if (!this.partials.length) {
+        if (!this.includes.length) {
             return null;
         }
 
         self.partialsPath = self.partialsPath || '';
 
-        this.partials.forEach(function(partial) {
+        this.includes.forEach(function(partial) {
             if (partial in FireTPL.partialCache) {
                 return;
             }
@@ -1159,7 +1159,7 @@ var FireTPL;
                 source: subParser.flush()
             });
 
-            if (subParser.partials.length) {
+            if (subParser.includes.length) {
                 partialStore.concat(subParser.partialParser());
             }
         });
@@ -1345,8 +1345,14 @@ var FireTPL;
 (function(FireTPL) {
     'use strict';
 
-    var Compiler = function(options) {
-        options = options || {};
+    /**
+     * FireTPL Compiler
+     *
+     * (pre)compiles firetpl templates
+     * @method Compiler
+     * @constructor
+     */
+    var Compiler = function() {
         
         /**
          * Set the log level.
@@ -1363,25 +1369,37 @@ var FireTPL;
     };
 
     /**
-     * Precompiles a template string
+     * Precompiles a template string.
+     * 
+     * If template has any include tags, the include names are present in the `includes` property
      *
+     * @describe options
+     * commonjs     {Boolean}   Compile as an commonjs module
+     * amd          {Boolean}   Compile as an amd module
+     * moduleName   {String}    Defines an amd module name
+     * scope        {Boolean}   Wrap outputed code into a function (Only if commonjs or amd isn't used)
+     * pretty       {Boolean}   Makes output prettier
+     * firetplModule {String}   Overrides firetpl module name, used by commionjs. Defaults to `firetpl`
+     *     `
      * @method precompile
      * @param {String} tmpl Tmpl source
+     * @param {String} name Tmpl name
      * @param {Object} options Precompile options
-     * 
      *
      * @return {Function} Returns a parsed tmpl source as a function.
      */
-    Compiler.prototype.precompile = function(tmpl, options) {
+    Compiler.prototype.precompile = function(tmpl, name, options) {
         options = options || {};
 
-        if (!options.name) {
+        if (typeof name !== 'string') {
             throw new FireTPL.Error('Precompilation not possible! The options.name flag must be set!');
         }
 
         options.firetplModule = options.firetplModule || 'firetpl';
 
-        var tplName = options.name;
+        if (options.partial) {
+            console.warn('Partials are no longer supported! Use includes instead!');
+        }
 
         var parser = new FireTPL.Parser({
             type: options.type || 'fire',
@@ -1390,6 +1408,7 @@ var FireTPL;
         
         parser.parse(tmpl);
         var precompiled = parser.flush();
+        this.includes = parser.includes;
 
         if (options.verbose) {
             console.log('\n---------- begin of precompiled file ----------\n');
@@ -1399,36 +1418,58 @@ var FireTPL;
         }
 
         var output = '';
+        precompiled = 'FireTPL.templateCache[\'' + name + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
         if (options.commonjs) {
-            output += ';(function(require) {var FireTPL = require(\'' + options.firetplModule + '\');';
+            output = this.wrapCJS(precompiled, options.firetplModule);
         }
         else if (options.amd) {
-            output += 'define(' + (options.moduleName ? '\'' + options.moduleName + '\',' : '') + '[\'' + options.firetplModule + '\'],function(FireTPL) {';
+            output = this.wrapAMD(precompiled, options.moduleName, options.firetplModule);
         }
         else if (options.scope) {
-            output = ';(function(FireTPL) {';
+            output = this.wrapScope(precompiled);
         }
+        else {
+            output = precompiled;
+        }
+        // if (options.commonjs) {
+        //     output += '(function(require) {var FireTPL = require(\'' + options.firetplModule + '\');';
+        // }
+        // else if (options.amd) {
+        //     output += 'define(' + (options.moduleName ? '\'' + options.moduleName + '\',' : '') + '[\'' + options.firetplModule + '\'],function(FireTPL) {';
+        // }
+        // else if (options.scope) {
+        //     output = '(function(FireTPL) {';
+        // }
 
-        output += 'FireTPL.' + (options.partial ? 'partialCache' : 'templateCache') + '[\'' + tplName + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
 
-        if (options.commonjs) {
-            output += '})(require);';
-        }
-        else if(options.amd) {
-            output += '});';
-        }
-        else if (options.scope) {
-            output += '})(FireTPL);';
-        }
+        // if (options.commonjs) {
+        //     output += '})(require);';
+        // }
+        // else if(options.amd) {
+        //     output += '});';
+        // }
+        // else if (options.scope) {
+        //     output += '})(FireTPL);';
+        // }
 
         return options.pretty ? this.prettifyJs(output) : output;
     };
 
     /* +---------- FireTPL methods ---------- */
 
-    FireTPL.precompile = function(tmpl, options) {
-        var compiler = new Compiler(options);
-        return compiler.precompile(tmpl, options);
+    /**
+     * Precompiles a template
+     * 
+     * @method precompile
+     * @static
+     * @param  {String}   tmpl    Template as a string
+     * @param  {String}   name    Template name
+     * @param  {Object}   [options] Template options
+     * @return {String}           Returns precompiled code
+     */
+    FireTPL.precompile = function(tmpl, name, options) {
+        var compiler = new Compiler();
+        return compiler.precompile(tmpl, name, options);
     };
 
     FireTPL.fire2html = function(tmpl, data, options) {
@@ -1549,6 +1590,27 @@ var FireTPL;
         }
 
         return out;
+    };
+
+    Compiler.prototype.wrapCJS = function(code, firetplModule) {
+        var above = '(function(require) {var FireTPL = require(\'' + firetplModule + '\');';
+        var below = '})(require);';
+
+        return above + code + below;
+    };
+
+    Compiler.prototype.wrapAMD = function(code, moduleName, firetplModule) {
+        var above = 'define(' + (moduleName ? '\'' + moduleName + '\',' : '') + '[\'' + firetplModule + '\'],function(FireTPL) {';
+        var below = '});';
+
+        return above + code + below;
+    };
+
+    Compiler.prototype.wrapScope = function(code) {
+        var above = '(function(FireTPL) {';
+        var below = '})(FireTPL);';
+
+        return above + code + below;
     };
 
     /**
