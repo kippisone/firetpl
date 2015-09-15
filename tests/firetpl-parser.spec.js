@@ -143,8 +143,8 @@ describe('Parser', function() {
             var getSyntaxConfStub = sinon.stub(Parser.prototype, 'getSyntaxConf');
             var parser = new Parser();
 
-            expect(getSyntaxConfStub).was.calledOnce();
-            expect(getSyntaxConfStub).was.calledWith('fire');
+            expect(getSyntaxConfStub).to.be.calledOnce();
+            expect(getSyntaxConfStub).to.be.calledWith('fire');
             
             getSyntaxConfStub.restore();
         });
@@ -155,8 +155,8 @@ describe('Parser', function() {
                 type: 'hbs'
             });
 
-            expect(getSyntaxConfStub).was.calledOnce();
-            expect(getSyntaxConfStub).was.calledWith('hbs');
+            expect(getSyntaxConfStub).to.be.calledOnce();
+            expect(getSyntaxConfStub).to.be.calledWith('hbs');
             
             getSyntaxConfStub.restore();
         });
@@ -704,7 +704,7 @@ describe('Parser', function() {
         beforeEach(function() {
             stubs = ['parseTag', 'parseCloseTag', 'parseString', 'parseVariable', 'parseHelper',
             'parseCodeBlock', 'parseAttribute', 'parseIndention', 'parseEmptyLine', 'parseComment',
-            'parsePartial', 'parseLineOption'];
+            'parseInclude', 'parseLineOption'];
 
             result = [];
             parser = new Parser();
@@ -795,17 +795,17 @@ describe('Parser', function() {
             ]);
         });
 
-        it('Should parse a partial block', function() {
+        it('Should parse a include block', function() {
             var tmpl =
                 'div\n' +
-                '    > myPartial\n' +
+                '    > myInclude\n' +
                 '';
 
             parser.parse(tmpl);
             expect(result).to.eql([
                 ['parseTag', 'div'],
                 ['parseIndention', '    '],
-                ['parsePartial', 'myPartial']
+                ['parseInclude', 'myInclude']
             ]);
         });
 
@@ -917,7 +917,7 @@ describe('Parser', function() {
         beforeEach(function() {
             stubs = ['parseTag', 'parseCloseTag', 'parseHtmlString', 'parseVariable', 'parseHelper',
             'parseCodeBlock', 'parseAttribute', 'parseIndention', 'parseEmptyLine', 'parseComment',
-            'parsePartial'];
+            'parseInclude'];
 
             result = [];
             parser = new Parser({
@@ -984,13 +984,13 @@ describe('Parser', function() {
             ]);
         });
 
-        it('Should parse a partial block', function() {
-            var tmpl = '<div>{{> myPartial}}</div>';
+        it('Should parse a include block', function() {
+            var tmpl = '<div>{{> myInclude}}</div>';
 
             parser.parse(tmpl);
             expect(result).to.eql([
                 ['parseTag', 'div', undefined],
-                ['parsePartial', 'myPartial'],
+                ['parseInclude', 'myInclude'],
                 ['parseCloseTag', 'div']
             ]);
         });
@@ -1506,15 +1506,15 @@ describe('Parser', function() {
         });
     });
 
-    describe('parsePartial', function() {
-        it('Should parse a partial tag', function() {
+    describe('parseInclude', function() {
+        it('Should parse a include tag', function() {
             var fireTpl = new Parser();
             fireTpl.parseTag('div');
             fireTpl.parseIndention('    ');
-            fireTpl.parsePartial('myPartial');
+            fireTpl.parseInclude('myInclude');
 
             expect(fireTpl.flush()).to.eql('scopes=scopes||{};var root=data,parent=data;' +
-                'var s=\'\';s+=\'<div>\'+p(\'myPartial\',data)+\'</div>\';');
+                'var s=\'\';s+=\'<div>\'+p(\'myInclude\',data)+\'</div>\';');
         });
     });
 
@@ -2407,7 +2407,7 @@ describe('Parser', function() {
         });
     });
 
-    describe('partialParser', function() {
+    describe('includeParser', function() {
         var tmpl = 'html\n' +
             '    > header\n' +
             '    body';
@@ -2427,20 +2427,20 @@ describe('Parser', function() {
             readFileStub.restore();
         });
 
-        it('Should remember all partials', function() {
-            expect(parser.partials).to.eql(['header']);
+        it('Should remember all includes', function() {
+            expect(parser.includes).to.eql(['header']);
         });
 
-        it('Should parse a partial', function() {
-            expect(parser.partials).to.eql(['header']);
-            parser.partialsPath = './partials/';
-            var partials = parser.partialParser();
+        it('Should parse a include', function() {
+            expect(parser.includes).to.eql(['header']);
+            parser.includesPath = './includes/';
+            var includes = parser.includeParser();
 
-            expect(readFileStub).was.calledOnce();
-            expect(readFileStub).was.calledWith('./partials/header.fire');
+            expect(readFileStub).to.be.calledOnce();
+            expect(readFileStub).to.be.calledWith('./includes/header.fire');
 
-            expect(partials).to.eql([{
-                partial: 'header',
+            expect(includes).to.eql([{
+                include: 'header',
                 source: 'scopes=scopes||{};var root=data,parent=data;var s=\'\';s+=\'<header><h1>Hello \'+f.escape(data.name)+\'</h1></header>\';'
             }]);
         });

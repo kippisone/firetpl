@@ -49,7 +49,7 @@
         this.lastIndention = 0;
 
         this.syntax = this.getSyntaxConf(this.tmplType);
-        this.partialsPath = options.partialsPath;
+        this.includesPath = options.includesPath;
 
         /**
          * Stores names of required includes
@@ -701,11 +701,11 @@
         return res.join(' ');
     };
 
-    Parser.prototype.parsePartial = function(partialName) {
-        partialName = partialName.replace(/\)$/, '');
-        this.append('str', '\'+p(\'' + partialName + '\',data)+\'');
-        if (this.includes.indexOf(partialName) === -1) {
-            this.includes.push(partialName);
+    Parser.prototype.parseInclude = function(includeName) {
+        includeName = includeName.replace(/\)$/, '');
+        this.append('str', '\'+p(\'' + includeName + '\',data)+\'');
+        if (this.includes.indexOf(includeName) === -1) {
+            this.includes.push(includeName);
         }
 
         if (this.tmplType === 'fire') {
@@ -958,50 +958,50 @@
     };
 
     /**
-     * Parse all partials. Returns an array of all partials
-     * @return {Array} Returns an array with all parsed partials or null if no partials are present
+     * Parse all includes. Returns an array of all includes
+     * @return {Array} Returns an array with all parsed includes or null if no includes are present
      * [
      *   {
-     *     partial: 'Partialname',
-     *     source: Partial source
+     *     include: 'Includename',
+     *     source: Include source
      *   }
      * ]
      */
-    Parser.prototype.partialParser = function() {
+    Parser.prototype.includeParser = function() {
         var self = this,
-            partialStore = [];
+            includeStore = [];
 
         if (!this.includes.length) {
             return null;
         }
 
-        self.partialsPath = self.partialsPath || '';
+        self.includesPath = self.includesPath || '';
 
-        this.includes.forEach(function(partial) {
-            if (partial in FireTPL.partialCache) {
+        this.includes.forEach(function(include) {
+            if (include in FireTPL.templateCache) {
                 return;
             }
             
-            var fileName = self.partialsPath.replace(/\/$/, '') + '/' + partial + '.' + self.tmplType;
+            var fileName = self.includesPath.replace(/\/$/, '') + '/' + include + '.' + self.tmplType;
             var source = FireTPL.readFile(fileName);
             var subParser = new FireTPL.Parser({
                 type: self.tmplType,
-                partialsPath: self.partialsPath,
+                includesPath: self.includesPath,
                 fileName: fileName
             });
             subParser.parse(source);
 
-            partialStore.push({
-                partial: partial,
+            includeStore.push({
+                include: include,
                 source: subParser.flush()
             });
 
             if (subParser.includes.length) {
-                partialStore.concat(subParser.partialParser());
+                includeStore.concat(subParser.includeParser());
             }
         });
 
-        return partialStore.length > 0 ? partialStore : null;
+        return includeStore.length > 0 ? includeStore : null;
     };
 
     FireTPL.Parser = Parser;

@@ -54,9 +54,9 @@ describe('LocalePrecompiler', function() {
 			compiler.defaultLocale = 'en-US';
 			var locales = compiler.parseFolder('test');
 
-			expect(readFileStub).was.calledTwice();
-			expect(readFileStub).was.calledWith('./locale/en-US.json');
-			expect(readFileStub).was.calledWith('./locale/de-DE.json');
+			expect(readFileStub).to.be.calledTwice();
+			expect(readFileStub).to.be.calledWith('./locale/en-US.json');
+			expect(readFileStub).to.be.calledWith('./locale/de-DE.json');
 			
 			expect(locales).to.eql({
 				'en-US': {'greeding': 'Hello World', 'char': 'a'},
@@ -74,10 +74,10 @@ describe('LocalePrecompiler', function() {
 
 			compiler.defaultLocale = 'en-US';
 			var locales = compiler.parseFolder('test');
-			expect(readFileStub).was.calledThrice();
-			expect(readFileStub).was.calledWith('./locale/en-US.json');
-			expect(readFileStub).was.calledWith('./locale/de-DE.json');
-			expect(readFileStub).was.calledWith('./locale/txt/test/content.en-US.fire');
+			expect(readFileStub).to.be.calledThrice();
+			expect(readFileStub).to.be.calledWith('./locale/en-US.json');
+			expect(readFileStub).to.be.calledWith('./locale/de-DE.json');
+			expect(readFileStub).to.be.calledWith('./locale/txt/test/content.en-US.fire');
 			
 			expect(locales).to.eql({
 				'en-US': {'greeding': 'Hello World', 'char': 'a', txt: {test: { content: '<h1>Long text</h1><div>A very long text with a touch of html</div>'}}},

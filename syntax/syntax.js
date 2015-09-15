@@ -68,12 +68,12 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }, {
-            "name": "partial",
-            "func": "parsePartial",
-            "args": ["partialName"],
+            "name": "include",
+            "func": "parseInclude",
+            "args": ["includeName"],
             "parts": [
                 {
-                    "name": "partialName",
+                    "name": "includeName",
                     "pattern": "(?:\\(?>\\s*(\\S+)\\)?)"
                 }
             ]
@@ -289,12 +289,12 @@ FireTPL.Syntax["hbs"] = {
                 }
             ]
         }, {
-            "name": "partial",
-            "func": "parsePartial",
-            "args": ["partialName"],
+            "name": "include",
+            "func": "parseInclude",
+            "args": ["includeName"],
             "parts": [
                 {
-                    "name": "partialName",
+                    "name": "includeName",
                     "pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
                 }
             ]

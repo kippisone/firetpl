@@ -1,7 +1,7 @@
 /*!
- * FireTPL template engine v0.6.0-75
+ * FireTPL template engine v0.6.0-81
  * 
- * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports partials, helper and inline functions.
+ * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
  * FireTPL is licensed under MIT License
  * http://opensource.org/licenses/MIT
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-75',
+        version: '0.6.0-81',
 
         /**
          * Defines the default language
@@ -246,7 +246,7 @@ var FireTPL;
         }
 
         var output = '';
-        precompiled = 'FireTPL.templateCache[\'' + name + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + precompiled + 'return s;};';
+        precompiled = 'FireTPL.templateCache[\'' + name + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + precompiled + 'return s;};';
         if (options.commonjs) {
             output = this.wrapCJS(precompiled, options.firetplModule);
         }
@@ -533,12 +533,12 @@ FireTPL.Syntax["fire"] = {
                 }
             ]
         }, {
-            "name": "partial",
-            "func": "parsePartial",
-            "args": ["partialName"],
+            "name": "include",
+            "func": "parseInclude",
+            "args": ["includeName"],
             "parts": [
                 {
-                    "name": "partialName",
+                    "name": "includeName",
                     "pattern": "(?:\\(?>\\s*(\\S+)\\)?)"
                 }
             ]
@@ -754,12 +754,12 @@ FireTPL.Syntax["hbs"] = {
                 }
             ]
         }, {
-            "name": "partial",
-            "func": "parsePartial",
-            "args": ["partialName"],
+            "name": "include",
+            "func": "parseInclude",
+            "args": ["includeName"],
             "parts": [
                 {
-                    "name": "partialName",
+                    "name": "includeName",
                     "pattern": "(?:\\{\\{>\\s*(\\S+)\\s*\\}\\})"
                 }
             ]

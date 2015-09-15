@@ -34,7 +34,7 @@ describe('Render test', function() {
                     var tmpl = readFile(file.fire);
                     var res = FireTPL.fire2html(tmpl, data, {
                         pretty: true,
-                        partialsPath: path.join(__dirname, './testdata'),
+                        includesPath: path.join(__dirname, './testdata'),
                         eventAttrs: true
                     });
                     expect(res).to.eql(html);
@@ -47,7 +47,7 @@ describe('Render test', function() {
                     var res = FireTPL.fire2html(tmpl, data, {
                         type: 'hbs',
                         pretty: true,
-                        partialsPath: path.join(__dirname, './testdata'),
+                        includesPath: path.join(__dirname, './testdata'),
                         eventAttrs: true
                     });
                     expect(res).to.eql(html);

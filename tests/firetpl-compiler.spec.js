@@ -39,17 +39,15 @@ describe('FireTPL', function() {
     describe('precompile', function() {
         it('Should precompile a tmpl string', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       div id=myDiv\n';
-            template += '       div id=mySecondDiv class=myClass\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div id=myDiv\n';
+            template += '        div id=mySecondDiv class=myClass\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, {
-                name: 'test'
-            });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body><div id="myDiv"></div>' +
                 '<div id="mySecondDiv" class="myClass"></div>' +
@@ -66,9 +64,9 @@ describe('FireTPL', function() {
             template += '        div id=mySecondDiv class=myClass\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body><div id="myDiv"></div>' +
                 '<div id="mySecondDiv" class="myClass"></div>' +
@@ -85,9 +83,9 @@ describe('FireTPL', function() {
             template += '\t    div id=mySecondDiv class=myClass\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body><div id="myDiv"></div>' +
                 '<div id="mySecondDiv" class="myClass"></div>' +
@@ -98,16 +96,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with inline text', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       div id=myDiv\n';
-            template += '       div id=mySecondDiv class=myClass\n';
-            template += '           "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div id=myDiv\n';
+            template += '        div id=mySecondDiv class=myClass\n';
+            template += '            "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body><div id="myDiv"></div>' +
                 '<div id="mySecondDiv" class="myClass">Hello World</div>' +
@@ -118,19 +116,19 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with line attribute', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       div id=myDiv\n';
-            template += '       div\n';
-            template += '           id=mySecondDiv\n';
-            template += '           class=myClass\n';
-            template += '           \n';
-            template += '           "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div id=myDiv\n';
+            template += '        div\n';
+            template += '            id=mySecondDiv\n';
+            template += '            class=myClass\n';
+            template += '            \n';
+            template += '            "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body><div id="myDiv"></div>' +
                 '<div id="mySecondDiv" class="myClass">Hello World</div>' +
@@ -141,16 +139,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with an if statement', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :if $sayit : div\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :if $sayit : div\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';s+=\'' + 
@@ -166,19 +164,19 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with a if..else statement', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :if $sayit\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
-            template += '       :else\n';
-            template += '           div\n';
-            template += '               "Good bye"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :if $sayit\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
+            template += '        :else\n';
+            template += '            div\n';
+            template += '                "Good bye"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';' +
@@ -197,19 +195,19 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with a if..else statement wrapped in a div', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :if $sayit : div\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
-            template += '       :else\n';
-            template += '           div\n';
-            template += '               "Good bye"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :if $sayit : div\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
+            template += '        :else\n';
+            template += '            div\n';
+            template += '                "Good bye"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';' +
@@ -228,16 +226,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with an unless statement', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :unless $sayit\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :unless $sayit\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 's+=h(\'unless\',data,parent,root,function(data){var s=\'\';' +
@@ -253,16 +251,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with an unless statement wrapped in a div', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :unless $sayit : div\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :unless $sayit : div\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 's+=h(\'unless\',data,parent,root,\'div\',\'\',function(data){var s=\'\';' +
@@ -278,16 +276,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with an each statement', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :each $listing\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :each $listing\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
@@ -303,16 +301,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with an each statement wrapped in a div', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       :each $listing : div\n';
-            template += '           div\n';
-            template += '               "Hello World"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        :each $listing : div\n';
+            template += '            div\n';
+            template += '                "Hello World"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 's+=h(\'each\',data,parent,root,\'div\',\'\',function(data){var s=\'\';' +
@@ -328,16 +326,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with a multiline string', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       div class=content\n';
-            template += '           "I\'m a multiline\n';
-            template += '           String"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div class=content\n';
+            template += '            "I\'m a multiline\n';
+            template += '            String"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body>' +
                 '<div class="content">I\\\'m a multiline String</div>' +
@@ -355,9 +353,9 @@ describe('FireTPL', function() {
             template += '            String"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body>' +
                 '<div class="content">I\\\'m a multiline String</div>' +
@@ -368,8 +366,8 @@ describe('FireTPL', function() {
 
         it.skip('Should precompile a tmpl string with multiple multiline strings', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
+            template += '    head\n';
+            template += '    body\n';
             template += '       div class=content\n';
             template += '           "I\'m a multiline\n';
             template += '           String"\n';
@@ -379,9 +377,9 @@ describe('FireTPL', function() {
             template += '           Block"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body>' +
                 '<div class="content">I\\\'m a multiline String<br>' +
@@ -393,8 +391,8 @@ describe('FireTPL', function() {
 
         it.skip('Should precompile a tmpl string with multiple multiline strings and placeholders', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
+            template += '    head\n';
+            template += '    body\n';
             template += '       div class=content\n';
             template += '           "I\'m a $super multiline\n';
             template += '           String"\n';
@@ -404,9 +402,9 @@ describe('FireTPL', function() {
             template += '           Block"\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body>' +
                 '<div class="content">I\\\'m a \'+data.super+\' multiline String<br>' +
@@ -418,26 +416,26 @@ describe('FireTPL', function() {
 
         it('Shouldn\'t close void tags', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '       meta\n';
-            template += '       title\n';
-            template += '       link\n';
-            template += '   body\n';
-            template += '       input\n';
-            template += '       img\n';
-            template += '       div class=content\n';
-            template += '           map\n';
-            template += '               area\n';
-            template += '               area\n';
-            template += '           br\n';
-            template += '           colgroup\n';
-            template += '               col\n';
-            template += '               col\n';
+            template += '    head\n';
+            template += '        meta\n';
+            template += '        title\n';
+            template += '        link\n';
+            template += '    body\n';
+            template += '        input\n';
+            template += '        img\n';
+            template += '        div class=content\n';
+            template += '            map\n';
+            template += '                area\n';
+            template += '                area\n';
+            template += '            br\n';
+            template += '            colgroup\n';
+            template += '                col\n';
+            template += '                col\n';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head><meta><title></title><link></head><body>' +
                 '<input><img>' +
@@ -449,16 +447,16 @@ describe('FireTPL', function() {
 
         it('Should precompile a tmpl string with i18n tags', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       div class=description\n';
-            template += '           @txt.description\n';
-            template += '       button @btn.submit';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        div class=description\n';
+            template += '            @txt.description\n';
+            template += '        button @btn.submit';
 
             var fireTpl = new FireTPL.Compiler();
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;var s=\'\';' +
                 's+=\'<html><head></head><body>' +
                 '<div class="description">\'+l(\'txt.description\',data)+\'</div>' +
@@ -469,19 +467,19 @@ describe('FireTPL', function() {
 
         it.skip('Should precompile a tmpl string with an each statement wrapped in a div scopeTags are enabled', function() {
             var template = 'html\n';
-            template += '   head\n';
-            template += '   body\n';
-            template += '       h1 $title\n';
-            template += '       :each $listing : div\n';
-            template += '           div\n';
-            template += '               "Hello $name"\n';
+            template += '    head\n';
+            template += '    body\n';
+            template += '        h1 $title\n';
+            template += '        :each $listing : div\n';
+            template += '            div\n';
+            template += '                "Hello $name"\n';
 
             var fireTpl = new FireTPL.Compiler({
                 scopeTags: true
             });
-            template = fireTpl.precompile(template, { name: 'test' });
+            template = fireTpl.precompile(template, 'test');
             expect(template).to.eql(
-                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' +
+                'FireTPL.templateCache[\'test\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' +
                 'scopes=scopes||{};var root=data,parent=data;' +
                 'scopes.scope001=function(data,parent){var s=\'\';' +
                 's+=h(\'each\',data,parent,root,function(data){var s=\'\';' +
@@ -542,8 +540,8 @@ describe('FireTPL', function() {
             var source = FireTPL.loadFile(file);
 
             expect(source).to.eql('');
-            expect(errorStub).was.called();
-            expect(errorStub).was.calledWith('Loading a FireTPL template failed! Template wasn\'t found!');
+            expect(errorStub).to.be.called();
+            expect(errorStub).to.be.calledWith('Loading a FireTPL template failed! Template wasn\'t found!');
             errorStub.restore();
         });
 
@@ -559,8 +557,8 @@ describe('FireTPL', function() {
             var file = 'templates/test.fire';
             var source = FireTPL.loadFile(file);
             expect(source).to.eql('');
-            expect(errorStub).was.called();
-            expect(errorStub).was.calledWith('Loading a FireTPL template failed! Server response was: 500 Internal Server Error');
+            expect(errorStub).to.be.called();
+            expect(errorStub).to.be.calledWith('Loading a FireTPL template failed! Server response was: 500 Internal Server Error');
             errorStub.restore();
         });
     });

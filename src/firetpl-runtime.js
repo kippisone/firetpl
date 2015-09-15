@@ -9,7 +9,6 @@
     FireTPL.helpers = {};
     FireTPL.fn = {};
     FireTPL.templateCache = {};
-    FireTPL.partialCache = {};
 
     /**
      * Register a block helper
@@ -27,30 +26,30 @@
     };
 
     /**
-     * Register a global partial
+     * Register a global include
      * @method registerPartial
-     * @param  {String}   partial Partial name
-     * @param  {Function|String} fn      Precompiled partial or a partial string
+     * @param  {String}   include Partial name
+     * @param  {Function|String} fn      Precompiled include or a include string
      * @param  {Object}   options (Optional) If second arg is a string, add parser options here
      */
-    FireTPL.registerPartial = function(partial, fn, options) {
+    FireTPL.registerInclude = function(include, fn, options) {
         if (typeof fn === 'string') {
             options = options || {};
-            options.partial = true;
+            options.include = true;
             fn = FireTPL.compile(fn, options);
         }
 
-        FireTPL.partialCache[partial] = fn;
+        FireTPL.includeCache[include] = fn;
     };
 
     /**
-     * Clears a global partial cache
+     * Clears a global include cache
      *
-     * @method clearPartials
+     * @method clearIncludes
      * 
      */
-    FireTPL.clearPartials = function() {
-        FireTPL.partialCache = [];
+    FireTPL.clearIncludes = function() {
+        FireTPL.includeCache = [];
     };
 
     /**
@@ -98,7 +97,7 @@
     };
 
     var Runtime = function() {
-        this.partialCache = FireTPL.partialCache;
+        this.includeCache = FireTPL.includeCache;
     };
 
     Runtime.prototype.exec = function(helper, data, parent, root, fn) {
@@ -134,17 +133,17 @@
         }, fn);
     };
 
-    Runtime.prototype.execPartial = function(partialName, data) {
-        var partial = this.partialCache[partialName];
-        if (!partial) {
-            throw new FireTPL.Error('Partial \'' + partialName + '\' was not registered!');
+    Runtime.prototype.execInclude = function(includeName, data) {
+        var include = this.includeCache[includeName];
+        if (!include) {
+            throw new FireTPL.Error('Include \'' + includeName + '\' was not registered!');
         }
 
-        return partial(data);
+        return include(data);
     };
 
-    Runtime.prototype.registerPartial = function(partial, fn) {
-        this.partialCache[partial] = fn;
+    Runtime.prototype.registerPartial = function(include, fn) {
+        this.includeCache[include] = fn;
     };
 
     /**
@@ -193,17 +192,17 @@
             parser.parse(template);
             template = parser.flush();
 
-            var partials = parser.partialParser();
-            if (partials) {
-                partials.forEach(function(item) {
+            var includes = parser.includeParser();
+            if (includes) {
+                includes.forEach(function(item) {
                     try {
-                        runTime.registerPartial(item.partial, 
+                        runTime.registerPartial(item.include, 
                             //jshint evil:true
-                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execPartial;' + item.source + 'return s;})')
+                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + item.source + 'return s;})')
                         );
                     }
                     catch(err) {
-                        console.error('Pregister partial error!', err, err.lineNumber);
+                        console.error('Pregister include error!', err, err.lineNumber);
                     }
                 });
             }
@@ -213,7 +212,7 @@
             var h = runTime.execHelper,
                 l = FireTPL.locale,
                 f = FireTPL.fn,
-                p = runTime.execPartial.bind(runTime);
+                p = runTime.execInclude.bind(runTime);
 
             var s;
 
