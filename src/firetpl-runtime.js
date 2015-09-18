@@ -39,7 +39,7 @@
             fn = FireTPL.compile(fn, options);
         }
 
-        FireTPL.includeCache[include] = fn;
+        FireTPL.templateCache[include] = fn;
     };
 
     /**
@@ -49,7 +49,7 @@
      * 
      */
     FireTPL.clearIncludes = function() {
-        FireTPL.includeCache = [];
+        FireTPL.templateCache = [];
     };
 
     /**
@@ -97,7 +97,7 @@
     };
 
     var Runtime = function() {
-        this.includeCache = FireTPL.includeCache;
+        this.templateCache = FireTPL.templateCache;
     };
 
     Runtime.prototype.exec = function(helper, data, parent, root, fn) {
@@ -134,7 +134,7 @@
     };
 
     Runtime.prototype.execInclude = function(includeName, data) {
-        var include = this.includeCache[includeName];
+        var include = this.templateCache[includeName];
         if (!include) {
             throw new FireTPL.Error('Include \'' + includeName + '\' was not registered!');
         }
@@ -143,7 +143,7 @@
     };
 
     Runtime.prototype.registerPartial = function(include, fn) {
-        this.includeCache[include] = fn;
+        this.templateCache[include] = fn;
     };
 
     /**

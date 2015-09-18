@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-81
+ * FireTPL template engine v0.6.0-85
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-81',
+        version: '0.6.0-85',
 
         /**
          * Defines the default language
@@ -2034,7 +2034,7 @@ FireTPL.Syntax["hbs"] = {
             fn = FireTPL.compile(fn, options);
         }
 
-        FireTPL.includeCache[include] = fn;
+        FireTPL.templateCache[include] = fn;
     };
 
     /**
@@ -2044,7 +2044,7 @@ FireTPL.Syntax["hbs"] = {
      * 
      */
     FireTPL.clearIncludes = function() {
-        FireTPL.includeCache = [];
+        FireTPL.templateCache = [];
     };
 
     /**
@@ -2092,7 +2092,7 @@ FireTPL.Syntax["hbs"] = {
     };
 
     var Runtime = function() {
-        this.includeCache = FireTPL.includeCache;
+        this.templateCache = FireTPL.templateCache;
     };
 
     Runtime.prototype.exec = function(helper, data, parent, root, fn) {
@@ -2129,7 +2129,7 @@ FireTPL.Syntax["hbs"] = {
     };
 
     Runtime.prototype.execInclude = function(includeName, data) {
-        var include = this.includeCache[includeName];
+        var include = this.templateCache[includeName];
         if (!include) {
             throw new FireTPL.Error('Include \'' + includeName + '\' was not registered!');
         }
@@ -2138,7 +2138,7 @@ FireTPL.Syntax["hbs"] = {
     };
 
     Runtime.prototype.registerPartial = function(include, fn) {
-        this.includeCache[include] = fn;
+        this.templateCache[include] = fn;
     };
 
     /**
