@@ -50,6 +50,7 @@
 
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.includesPath = options.includesPath;
+        this.templateCache = {};
 
         /**
          * Stores names of required includes
@@ -978,9 +979,9 @@
         self.includesPath = self.includesPath || '';
 
         this.includes.forEach(function(include) {
-            if (include in FireTPL.templateCache) {
-                return;
-            }
+            // if (include in this.templateCache) {
+            //     return;
+            // }
             
             var fileName = self.includesPath.replace(/\/$/, '') + '/' + include + '.' + self.tmplType;
             var source = FireTPL.readFile(fileName);
@@ -999,7 +1000,7 @@
             if (subParser.includes.length) {
                 includeStore.concat(subParser.includeParser());
             }
-        });
+        }, this);
 
         return includeStore.length > 0 ? includeStore : null;
     };

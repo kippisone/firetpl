@@ -142,7 +142,7 @@
         return include(data);
     };
 
-    Runtime.prototype.registerPartial = function(include, fn) {
+    Runtime.prototype.registerInclude = function(include, fn) {
         this.templateCache[include] = fn;
     };
 
@@ -196,7 +196,7 @@
             if (includes) {
                 includes.forEach(function(item) {
                     try {
-                        runTime.registerPartial(item.include, 
+                        runTime.registerInclude(item.include, 
                             //jshint evil:true
                             eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + item.source + 'return s;})')
                         );

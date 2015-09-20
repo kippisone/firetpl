@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-85
+ * FireTPL template engine v0.6.0-90
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-85',
+        version: '0.6.0-90',
 
         /**
          * Defines the default language
@@ -305,7 +305,7 @@ var FireTPL;
         return include(data);
     };
 
-    Runtime.prototype.registerPartial = function(include, fn) {
+    Runtime.prototype.registerInclude = function(include, fn) {
         this.templateCache[include] = fn;
     };
 
@@ -359,7 +359,7 @@ var FireTPL;
             if (includes) {
                 includes.forEach(function(item) {
                     try {
-                        runTime.registerPartial(item.include, 
+                        runTime.registerInclude(item.include, 
                             //jshint evil:true
                             eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + item.source + 'return s;})')
                         );
@@ -572,6 +572,25 @@ var FireTPL;
     });
 
     /**
+     * Returns str if it is truthy, otherwise altValue is returning
+     *
+     * @group InlineFunctions
+     * @method or
+     * @param  {String} altValue 
+     * @return {String}    Returns instr or altValue
+     * 
+     * @example {fire}
+     * $str.or('String is empty')
+     */
+    FireTPL.registerFunction('or', function(str, value, altValue) {
+        if (str) {
+            return str;
+        }
+
+        return altValue;
+    });
+
+    /**
      * Checks whether str is truthy or not
      *
      * Returns value if str is truthy, otherwise altValue will be returned.
@@ -672,6 +691,32 @@ var FireTPL;
 
         return lng;
     });
+})(FireTPL);
+(function(FireTPL) {
+    'use strict';
+
+    /**
+     * Concatenate String
+     *
+     * @group InlineFunctions
+     * @method if
+     * @param {String} separator Concatenates strings by using a separator
+     * @return {String}    Returns a concatenated string
+     *
+     * @example
+     * $str = 'foo'
+     * $foo = 'bar'
+     * 
+     * $str.concat(' ', $foo, 'link')
+     *
+     * returns "foo bar link"
+     */
+    FireTPL.registerFunction('concat', function(str, sep) {
+        var args = Array.prototype.slice.call(arguments, 2);
+        args.unshift(str);
+        return args.join(sep);
+    });
+
 })(FireTPL);
 /**
  * Tree helper

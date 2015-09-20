@@ -119,6 +119,25 @@
     });
 
     /**
+     * Returns str if it is truthy, otherwise altValue is returning
+     *
+     * @group InlineFunctions
+     * @method or
+     * @param  {String} altValue 
+     * @return {String}    Returns instr or altValue
+     * 
+     * @example {fire}
+     * $str.or('String is empty')
+     */
+    FireTPL.registerFunction('or', function(str, value, altValue) {
+        if (str) {
+            return str;
+        }
+
+        return altValue;
+    });
+
+    /**
      * Checks whether str is truthy or not
      *
      * Returns value if str is truthy, otherwise altValue will be returned.
