@@ -66,10 +66,7 @@
             console.warn('Partials are no longer supported! Use includes instead!');
         }
 
-        var parser = new FireTPL.Parser({
-            type: options.type || 'fire',
-            pretty: options.pretty
-        });
+        var parser = new FireTPL.Parser(options);
         
         parser.parse(tmpl);
         var precompiled = parser.flush();

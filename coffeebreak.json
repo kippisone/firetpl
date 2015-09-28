@@ -3,8 +3,8 @@
 	"browser": true,
     "libs": "tests/coffee-tools.js",
 	"files": "firetpl.js",
-	"watch": "src/**/*.js",
-	"tests": "tests/**/*.spec.js",
+	"watch": "src/*.js",
+	"tests": "tests/*.spec.js",
 	"grunt": {
 		"task": ["json", "concat:build"]
 	}

@@ -52,6 +52,8 @@
         this.includesPath = options.includesPath;
         this.templateCache = {};
 
+        this.scopeTags = options.scopeTags || false;
+
         /**
          * Stores names of required includes
          * @property {Array}
@@ -528,6 +530,8 @@
     Parser.prototype.matchVariables = function(str, isCode, strEscape) {
         var opener = '',
             closer = '',
+            lcOpener = '',
+            lcCloser = '',
             altOpener = '',
             altCloser = '',
             prefix = 'data.',
@@ -602,8 +606,14 @@
                 m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
+            console.log('HUHU');
             if (self.curScope[0] === 'root' && !isCode) {
-                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
+                if (self.scopeTags) {
+                    return opener + m + closer;
+                }
+                else {
+                    return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
+                }
             }
             else if (self.scopeTags) {
                 return altOpener + m + altCloser;
@@ -620,7 +630,7 @@
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
-                    return opener + 'l(\'' + item.substr(1) + '\',data)' + closer;
+                    return altOpener + 'l(\'' + item.substr(1) + '\',data)' + altCloser;
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {

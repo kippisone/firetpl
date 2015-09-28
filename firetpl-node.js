@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-90
+ * FireTPL template engine v0.6.0-95
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-90',
+        version: '0.6.0-95',
 
         /**
          * Defines the default language
@@ -214,6 +214,8 @@ var FireTPL;
         this.syntax = this.getSyntaxConf(this.tmplType);
         this.includesPath = options.includesPath;
         this.templateCache = {};
+
+        this.scopeTags = options.scopeTags || false;
 
         /**
          * Stores names of required includes
@@ -691,6 +693,8 @@ var FireTPL;
     Parser.prototype.matchVariables = function(str, isCode, strEscape) {
         var opener = '',
             closer = '',
+            lcOpener = '',
+            lcCloser = '',
             altOpener = '',
             altCloser = '',
             prefix = 'data.',
@@ -765,8 +769,14 @@ var FireTPL;
                 m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
+            console.log('HUHU');
             if (self.curScope[0] === 'root' && !isCode) {
-                return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
+                if (self.scopeTags) {
+                    return opener + m + closer;
+                }
+                else {
+                    return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
+                }
             }
             else if (self.scopeTags) {
                 return altOpener + m + altCloser;
@@ -783,7 +793,7 @@ var FireTPL;
         if (this.tmplType === 'fire') {
             split = split.map(function(item) {
                 if (item.charAt(0) === '@') {
-                    return opener + 'l(\'' + item.substr(1) + '\',data)' + closer;
+                    return altOpener + 'l(\'' + item.substr(1) + '\',data)' + altCloser;
                 }
                 else if(item.charAt(0) === '$') {
                     if (item.charAt(1) === '{') {
@@ -1402,10 +1412,7 @@ var FireTPL;
             console.warn('Partials are no longer supported! Use includes instead!');
         }
 
-        var parser = new FireTPL.Parser({
-            type: options.type || 'fire',
-            pretty: options.pretty
-        });
+        var parser = new FireTPL.Parser(options);
         
         parser.parse(tmpl);
         var precompiled = parser.flush();
