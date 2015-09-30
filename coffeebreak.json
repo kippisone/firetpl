@@ -2,8 +2,18 @@
 	"project": "firetpl",
 	"browser": true,
     "libs": "tests/coffee-tools.js",
-	"files": "firetpl.js",
-	"watch": "src/*.js",
+	"files": [
+        "src/firetpl.js",
+        "src/firetpl-error.js",
+        "src/firetpl-parser.js",
+        "src/firetpl-i18n-parser.js",
+        "src/firetpl-compiler.js",
+        "syntax/syntax.js",
+        "src/firetpl-runtime.js",
+        "src/functions/*.js",
+        "src/helper/*.js",
+        "src/firetpl-browser.j"
+    ],
 	"tests": "tests/*.spec.js",
 	"grunt": {
 		"task": ["json", "concat:build"]
