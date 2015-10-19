@@ -578,6 +578,7 @@
                 if (i === 0) {
                     if (chunks[i] === 'parent' || chunks[i] === 'root') {
                         if (self.scopeTags) {
+                            vars.push('$' + chunks[i]);
                             continue;
                         }
                     }
@@ -606,7 +607,6 @@
                 m = 'f.' + funcs[i][0] + '(' + m + (funcs[i][1] ? ',' + funcs[i][1].join(',') : '') + ')';
             }
 
-            console.log('HUHU');
             if (self.curScope[0] === 'root' && !isCode) {
                 if (self.scopeTags) {
                     return opener + m + closer;
@@ -616,7 +616,7 @@
                 }
             }
             else if (self.scopeTags) {
-                return altOpener + m + altCloser;
+                return opener + m + closer;
             }
             else {
                 return escape ? opener + 'f.escape(' + m + ')' + closer : opener + m + closer;
