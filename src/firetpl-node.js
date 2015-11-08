@@ -87,7 +87,7 @@
                 tmplNames.push(tmpl.name);
 
                 //Add includes
-                if (compiler.includes) {
+                if (!options.skipIncludes && compiler.includes) {
                     var includeFiles = [];
                     compiler.includes.forEach(function(include) {
                         if (tmplNames.indexOf(include) === -1) {
