@@ -59,6 +59,15 @@
          * @property {Array}
          */
         this.includes = [];
+
+        /**
+         * Function to be called before include will be started.
+         * Passe through the include name
+         * @method beforeInclude
+         * @param {String} include Name of current handled include
+         * @returns {String} Must return the include name. Otherwis it will skip this include
+         */
+        this.beforeInclude = options.beforeInclude;
     };
 
     /**
@@ -989,21 +998,28 @@
         self.includesPath = self.includesPath || '';
 
         this.includes.forEach(function(include) {
-            // if (include in this.templateCache) {
-            //     return;
-            // }
-            
-            var fileName = self.includesPath.replace(/\/$/, '') + '/' + include + '.' + self.tmplType;
-            var source = FireTPL.readFile(fileName);
+            include = {
+                src: self.includesPath.replace(/\/$/, '') + '/' + include + '.' + self.tmplType,
+                name: include
+            };
+
+            if (this.beforeInclude) {
+                include = this.beforeInclude.call(this, include);
+                if (!include) {
+                    return;
+                }
+            }
+
+            var source = FireTPL.readFile(include.src);
             var subParser = new FireTPL.Parser({
                 type: self.tmplType,
                 includesPath: self.includesPath,
-                fileName: fileName
+                fileName: include.src
             });
             subParser.parse(source);
 
             includeStore.push({
-                include: include,
+                include: include.name,
                 source: subParser.flush()
             });
 

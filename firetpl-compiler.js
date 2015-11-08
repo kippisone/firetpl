@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-98
+ * FireTPL template engine v0.6.1-6
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-98',
+        version: '0.6.1-6',
 
         /**
          * Defines the default language
@@ -243,7 +243,7 @@ var FireTPL;
         }
 
         var output = '';
-        precompiled = 'FireTPL.templateCache[\'' + name + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + precompiled + 'return s;};';
+        precompiled = 'FireTPL.templateCache[\'' + name + '\']=function(data,scopes) {var t=new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude.bind(t);' + precompiled + 'return s;};';
         if (options.commonjs) {
             output = this.wrapCJS(precompiled, options.firetplModule);
         }
@@ -278,6 +278,71 @@ var FireTPL;
         // }
 
         return options.pretty ? this.prettifyJs(output) : output;
+    };
+
+    /**
+     * Precompiles a template string.
+     * 
+     * If template has any include tags, the include names are present in the `includes` property
+     *
+     * @describe options
+     * commonjs     {Boolean}   Compile as an commonjs module
+     * amd          {Boolean}   Compile as an amd module
+     * moduleName   {String}    Defines an amd module name
+     * scope        {Boolean}   Wrap outputed code into a function (Only if commonjs or amd isn't used)
+     * pretty       {Boolean}   Makes output prettier
+     * firetplModule {String}   Overrides firetpl module name, used by commionjs. Defaults to `firetpl`
+     *     `
+     * @method precompile
+     * @param {String} tmpl Tmpl source
+     * @param {String} name Tmpl name
+     * @param {Object} options Precompile options
+     *
+     * @return {Function} Returns a parsed tmpl source as a function.
+     */
+    Compiler.prototype.precompileFn = function(tmpl, name, options) {
+        options = options || {};
+
+        if (typeof name !== 'string') {
+            throw new FireTPL.Error('Precompilation not possible! The options.name flag must be set!');
+        }
+
+        options.firetplModule = options.firetplModule || 'firetpl';
+
+        if (options.partial) {
+            console.warn('Partials are no longer supported! Use includes instead!');
+        }
+
+        var parser = new FireTPL.Parser(options);
+        
+        parser.parse(tmpl);
+        var precompiled = parser.flush();
+        this.includes = parser.includes;
+
+        if (options.verbose) {
+            console.log('\n---------- begin of precompiled file ----------\n');
+            console.log(precompiled);
+            console.log('\n----------- end of precompiled file -----------\n');
+            console.log('size: ', precompiled.length, 'chars\n');
+        }
+
+        var output = '';
+        precompiled = 'function(data,scopes) {var t=new FireTPL.Runtime()t.templateCache=this.templateCache,h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude.bind(t);' + precompiled + 'return s;};';
+        if (options.commonjs) {
+            output = this.wrapCJS(precompiled, options.firetplModule);
+        }
+        else if (options.amd) {
+            output = this.wrapAMD(precompiled, options.moduleName, options.firetplModule);
+        }
+        else if (options.scope) {
+            output = this.wrapScope(precompiled);
+        }
+        else {
+            output = precompiled;
+        }
+
+        //jshint evil:true
+        return eval(output);
     };
 
     /* +---------- FireTPL methods ---------- */

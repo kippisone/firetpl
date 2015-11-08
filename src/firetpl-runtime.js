@@ -192,19 +192,21 @@
             parser.parse(template);
             template = parser.flush();
 
-            var includes = parser.includeParser();
-            if (includes) {
-                includes.forEach(function(item) {
-                    try {
-                        runTime.registerInclude(item.include, 
-                            //jshint evil:true
-                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + item.source + 'return s;})')
-                        );
-                    }
-                    catch(err) {
-                        console.error('Pregister include error!', err, err.lineNumber);
-                    }
-                });
+            if (!options.skipIncludes) {
+                var includes = parser.includeParser();
+                if (includes) {
+                    includes.forEach(function(item) {
+                        try {
+                            runTime.registerInclude(item.include, 
+                                //jshint evil:true
+                                eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude.bind(t);' + item.source + 'return s;})')
+                            );
+                        }
+                        catch(err) {
+                            console.error('Pregister include error!', err, err.lineNumber);
+                        }
+                    });
+                }
             }
         }
 

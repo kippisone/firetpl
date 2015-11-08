@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.0-98
+ * FireTPL template engine v0.6.1-6
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.0-98',
+        version: '0.6.1-6',
 
         /**
          * Defines the default language
@@ -355,19 +355,21 @@ var FireTPL;
             parser.parse(template);
             template = parser.flush();
 
-            var includes = parser.includeParser();
-            if (includes) {
-                includes.forEach(function(item) {
-                    try {
-                        runTime.registerInclude(item.include, 
-                            //jshint evil:true
-                            eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude;' + item.source + 'return s;})')
-                        );
-                    }
-                    catch(err) {
-                        console.error('Pregister include error!', err, err.lineNumber);
-                    }
-                });
+            if (!options.skipIncludes) {
+                var includes = parser.includeParser();
+                if (includes) {
+                    includes.forEach(function(item) {
+                        try {
+                            runTime.registerInclude(item.include, 
+                                //jshint evil:true
+                                eval('(function(data,scopes) {var t = new FireTPL.Runtime(),h=t.execHelper,l=FireTPL.locale,f=FireTPL.fn,p=t.execInclude.bind(t);' + item.source + 'return s;})')
+                            );
+                        }
+                        catch(err) {
+                            console.error('Pregister include error!', err, err.lineNumber);
+                        }
+                    });
+                }
             }
         }
 
