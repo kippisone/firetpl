@@ -1023,6 +1023,10 @@
                 source: subParser.flush()
             });
 
+            subParser.includes.filter(function(inc) {
+                return this.includes.indexOf(inc) !== -1;
+            }, this);
+
             if (subParser.includes.length) {
                 includeStore.concat(subParser.includeParser());
             }

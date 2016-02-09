@@ -194,6 +194,7 @@
 
             if (!options.skipIncludes) {
                 var includes = parser.includeParser();
+                console.log('INCLUDES', includes);
                 if (includes) {
                     includes.forEach(function(item) {
                         try {
