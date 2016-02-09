@@ -991,6 +991,8 @@
         var self = this,
             includeStore = [];
 
+        console.log('RUN INC PARSER', this.includes);
+
         if (!this.includes.length) {
             return null;
         }
@@ -1017,21 +1019,24 @@
                 fileName: include.src
             });
             subParser.parse(source);
+            console.log('RUN INC SUB PARSER', subParser.includes);
 
             includeStore.push({
                 include: include.name,
                 source: subParser.flush()
             });
 
-            subParser.includes.filter(function(inc) {
-                return this.includes.indexOf(inc) !== -1;
-            }, this);
+            // subParser.includes = subParser.includes.filter(function(inc) {
+            //     return this.includes.indexOf(inc) !== -1;
+            // }, this);
 
             if (subParser.includes.length) {
-                includeStore.concat(subParser.includeParser());
+                includeStore = includeStore.concat(subParser.includeParser());
             }
         }, this);
 
+        console.log('RES LENGTTH', includeStore.length);
+        console.log('RES', includeStore);
         return includeStore.length > 0 ? includeStore : null;
     };
 

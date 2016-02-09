@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.2-0
+ * FireTPL template engine v0.6.2-4
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-0',
+        version: '0.6.2-4',
 
         /**
          * Defines the default language
@@ -1154,6 +1154,8 @@ var FireTPL;
         var self = this,
             includeStore = [];
 
+        console.log('RUN INC PARSER', this.includes);
+
         if (!this.includes.length) {
             return null;
         }
@@ -1180,21 +1182,24 @@ var FireTPL;
                 fileName: include.src
             });
             subParser.parse(source);
+            console.log('RUN INC SUB PARSER', subParser.includes);
 
             includeStore.push({
                 include: include.name,
                 source: subParser.flush()
             });
 
-            subParser.includes.filter(function(inc) {
-                return this.includes.indexOf(inc) !== -1;
-            }, this);
+            // subParser.includes = subParser.includes.filter(function(inc) {
+            //     return this.includes.indexOf(inc) !== -1;
+            // }, this);
 
             if (subParser.includes.length) {
-                includeStore.concat(subParser.includeParser());
+                includeStore = includeStore.concat(subParser.includeParser());
             }
         }, this);
 
+        console.log('RES LENGTTH', includeStore.length);
+        console.log('RES', includeStore);
         return includeStore.length > 0 ? includeStore : null;
     };
 
@@ -2281,8 +2286,8 @@ FireTPL.Syntax["hbs"] = {
             template = parser.flush();
 
             if (!options.skipIncludes) {
+                console.log('MATCHED INCLUDES', parser.includes);
                 var includes = parser.includeParser();
-                console.log('INCLUDES', includes);
                 if (includes) {
                     includes.forEach(function(item) {
                         try {

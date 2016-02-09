@@ -193,8 +193,8 @@
             template = parser.flush();
 
             if (!options.skipIncludes) {
+                console.log('MATCHED INCLUDES', parser.includes);
                 var includes = parser.includeParser();
-                console.log('INCLUDES', includes);
                 if (includes) {
                     includes.forEach(function(item) {
                         try {
