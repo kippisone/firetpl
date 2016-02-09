@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.2-4
+ * FireTPL template engine v0.6.2-18
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-4',
+        version: '0.6.2-18',
 
         /**
          * Defines the default language
@@ -70,6 +70,8 @@ var FireTPL;
 
     return FireTPL;
 }));
+'use strict';
+
 /**
  * FireTPL error handler
  *
@@ -150,7 +152,7 @@ var FireTPL;
 
         if (tmpl) {
             console.log('----- Template source -----');
-            // console.log(prettify(tmpl));
+            console.log(tmpl);
             console.log('----- Template source -----');
         }
     };
@@ -263,7 +265,7 @@ var FireTPL;
         this.templateCache = FireTPL.templateCache;
     };
 
-    Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+    Runtime.prototype.exec = function(helper, data, parent, root, ctx, fn) {
         console.warn('FireTPL.Runtime.prototype.exec is deprecated! Please use execHelper instead!');
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
@@ -272,11 +274,12 @@ var FireTPL;
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            ctx: ctx
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, ctx, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
         }
@@ -291,6 +294,7 @@ var FireTPL;
             data: data,
             parent: parent,
             root: root,
+            ctx: ctx,
             tag: tag,
             attrs: attrs
         }, fn);
@@ -356,7 +360,6 @@ var FireTPL;
             template = parser.flush();
 
             if (!options.skipIncludes) {
-                console.log('MATCHED INCLUDES', parser.includes);
                 var includes = parser.includeParser();
                 if (includes) {
                     includes.forEach(function(item) {
@@ -382,9 +385,10 @@ var FireTPL;
 
             var s;
 
+            var tmpl;
             //jshint evil:true
             try {
-                var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+                tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
                 return eval(tmpl);
             }
             catch (err) {
@@ -768,6 +772,7 @@ var FireTPL;
                         data: item,
                         parent: ctx.parent,
                         root: ctx.root,
+                        ctx: ctx.ctx,
                         tag: ctx.tag,
                         attrs: ctx.attrs
                     }, fn);
@@ -781,14 +786,15 @@ var FireTPL;
             }
         };
 
+        ctx.ctx.next = ctxFuncs.next;
         if (ctx.data) {
             if (Array.isArray(ctx.data)) {
                 ctx.data.forEach(function(d) {
-                    s += fn.bind(ctxFuncs)(d,ctx.parent, ctx.root);
+                    s += fn(d,ctx.parent, ctx.root, ctx.ctx);
                 });
             }
             else {
-                s += fn.bind(ctxFuncs)(ctx.data,ctx.parent, ctx.root);
+                s += fn(ctx.data,ctx.parent, ctx.root, ctx.ctx);
             }
         }
 

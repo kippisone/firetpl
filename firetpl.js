@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.2-4
+ * FireTPL template engine v0.6.2-18
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-4',
+        version: '0.6.2-18',
 
         /**
          * Defines the default language
@@ -70,6 +70,8 @@ var FireTPL;
 
     return FireTPL;
 }));
+'use strict';
+
 /**
  * FireTPL error handler
  *
@@ -150,7 +152,7 @@ var FireTPL;
 
         if (tmpl) {
             console.log('----- Template source -----');
-            // console.log(prettify(tmpl));
+            console.log(tmpl);
             console.log('----- Template source -----');
         }
     };
@@ -303,7 +305,7 @@ var FireTPL;
             this.appendCloser();
         }
 
-        var outStream = 'scopes=scopes||{};var root=data,parent=data;';
+        var outStream = 'scopes=scopes||{};var root=data,parent=data,ctx={};';
         var keys = Object.keys(this.out);
 
         keys = keys.sort(function(a, b) {
@@ -315,7 +317,7 @@ var FireTPL;
                 return;
             }
 
-            outStream += 'scopes.' + key + '=function(data,parent){var s=\'\';' + this.out[key] + 'return s;};';
+            outStream += 'scopes.' + key + '=function(data,parent,ctx){var s=\'\';' + this.out[key] + 'return s;};';
         }.bind(this));
 
         outStream += 'var s=\'\';';
@@ -556,18 +558,18 @@ var FireTPL;
             this.append('str', '<scope id="scope' + scopeId + '" path="' + expr + '"></scope>');
         }
         else {
-            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data);');
+            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data,ctx);');
         }
         
         this.newScope('scope' + scopeId);
 
         if (helper === 'if') {
             // this.lastIfScope = scopeId;
-            this.append('code', 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
+            this.append('code', 'var c=data;var r=h(\'if\',c,parent,root,ctx,function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});s+=r;']);
         }
         else {
-            this.append('code', 's+=h(\'' + helper + '\',data,parent,root' + tagStr + ',function(data){var s=\'\';');
+            this.append('code', 's+=h(\'' + helper + '\',data,parent,root,ctx' + tagStr + ',function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});']);
         }
 
@@ -585,7 +587,11 @@ var FireTPL;
      * @param {String} attrs Attributes string
      */
     Parser.prototype.parseSubHelper = function(name, expr, tag, attrs) {
-        this.append('code', 's+=this.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
+        if (attrs) {
+            attrs = this.matchVariables(attrs);
+        }
+        
+        this.append('code', 's+=ctx.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
         this.closer.push(['code', 'return s;});']);
     };
 
@@ -2193,7 +2199,7 @@ FireTPL.Syntax["hbs"] = {
         this.templateCache = FireTPL.templateCache;
     };
 
-    Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+    Runtime.prototype.exec = function(helper, data, parent, root, ctx, fn) {
         console.warn('FireTPL.Runtime.prototype.exec is deprecated! Please use execHelper instead!');
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
@@ -2202,11 +2208,12 @@ FireTPL.Syntax["hbs"] = {
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            ctx: ctx
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, ctx, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
         }
@@ -2221,6 +2228,7 @@ FireTPL.Syntax["hbs"] = {
             data: data,
             parent: parent,
             root: root,
+            ctx: ctx,
             tag: tag,
             attrs: attrs
         }, fn);
@@ -2286,7 +2294,6 @@ FireTPL.Syntax["hbs"] = {
             template = parser.flush();
 
             if (!options.skipIncludes) {
-                console.log('MATCHED INCLUDES', parser.includes);
                 var includes = parser.includeParser();
                 if (includes) {
                     includes.forEach(function(item) {
@@ -2312,9 +2319,10 @@ FireTPL.Syntax["hbs"] = {
 
             var s;
 
+            var tmpl;
             //jshint evil:true
             try {
-                var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+                tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
                 return eval(tmpl);
             }
             catch (err) {
@@ -2698,6 +2706,7 @@ FireTPL.Syntax["hbs"] = {
                         data: item,
                         parent: ctx.parent,
                         root: ctx.root,
+                        ctx: ctx.ctx,
                         tag: ctx.tag,
                         attrs: ctx.attrs
                     }, fn);
@@ -2711,14 +2720,15 @@ FireTPL.Syntax["hbs"] = {
             }
         };
 
+        ctx.ctx.next = ctxFuncs.next;
         if (ctx.data) {
             if (Array.isArray(ctx.data)) {
                 ctx.data.forEach(function(d) {
-                    s += fn.bind(ctxFuncs)(d,ctx.parent, ctx.root);
+                    s += fn(d,ctx.parent, ctx.root, ctx.ctx);
                 });
             }
             else {
-                s += fn.bind(ctxFuncs)(ctx.data,ctx.parent, ctx.root);
+                s += fn(ctx.data,ctx.parent, ctx.root, ctx.ctx);
             }
         }
 

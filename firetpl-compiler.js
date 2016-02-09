@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.2-4
+ * FireTPL template engine v0.6.2-18
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-4',
+        version: '0.6.2-18',
 
         /**
          * Defines the default language
@@ -70,6 +70,8 @@ var FireTPL;
 
     return FireTPL;
 }));
+'use strict';
+
 /**
  * FireTPL error handler
  *
@@ -150,7 +152,7 @@ var FireTPL;
 
         if (tmpl) {
             console.log('----- Template source -----');
-            // console.log(prettify(tmpl));
+            console.log(tmpl);
             console.log('----- Template source -----');
         }
     };

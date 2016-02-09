@@ -100,7 +100,7 @@
         this.templateCache = FireTPL.templateCache;
     };
 
-    Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+    Runtime.prototype.exec = function(helper, data, parent, root, ctx, fn) {
         console.warn('FireTPL.Runtime.prototype.exec is deprecated! Please use execHelper instead!');
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
@@ -109,11 +109,12 @@
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            ctx: ctx
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, ctx, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
         }
@@ -128,6 +129,7 @@
             data: data,
             parent: parent,
             root: root,
+            ctx: ctx,
             tag: tag,
             attrs: attrs
         }, fn);
@@ -193,7 +195,6 @@
             template = parser.flush();
 
             if (!options.skipIncludes) {
-                console.log('MATCHED INCLUDES', parser.includes);
                 var includes = parser.includeParser();
                 if (includes) {
                     includes.forEach(function(item) {
@@ -219,9 +220,10 @@
 
             var s;
 
+            var tmpl;
             //jshint evil:true
             try {
-                var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+                tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
                 return eval(tmpl);
             }
             catch (err) {

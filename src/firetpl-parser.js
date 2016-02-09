@@ -140,7 +140,7 @@
             this.appendCloser();
         }
 
-        var outStream = 'scopes=scopes||{};var root=data,parent=data;';
+        var outStream = 'scopes=scopes||{};var root=data,parent=data,ctx={};';
         var keys = Object.keys(this.out);
 
         keys = keys.sort(function(a, b) {
@@ -152,7 +152,7 @@
                 return;
             }
 
-            outStream += 'scopes.' + key + '=function(data,parent){var s=\'\';' + this.out[key] + 'return s;};';
+            outStream += 'scopes.' + key + '=function(data,parent,ctx){var s=\'\';' + this.out[key] + 'return s;};';
         }.bind(this));
 
         outStream += 'var s=\'\';';
@@ -393,18 +393,18 @@
             this.append('str', '<scope id="scope' + scopeId + '" path="' + expr + '"></scope>');
         }
         else {
-            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data);');
+            this.append('code', 's+=scopes.scope' + scopeId + '(' + expr + ',data,ctx);');
         }
         
         this.newScope('scope' + scopeId);
 
         if (helper === 'if') {
             // this.lastIfScope = scopeId;
-            this.append('code', 'var c=data;var r=h(\'if\',c,parent,root,function(data){var s=\'\';');
+            this.append('code', 'var c=data;var r=h(\'if\',c,parent,root,ctx,function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});s+=r;']);
         }
         else {
-            this.append('code', 's+=h(\'' + helper + '\',data,parent,root' + tagStr + ',function(data){var s=\'\';');
+            this.append('code', 's+=h(\'' + helper + '\',data,parent,root,ctx' + tagStr + ',function(data){var s=\'\';');
             this.closer.push(['code', 'return s;});']);
         }
 
@@ -422,7 +422,11 @@
      * @param {String} attrs Attributes string
      */
     Parser.prototype.parseSubHelper = function(name, expr, tag, attrs) {
-        this.append('code', 's+=this.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
+        if (attrs) {
+            attrs = this.matchVariables(attrs);
+        }
+        
+        this.append('code', 's+=ctx.' + name + '(' + this.matchVariables(expr, true, false) + ',\'' + tag + '\',\'' + attrs + '\',function(data){var s=\'\';');
         this.closer.push(['code', 'return s;});']);
     };
 

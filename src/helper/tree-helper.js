@@ -29,6 +29,7 @@
                         data: item,
                         parent: ctx.parent,
                         root: ctx.root,
+                        ctx: ctx.ctx,
                         tag: ctx.tag,
                         attrs: ctx.attrs
                     }, fn);
@@ -42,14 +43,15 @@
             }
         };
 
+        ctx.ctx.next = ctxFuncs.next;
         if (ctx.data) {
             if (Array.isArray(ctx.data)) {
                 ctx.data.forEach(function(d) {
-                    s += fn.bind(ctxFuncs)(d,ctx.parent, ctx.root);
+                    s += fn(d,ctx.parent, ctx.root, ctx.ctx);
                 });
             }
             else {
-                s += fn.bind(ctxFuncs)(ctx.data,ctx.parent, ctx.root);
+                s += fn(ctx.data,ctx.parent, ctx.root, ctx.ctx);
             }
         }
 
