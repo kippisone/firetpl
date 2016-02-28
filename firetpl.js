@@ -2598,23 +2598,6 @@ FireTPL.Syntax["hbs"] = {
     FireTPL.registerFunction('exists', function(str) {
         return str !== undefined && str !== null;
     });
-
-    /**
-     * Checks whether str matches agains a regular expression
-     *
-     * Returns true if str matches
-     *
-     * @group InlineFunctions
-     * @method match
-     * @return {boolean}    Returns true if input matches
-     * @example {fire}
-     * :if $str.match('foo|bar')
-     *     "Str matches!"
-     */
-    FireTPL.registerFunction('match', function(str, pattern, modifier) {
-        var reg = new RegExp(pattern, modifier);
-        return reg.test(str);
-    });
 })(FireTPL);
 (function(FireTPL) {
     'use strict';
