@@ -995,7 +995,7 @@
         var self = this,
             includeStore = [];
 
-        console.log('RUN INC PARSER', this.includes);
+        // console.log('RUN INC PARSER', this.includes);
 
         if (!this.includes.length) {
             return null;
@@ -1023,7 +1023,7 @@
                 fileName: include.src
             });
             subParser.parse(source);
-            console.log('RUN INC SUB PARSER', subParser.includes);
+            // console.log('RUN INC SUB PARSER', subParser.includes);
 
             includeStore.push({
                 include: include.name,
@@ -1039,8 +1039,8 @@
             }
         }, this);
 
-        console.log('RES LENGTTH', includeStore.length);
-        console.log('RES', includeStore);
+        // console.log('RES LENGTTH', includeStore.length);
+        // console.log('RES', includeStore);
         return includeStore.length > 0 ? includeStore : null;
     };
 
