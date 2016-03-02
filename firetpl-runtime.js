@@ -1,5 +1,5 @@
 /*!
- * FireTPL template engine v0.6.2-20
+ * FireTPL template engine v0.6.2-22
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-20',
+        version: '0.6.2-22',
 
         /**
          * Defines the default language
@@ -663,6 +663,23 @@ var FireTPL;
      */
     FireTPL.registerFunction('exists', function(str) {
         return str !== undefined && str !== null;
+    });
+
+    /**
+     * Checks whether str matches agains a regular expression
+     *
+     * Returns true if str matches
+     *
+     * @group InlineFunctions
+     * @method match
+     * @return {boolean}    Returns true if input matches
+     * @example {fire}
+     * :if $str.match('foo|bar')
+     *     "Str matches!"
+     */
+    FireTPL.registerFunction('match', function(str, pattern, modifier) {
+        var reg = new RegExp(pattern, modifier);
+        return reg.test(str);
     });
 })(FireTPL);
 (function(FireTPL) {
