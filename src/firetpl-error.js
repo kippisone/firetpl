@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * FireTPL error handler
  *
@@ -78,7 +80,7 @@
 
         if (tmpl) {
             console.log('----- Template source -----');
-            // console.log(prettify(tmpl));
+            console.log(tmpl);
             console.log('----- Template source -----');
         }
     };

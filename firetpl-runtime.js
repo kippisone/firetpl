@@ -1,12 +1,12 @@
 /*!
- * FireTPL template engine v0.6.1-6
+ * FireTPL template engine v0.6.2-22
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
  * FireTPL is licensed under MIT License
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2015 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2016 Noname Media, http://noname-media.com
  * Author Andi Heinkelein <andi.oxidant@noname-media.com>
  *
  */
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.1-6',
+        version: '0.6.2-22',
 
         /**
          * Defines the default language
@@ -70,6 +70,8 @@ var FireTPL;
 
     return FireTPL;
 }));
+'use strict';
+
 /**
  * FireTPL error handler
  *
@@ -150,7 +152,7 @@ var FireTPL;
 
         if (tmpl) {
             console.log('----- Template source -----');
-            // console.log(prettify(tmpl));
+            console.log(tmpl);
             console.log('----- Template source -----');
         }
     };
@@ -263,7 +265,7 @@ var FireTPL;
         this.templateCache = FireTPL.templateCache;
     };
 
-    Runtime.prototype.exec = function(helper, data, parent, root, fn) {
+    Runtime.prototype.exec = function(helper, data, parent, root, ctx, fn) {
         console.warn('FireTPL.Runtime.prototype.exec is deprecated! Please use execHelper instead!');
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
@@ -272,11 +274,12 @@ var FireTPL;
         return FireTPL.helpers[helper]({
             data: data,
             parent: parent,
-            root: root
+            root: root,
+            ctx: ctx
         }, fn);
     };
 
-    Runtime.prototype.execHelper = function(helper, data, parent, root, tag, attrs, fn) {
+    Runtime.prototype.execHelper = function(helper, data, parent, root, ctx, tag, attrs, fn) {
         if (!FireTPL.helpers[helper]) {
             throw new Error('Helper ' + helper + ' not registered!');
         }
@@ -291,6 +294,7 @@ var FireTPL;
             data: data,
             parent: parent,
             root: root,
+            ctx: ctx,
             tag: tag,
             attrs: attrs
         }, fn);
@@ -381,9 +385,10 @@ var FireTPL;
 
             var s;
 
+            var tmpl;
             //jshint evil:true
             try {
-                var tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
+                tmpl = '(function(data, scopes) {\n' + template + 'return s;})(data, scopes)';
                 return eval(tmpl);
             }
             catch (err) {
@@ -659,6 +664,23 @@ var FireTPL;
     FireTPL.registerFunction('exists', function(str) {
         return str !== undefined && str !== null;
     });
+
+    /**
+     * Checks whether str matches agains a regular expression
+     *
+     * Returns true if str matches
+     *
+     * @group InlineFunctions
+     * @method match
+     * @return {boolean}    Returns true if input matches
+     * @example {fire}
+     * :if $str.match('foo|bar')
+     *     "Str matches!"
+     */
+    FireTPL.registerFunction('match', function(str, pattern, modifier) {
+        var reg = new RegExp(pattern, modifier);
+        return reg.test(str);
+    });
 })(FireTPL);
 (function(FireTPL) {
     'use strict';
@@ -767,6 +789,7 @@ var FireTPL;
                         data: item,
                         parent: ctx.parent,
                         root: ctx.root,
+                        ctx: ctx.ctx,
                         tag: ctx.tag,
                         attrs: ctx.attrs
                     }, fn);
@@ -780,14 +803,15 @@ var FireTPL;
             }
         };
 
+        ctx.ctx.next = ctxFuncs.next;
         if (ctx.data) {
             if (Array.isArray(ctx.data)) {
                 ctx.data.forEach(function(d) {
-                    s += fn.bind(ctxFuncs)(d,ctx.parent, ctx.root);
+                    s += fn(d,ctx.parent, ctx.root, ctx.ctx);
                 });
             }
             else {
-                s += fn.bind(ctxFuncs)(ctx.data,ctx.parent, ctx.root);
+                s += fn(ctx.data,ctx.parent, ctx.root, ctx.ctx);
             }
         }
 
