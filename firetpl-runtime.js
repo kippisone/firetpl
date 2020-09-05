@@ -1,12 +1,12 @@
 /*!
- * FireTPL template engine v0.6.2-22
+ * FireTPL template engine v0.6.2
  * 
  * FireTPL is a pretty Javascript template engine. FireTPL uses indention for scops and blocks, supports includes, helper and inline functions.
  *
  * FireTPL is licensed under MIT License
  * http://opensource.org/licenses/MIT
  *
- * Copyright (c) 2013 - 2016 Noname Media, http://noname-media.com
+ * Copyright (c) 2013 - 2020 Noname Media, http://noname-media.com
  * Author Andi Heinkelein <andi.oxidant@noname-media.com>
  *
  */
@@ -53,7 +53,7 @@ var FireTPL;
          * @property {String} version
          * @default v0.6.0
          */
-        version: '0.6.2-22',
+        version: '0.6.2',
 
         /**
          * Defines the default language
@@ -70,8 +70,6 @@ var FireTPL;
 
     return FireTPL;
 }));
-'use strict';
-
 /**
  * FireTPL error handler
  *
@@ -163,6 +161,7 @@ var FireTPL;
     FireTPL.Error = FireError;
     FireTPL.ParseError = ParseError;
 })(FireTPL);
+
 /**
  * FireTPL runtime
  *

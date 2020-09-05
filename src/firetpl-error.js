@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * FireTPL error handler
  *
